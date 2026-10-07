@@ -1,0 +1,36 @@
+"""Command-line entry point: `uv run pipeline <command>`."""
+
+from __future__ import annotations
+
+import argparse
+import sys
+
+
+def _cmd_fetch(args: argparse.Namespace) -> int:
+    print("fetch: no sources implemented yet")
+    return 0
+
+
+def _cmd_build(args: argparse.Namespace) -> int:
+    print("build: no build steps implemented yet")
+    return 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="pipeline", description="NYC Enclave Finder data pipeline")
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p_fetch = sub.add_parser("fetch", help="Download source snapshots into data/raw/")
+    p_fetch.add_argument("--refresh", action="store_true", help="Re-download even if a snapshot exists")
+    p_fetch.add_argument("--only", nargs="*", default=None, help="Restrict to these source ids")
+    p_fetch.set_defaults(func=_cmd_fetch)
+
+    p_build = sub.add_parser("build", help="Build frontend assets from local snapshots")
+    p_build.set_defaults(func=_cmd_build)
+
+    args = parser.parse_args(argv)
+    return int(args.func(args) or 0)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

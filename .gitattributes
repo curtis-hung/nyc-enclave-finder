@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+# Processed data assets are byte-exact build outputs; never rewrite line endings
+web/public/data/** -text
+*.png binary

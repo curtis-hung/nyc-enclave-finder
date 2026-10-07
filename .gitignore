@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+dist/
+test-results/
+playwright-report/
+blob-report/
+.vite/
+
+# Data: raw snapshots and intermediates are never committed (§3.1)
+data/raw/
+data/interim/
+data/logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
