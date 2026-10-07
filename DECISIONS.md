@@ -58,6 +58,7 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   over-representation *among Asians* or *among immigrants*, which rewards areas with few Asians or
   immigrants. LQ still compares like with like: same numerator table, same denominator (§2.5).
 - **Limitations:** numerators remain partial (Asian-alone only; foreign-born only); the UI states it.
+- **Status:** confirmed by the user at the M2 checkpoint.
 
 ## D7. Data states and the minimum-data rule
 
@@ -108,3 +109,20 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 
 - Rook contiguity (shared boundary > 1 ft) on water-included tracts in EPSG:2263. Point contacts
   are not neighbours. Five island tracts have no neighbours. NTA adjacency = any adjacent tract pair.
+
+## D12. M2 checkpoint taxonomy changes (user decisions)
+
+- **Indo-Caribbean removed.** Guyanese and Trinidadian remain leaf groups under Caribbean; no
+  proxy group is built from birthplace.
+- **Sikh merged into Indian.** Indian's Asian-group mapping is B02015_021 + B02015_026 (the
+  pre-2020 ACS coded Sikh write-ins as Asian Indian; the lines are mutually exclusive, so summing
+  is valid within the dimension).
+- **Jewish added as a proxy group** (`proxy: true`). The user directed that Yiddish speakers be
+  assumed Jewish. At tract level the only available category is C16001 "German or other West
+  Germanic languages" (also German, Dutch, Pennsylvania Dutch speakers), so the group is labelled
+  "Jewish (Yiddish-language proxy)" everywhere, its mapping is flagged as a bucket, and the
+  rationale states it misses Jewish New Yorkers who do not speak Yiddish at home. Paired exact with
+  DOHMH "Jewish/Kosher". Only groups explicitly marked `proxy` may default to a bucket category.
+  This knowingly departs from the spec's caution about inferring identity (§4.5) at the user's
+  direction; the proxy is transparent in the UI and About page.
+- **Thresholds** (D7, presets.yaml) confirmed as-is.

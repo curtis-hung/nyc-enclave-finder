@@ -67,6 +67,7 @@ class Group:
     rationale: str | None
     cuisines: dict[str, str]
     dims: dict[str, DimMapping] = field(default_factory=dict)
+    proxy: bool = False  # the group is measured only through a flagged proxy category
 
     @property
     def is_leaf(self) -> bool:
@@ -111,6 +112,7 @@ def load_groups(dims: dict[str, Dimension], config_dir: Path = CONFIG_DIR) -> di
             default_dimension=node["default_dimension"],
             rationale=node.get("rationale"),
             cuisines=dict(node.get("cuisines") or {}),
+            proxy=bool(node.get("proxy", False)),
         )
         groups[gid] = g
         raw_dims[gid] = node.get("dims") or {}
@@ -162,9 +164,10 @@ def load_groups(dims: dict[str, Dimension], config_dir: Path = CONFIG_DIR) -> di
     for g in groups.values():
         if g.default_dimension not in g.dims:
             raise ConfigError(f"{g.id}: default_dimension {g.default_dimension} has no mapping")
-        if g.dims[g.default_dimension].is_bucket and g.id != "indo_caribbean":
-            # a bucket default would make enclaves describe a broader population than the group
-            raise ConfigError(f"{g.id}: default dimension is a bucket mapping")
+        if g.dims[g.default_dimension].is_bucket and not g.proxy:
+            # a bucket default would make enclaves describe a broader population than the group;
+            # allowed only for groups explicitly marked `proxy: true` (labelled as such in the UI)
+            raise ConfigError(f"{g.id}: default dimension is a bucket mapping (mark the group proxy: true)")
         if not g.rationale:
             g.rationale = DEFAULT_RATIONALE[g.default_dimension]
     return groups

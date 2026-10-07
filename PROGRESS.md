@@ -6,7 +6,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 - [x] M0 Scaffold
 - [x] M1 Fetch + provenance
-- [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (awaiting user review)
+- [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (reviewed; changes in D12)
 - [ ] M3 Basemap + group focus
 - [ ] M4 "Who's here?"
 - [ ] M5 Area focus **[CHECKPOINT]**
@@ -17,8 +17,9 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M2 complete — paused at the M2 checkpoint for user review** (taxonomy in `docs/TAXONOMY.md`,
-figure in `docs/figures/m2_default_dimension_lq.png`). Next: M3 (basemap + group focus).
+**M2 checkpoint reviewed.** Taxonomy changes applied (D12): Indo-Caribbean removed, Sikh merged
+into Indian, Jewish added as a Yiddish-language proxy group. PUMS proposal pending (QUESTIONS Q1).
+Next: M3 (basemap + group focus).
 
 ## Completed work
 

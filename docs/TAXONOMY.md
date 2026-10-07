@@ -79,14 +79,12 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
     - **Thai** `thai` — **asian** 7,221, NTA; birthplace 5,782, NTA; language (bucket) 92,445, NTA
     - **Vietnamese** `vietnamese` — **asian** 15,933, NTA; birthplace 13,607, NTA; language 10,130, NTA
   - **South Asian** `south_asian` — **asian** (sum) 379,217; birthplace (sum) 232,002
-    - **Indian** `indian` — **asian** 210,910; birthplace 73,526
+    - **Indian** `indian` — **asian** 211,717; birthplace 73,526
     - **Bangladeshi** `bangladeshi` — **asian** 98,575; birthplace 106,576
     - **Bhutanese** `bhutanese` — **asian** 715, NTA; birthplace 791, NTA
     - **Nepali** `nepali` — **asian** 14,671, NTA; birthplace 13,213, NTA
     - **Pakistani** `pakistani` — **asian** 49,138, NTA; birthplace 34,160, NTA
     - **Sri Lankan** `sri_lankan` — **asian** 4,401, NTA; birthplace 3,736, NTA
-    - **Sikh (ACS Asian group)** `sikh` — **asian** 807, NTA
-    - **Indo-Caribbean** `indo_caribbean` — **birthplace** (bucket) 213,130
   - **Central Asian** `central_asian` — **asian** (sum) 16,344, NTA; birthplace (sum) 40,522
     - **Afghan** `afghan` — asian 3,097, NTA; **ancestry** 3,687, NTA; birthplace 3,188, NTA
     - **Kazakh** `kazakh` — **asian** 1,481, NTA; birthplace 5,530, NTA
@@ -147,6 +145,7 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
   - **Israeli** `israeli` — **ancestry** 17,527, NTA; birthplace 19,400, NTA
   - **Armenian** `armenian` — **ancestry** 10,741, NTA; birthplace 2,152, NTA
   - **Assyrian/Chaldean/Syriac** `assyrian` — **ancestry** 303, NTA
+- **Jewish (Yiddish-language proxy)** `jewish` — **language** (bucket) 132,400
 - **European** `european` — **birthplace** (sum) 378,895
   - **Southern European** `southern_european` — **birthplace** (sum) 58,727
     - **Italian** `italian` — **ancestry** 480,124; birthplace 38,032, NTA
@@ -228,14 +227,12 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
 | Thai | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Vietnamese | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | South Asian | asian | tract | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
-| Indian | asian | tract | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
+| Indian | asian | tract | B02015 Asian Indian plus the separate "Sikh" write-in line (pre-2020 ACS coding counted Sikh responses as Asian Indian; merged at user request). Counts U.S.-born and immigrants. |
 | Bangladeshi | asian | tract | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Bhutanese | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Nepali | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Pakistani | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Sri Lankan | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
-| Sikh (ACS Asian group) | asian | nta | The 2020-based ACS codes "Sikh" as a detailed Asian group when respondents write it in. It is shown as reported and is not used to infer religion. |
-| Indo-Caribbean | birthplace | tract | No census table identifies Indo-Caribbean people. The only proxy is birthplace in Guyana or Trinidad & Tobago, which includes every ethnic origin; it is flagged as a bucket. |
 | Central Asian | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
 | Afghan | ancestry | nta | Afghan respondents report race as Asian or White inconsistently; ancestry captures self-identified Afghan heritage regardless of race. |
 | Kazakh | asian | nta | Detailed Asian groups (B02015) count U.S.-born and immigrant residents of the group. |
@@ -296,6 +293,7 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
 | Israeli | ancestry | nta | Ancestry counts U.S.-born and immigrants who report this heritage (race-neutral). |
 | Armenian | ancestry | nta | Ancestry counts U.S.-born and immigrants who report this heritage (race-neutral). |
 | Assyrian/Chaldean/Syriac | ancestry | nta | Ancestry counts U.S.-born and immigrants who report this heritage (race-neutral). |
+| Jewish (Yiddish-language proxy) | language | tract | The Census does not measure religion or Jewish identity. At the user's direction, Yiddish speakers are assumed to be Jewish; at tract level Yiddish is only available inside the "German or other West Germanic languages" category (residents aged 5+). This is a proxy for Yiddish-speaking households only and misses most Jewish New Yorkers, who do not speak Yiddish at home. |
 | European | birthplace | tract | Ancestry cannot be summed across categories, so broad European groups use summed countries of birth (foreign-born only). Leaf groups default to ancestry. |
 | Southern European | birthplace | tract | Country of birth (foreign-born residents only). |
 | Italian | ancestry | tract | Ancestry counts U.S.-born and immigrants who report this heritage (race-neutral). |
@@ -337,20 +335,18 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
 - Hispanic & Latin American / birthplace: sum excludes paraguayan, puerto_rican (no exact category in this dimension)
 - Hispanic & Latin American / language: bucket — Spanish (includes Spanish speakers of any origin) (Spanish)
 - South American / birthplace: sum excludes paraguayan (no exact category in this dimension)
-- Asian / birthplace: sum excludes indo_caribbean, mongolian, sikh (no exact category in this dimension)
+- Asian / birthplace: sum excludes mongolian (no exact category in this dimension)
 - East Asian / birthplace: sum excludes mongolian (no exact category in this dimension)
 - Chinese / language: bucket — Chinese languages (includes Taiwanese and other Chinese-speaking groups) (Chinese (incl. Mandarin, Cantonese))
 - Taiwanese / language: bucket — Chinese languages (Chinese (incl. Mandarin, Cantonese))
 - Japanese / language: bucket — Other Asian and Pacific Island languages (Other Asian and Pacific Island languages)
 - Filipino / language: bucket — Tagalog (incl. Filipino) — a language, not an ethnicity (Tagalog (incl. Filipino))
 - Thai / language: bucket — Other Asian and Pacific Island languages (Other Asian and Pacific Island languages)
-- South Asian / asian: sum excludes indo_caribbean (no exact category in this dimension)
-- South Asian / birthplace: sum excludes indo_caribbean, sikh (no exact category in this dimension)
-- Indo-Caribbean / birthplace: bucket — Born in Trinidad & Tobago or Guyana — all ethnic origins; the ACS has no Indo-Caribbean category (Americas:!!Latin America:!!Caribbean:!!Trinidad and Tobago, Americas:!!Latin America:!!South America:!!Guyana)
 - Haitian / language: bucket — French, Haitian, or Cajun (French, Haitian, or Cajun)
 - Middle Eastern & North African / birthplace: sum excludes assyrian, palestinian (no exact category in this dimension)
 - Arab / birthplace: sum excludes palestinian (no exact category in this dimension)
 - Arab / language: bucket — Arabic (spoken by people of many origins) (Arabic)
+- Jewish (Yiddish-language proxy) / language: bucket — German or other West Germanic languages — the tract-level category that contains Yiddish; also includes German, Dutch and Pennsylvania Dutch speakers (German or other West Germanic languages)
 - European / birthplace: sum excludes maltese (no exact category in this dimension)
 - Southern European / birthplace: sum excludes maltese (no exact category in this dimension)
 - Polish / language: bucket — Russian, Polish, or other Slavic languages (Russian, Polish, or other Slavic languages)
@@ -409,8 +405,6 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
 | Nepali | Nepali | Himalayan, South Asian |
 | Pakistani | Pakistani | South Asian |
 | Sri Lankan | Sri Lankan | South Asian |
-| Sikh (ACS Asian group) |  | Indian, South Asian |
-| Indo-Caribbean |  | Indian, Guyanese, Trinidadian, Caribbean |
 | Central Asian | Central Asian | Asian |
 | Afghan | Afghan | Central Asian |
 | Kazakh |  | Central Asian |
@@ -466,6 +460,7 @@ Bold dimension = `default_dimension`. Numbers are citywide estimates in that dim
 | Israeli | Israeli | Middle Eastern |
 | Armenian | Armenian |  |
 | Assyrian/Chaldean/Syriac |  | Middle Eastern |
+| Jewish (Yiddish-language proxy) | Jewish / Kosher |  |
 | European | European |  |
 | Southern European |  | Mediterranean, European |
 | Italian | Italian | European |
@@ -659,14 +654,12 @@ Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 | Thai | asian | 0 | 10 | 181 | 84 | 2052 | 27% |
 | Vietnamese | asian | 1 | 22 | 460 | 84 | 1760 | 13% |
 | South Asian | asian | 120 | 586 | 1005 | 84 | 532 | 80% |
-| Indian | asian | 68 | 418 | 998 | 84 | 759 | 71% |
+| Indian | asian | 66 | 379 | 1041 | 84 | 757 | 70% |
 | Bangladeshi | asian | 24 | 116 | 440 | 84 | 1663 | 63% |
 | Bhutanese | asian | 0 | 0 | 12 | 84 | 2231 | 0% |
 | Nepali | asian | 1 | 20 | 141 | 84 | 2081 | 39% |
 | Pakistani | asian | 5 | 58 | 527 | 84 | 1653 | 32% |
 | Sri Lankan | asian | 0 | 4 | 101 | 84 | 2138 | 18% |
-| Sikh (ACS Asian group) | asian | 0 | 0 | 10 | 84 | 2233 | 0% |
-| Indo-Caribbean | birthplace | 94 | 446 | 826 | 84 | 877 | 81% |
 | Central Asian | asian | 0 | 13 | 192 | 84 | 2038 | 20% |
 | Afghan | ancestry | 0 | 2 | 74 | 84 | 2167 | 2% |
 | Kazakh | asian | 0 | 1 | 35 | 84 | 2207 | 7% |
@@ -727,6 +720,7 @@ Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 | Israeli | ancestry | 0 | 24 | 345 | 84 | 1874 | 18% |
 | Armenian | ancestry | 0 | 9 | 324 | 84 | 1910 | 6% |
 | Assyrian/Chaldean/Syriac | ancestry | 0 | 0 | 13 | 84 | 2230 | 0% |
+| Jewish (Yiddish-language proxy) | language | 34 | 109 | 663 | 84 | 1437 | 79% |
 | European | birthplace | 251 | 899 | 660 | 84 | 433 | 92% |
 | Southern European | birthplace | 7 | 232 | 769 | 84 | 1235 | 53% |
 | Italian | ancestry | 404 | 848 | 649 | 84 | 342 | 93% |

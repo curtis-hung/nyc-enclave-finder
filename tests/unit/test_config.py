@@ -77,6 +77,17 @@ def test_every_group_has_a_valid_default_dimension(cfg):
     for g in cfg.groups.values():
         assert g.default_dimension in g.dims, g.id
         assert g.rationale
+        # only explicitly labelled proxy groups may default to a bucket category
+        assert g.proxy or not g.dims[g.default_dimension].is_bucket, g.id
+
+
+def test_rejects_bucket_default_unless_proxy(tmp_path):
+    grp = {"id": "x", "name": "X", "dims": {"language": {"vars": [9], "bucket": "b"}}, "default_dimension": "language"}
+    d = _tmp_config(tmp_path, [grp])
+    with pytest.raises(ConfigError, match="bucket"):
+        load_groups(load_dimensions(d), d)
+    d2 = _tmp_config(tmp_path / "ok", [{**grp, "proxy": True}])
+    assert load_groups(load_dimensions(d2), d2)["x"].proxy
 
 
 def test_every_pairing_points_at_a_cuisine_node(cfg):

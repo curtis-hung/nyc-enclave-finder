@@ -156,27 +156,15 @@ groups:
         children:
           - id: indian
             name: Indian
-            dims: {asian: [21], birthplace: [60]}
+            dims: {asian: [21, 26], birthplace: [60]}
             default_dimension: asian
+            rationale: B02015 Asian Indian plus the separate "Sikh" write-in line (pre-2020 ACS coding counted Sikh responses as Asian Indian; merged at user request). Counts U.S.-born and immigrants.
             cuisines: {indian: exact, south_asian: bucket}
           - {id: bangladeshi, name: Bangladeshi, dims: {asian: [22], birthplace: [58]}, default_dimension: asian, cuisines: {bangladeshi: exact, south_asian: bucket}}
           - {id: bhutanese, name: Bhutanese, dims: {asian: [23], birthplace: [59]}, default_dimension: asian, cuisines: {himalayan: bucket, south_asian: bucket}}
           - {id: nepali, name: Nepali, dims: {asian: [24], birthplace: [63]}, default_dimension: asian, cuisines: {nepali: exact, himalayan: bucket, south_asian: bucket}}
           - {id: pakistani, name: Pakistani, dims: {asian: [25], birthplace: [64]}, default_dimension: asian, cuisines: {pakistani: exact, south_asian: bucket}}
           - {id: sri_lankan, name: Sri Lankan, dims: {asian: [27], birthplace: [65]}, default_dimension: asian, cuisines: {sri_lankan: exact, south_asian: bucket}}
-          - id: sikh
-            name: Sikh (ACS Asian group)
-            dims: {asian: [26]}
-            default_dimension: asian
-            rationale: The 2020-based ACS codes "Sikh" as a detailed Asian group when respondents write it in. It is shown as reported and is not used to infer religion.
-            cuisines: {indian: bucket, south_asian: bucket}
-          - id: indo_caribbean
-            name: Indo-Caribbean
-            dims:
-              birthplace: {vars: [151, 171], bucket: "Born in Trinidad & Tobago or Guyana — all ethnic origins; the ACS has no Indo-Caribbean category"}
-            default_dimension: birthplace
-            rationale: No census table identifies Indo-Caribbean people. The only proxy is birthplace in Guyana or Trinidad & Tobago, which includes every ethnic origin; it is flagged as a bucket.
-            cuisines: {indian: bucket, guyanese: bucket, trinidadian: bucket, caribbean: bucket}
       - id: central_asian
         name: Central Asian
         default_dimension: asian
@@ -308,6 +296,20 @@ groups:
       - {id: israeli, name: Israeli, dims: {ancestry: [50], birthplace: [84]}, default_dimension: ancestry, cuisines: {israeli: exact, middle_eastern: bucket}}
       - {id: armenian, name: Armenian, dims: {ancestry: [16], birthplace: [80]}, default_dimension: ancestry, cuisines: {armenian: exact}}
       - {id: assyrian, name: Assyrian/Chaldean/Syriac, dims: {ancestry: [17]}, default_dimension: ancestry, cuisines: {middle_eastern: bucket}}
+
+  - id: jewish
+    name: Jewish (Yiddish-language proxy)
+    proxy: true
+    dims:
+      language: {vars: [9], bucket: "German or other West Germanic languages — the tract-level category that contains Yiddish; also includes German, Dutch and Pennsylvania Dutch speakers"}
+    default_dimension: language
+    rationale: >-
+      The Census does not measure religion or Jewish identity. At the user's direction, Yiddish
+      speakers are assumed to be Jewish; at tract level Yiddish is only available inside the
+      "German or other West Germanic languages" category (residents aged 5+). This is a proxy for
+      Yiddish-speaking households only and misses most Jewish New Yorkers, who do not speak Yiddish
+      at home.
+    cuisines: {jewish_kosher: exact}
 
   - id: european
     name: European

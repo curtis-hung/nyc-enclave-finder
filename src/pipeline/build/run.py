@@ -70,6 +70,7 @@ def write_groups(cfg: Config, acs: AcsSnapshot, gds: dict[str, dict[str, GroupDi
             "children": g.children,
             "default_dimension": g.default_dimension,
             "rationale": g.rationale,
+            "proxy": g.proxy,
             "cuisines": g.cuisines,
             "dims": {d: group_dim_meta(cfg, gds[gid][d], labels) for d in cfg.dimensions if d in gds[gid]},
         }
