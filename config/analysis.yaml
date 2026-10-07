@@ -1,0 +1,32 @@
+# Fixed, documented data-state rules (§2.7). These classify every value; they do not change by
+# preset. Presets (presets.yaml) choose which states may qualify a tract for an enclave.
+
+reliability:
+  # Coefficient of variation = (MOE / 1.645) / estimate, using the ACS 90% MOE.
+  z: 1.645
+  cv_reliable_max: 0.30   # CV <= 0.30 -> reliable
+  cv_caution_max: 0.60    # 0.30 < CV <= 0.60 -> caution; above -> suppressed
+  # Minimum-data rule: a share or LQ is not shown when the denominator (universe) is this small.
+  min_denominator: 50
+  # A group whose citywide estimate in a dimension is below this has no usable LQ anywhere.
+  min_city_count: 200
+
+# ACS annotation codes that appear in place of an MOE.
+#   -555555555: estimate is controlled; no sampling error -> MOE 0
+#   others: MOE cannot be computed -> treated as unknown (value is at best "caution")
+moe_codes:
+  zero: [-555555555]
+  unknown: [-222222222, -333333333, -888888888, -999999999]
+estimate_codes:
+  unavailable: [-666666666, -999999999, -888888888, -222222222, -333333333]
+
+sparse_level:
+  # If less than this share of a group's citywide population (in a dimension) sits in tracts
+  # with a reliable or caution value, the tract map is too sparse: the group/dimension is shown
+  # and analysed at NTA level by default, and the UI says so (§2.7).
+  min_share_in_usable_tracts: 0.5
+
+plausibility:
+  # Warn-only smoke tests (§13.4). "Concentrated around" = the NTA containing the reference
+  # point ranks within the top N NTAs citywide by LQ (among NTAs with a usable value).
+  top_n_ntas: 10

@@ -6,7 +6,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 - [x] M0 Scaffold
 - [x] M1 Fetch + provenance
-- [ ] M2 Demographic build + taxonomy **[CHECKPOINT]**
+- [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (awaiting user review)
 - [ ] M3 Basemap + group focus
 - [ ] M4 "Who's here?"
 - [ ] M5 Area focus **[CHECKPOINT]**
@@ -17,7 +17,8 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M1 complete.** Next: M2 (demographic build + taxonomy, then checkpoint).
+**M2 complete — paused at the M2 checkpoint for user review** (taxonomy in `docs/TAXONOMY.md`,
+figure in `docs/figures/m2_default_dimension_lq.png`). Next: M3 (basemap + group focus).
 
 ## Completed work
 
@@ -44,13 +45,28 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
   - Overture Places 2026-09-23.1: 70,777 food & drink places in the NYC bbox.
 - ACS no-key fallback (table-based Summary File) verified identical to the API for B01003.
 
+### M2 Demographic build + taxonomy
+- Config: `config/dimensions.yaml` (6 dimensions, one ACS table each, explicit denominators and
+  universes), `config/groups.yaml` (144 groups, 482 variable references), `config/cuisines.yaml`
+  (125-node cuisine DAG; all 90 DOHMH cuisine values mapped), `config/analysis.yaml` (data-state
+  rules), `config/presets.yaml` (enclave thresholds; cluster/catchment thresholds added at M6/M7).
+- `uv run pipeline build`: validated geography (tract→NTA→borough, rook adjacency on unclipped
+  geometry), group×dimension values at tract/NTA/borough/city with MOEs, shares, LQs and data
+  states; hard invariants; plausibility checks; deterministic assets in `web/public/data/`.
+- `uv run pipeline report`: generated `docs/TAXONOMY.md` + review figure.
+- Plausibility (warn-only): 5/5 residential checks pass (Brighton Beach Slavic language rank 1,
+  Russian ancestry rank 1, Washington Heights Dominican rank 3, Flushing Chinese rank 1, Borough
+  Park West Germanic language rank 2). Korean cuisine check runs at M6.
+- Tests: 43 passing (unit, synthetic ranking, built-data invariants).
+
 ## Cuts
 
 None.
 
 ## Payload sizes
 
-Not measured yet.
+M2 build: 273 files, 12.8 MB raw / 1.93 MB gzip in total (all lazy except geometry + meta).
+Tract geometry 215 KB gzip; NTA 92 KB; boroughs 43 KB; each group×dimension bundle ≤ 21 KB gzip.
 
 ## Blockers
 

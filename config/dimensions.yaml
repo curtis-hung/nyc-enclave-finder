@@ -1,0 +1,79 @@
+# Demographic dimensions (§2.5). Each dimension is one ACS table = one concept.
+#
+# numerator_universe: who can be counted in this table at all.
+# denominator: the variable every share in this dimension is divided by. LQ always compares
+#   shares built with this same numerator table and this same denominator (§2.5).
+# summable: whether a broad group may sum leaf categories of this table (§2.6, §5.4).
+#   Ancestry is NOT summable across categories, because one person can report two ancestries
+#   and would be counted twice; broad groups use a published ancestry subtotal or nothing.
+#
+# Shares are expressed against all residents (or residents aged 5+ for language) so a map of
+# "where group X lives" is comparable across tracts; the numerator universe is stated in the UI.
+
+race:
+  table: B03002
+  name: Race / Hispanic origin
+  short: Race
+  numerator_universe: Total population (each person in exactly one category)
+  denominator: B03002_001
+  share_of: all residents
+  summable: true
+  note: Hispanic or Latino people of any race are one category; other categories are non-Hispanic.
+
+hispanic:
+  table: B03001
+  name: Hispanic or Latino origin (detailed)
+  short: Hispanic origin
+  numerator_universe: Total population (Hispanic or Latino people by specific origin)
+  denominator: B03001_001
+  share_of: all residents
+  summable: true
+
+asian:
+  table: B02015
+  name: Asian groups (detailed)
+  short: Asian group
+  numerator_universe: Asian-alone population (people who reported only Asian race)
+  denominator: B01003_001
+  share_of: all residents
+  summable: true
+  note: >-
+    Counts only people who reported Asian as their only race; multiracial people with Asian
+    heritage are not counted. Shares are of all residents.
+
+ancestry:
+  table: B04006
+  name: Ancestry
+  short: Ancestry
+  numerator_universe: Total population; people may report up to two ancestries
+  denominator: B04006_001
+  share_of: all residents
+  summable: false
+  note: >-
+    A person who reports two ancestries is counted in both, so ancestry categories overlap and
+    are never added together.
+
+birthplace:
+  table: B05006
+  name: Country of birth
+  short: Birthplace
+  numerator_universe: Foreign-born population only (U.S.-born people are not counted)
+  denominator: B01003_001
+  share_of: all residents
+  summable: true
+  note: >-
+    Counts only immigrants born in the country. Puerto Rico is part of the U.S. and is not a
+    country of birth in this table. Shares are of all residents.
+
+language:
+  table: C16001
+  name: Language spoken at home
+  short: Language
+  numerator_universe: Population 5 years and over
+  denominator: C16001_001
+  share_of: residents aged 5 and over
+  summable: true
+  derive: false   # language categories are buckets; a partial roll-up would mislabel a broad group
+  note: >-
+    At tract level only 12 broad language categories exist (the detailed table B16001 is not
+    published for tracts). Most categories are buckets that cover many groups.

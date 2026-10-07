@@ -1,0 +1,166 @@
+# Cuisine hierarchy (§5.3). A directed acyclic graph rooted at `root`: a node may have several
+# parents (e.g. Dominican is below both Latin American and Caribbean; "Chinese/Cuban" is below
+# Chinese and Cuban). "Below" (§4.4) means "is a descendant of".
+#
+# Fields
+#   parents  default [root]
+#   kind     cuisine (default) | bucket (covers many groups) | food_type (a dish or format that
+#            is not a national cuisine) | generic (maps to root: any tag is "below" it)
+#   dohmh    exact DOHMH `CUISINE DESCRIPTION` values mapped here. Every value present in the
+#            snapshot must be mapped; the build fails otherwise. Blank cuisine maps to root.
+#   osm / overture / keywords: external labels mapped here (filled at M6, see §4.4).
+#
+# Restaurant labels come ONLY from restaurant data (§2.3). Group pairings live in groups.yaml.
+
+nodes:
+  - id: root
+    name: Any cuisine (unspecified)
+    parents: []
+    kind: generic
+    dohmh: ["Other", "Not Listed/Not Applicable"]
+
+  # --- formats and dishes that say nothing about national cuisine: treated as generic -------
+  # They keep their DOHMH text for display, but sit at the root, so an external cuisine label
+  # adds specificity instead of conflicting (a bakery tagged "chinese" is not a contradiction).
+  - {id: generic_format, name: "Format (bakery, café, juice, …)", kind: generic, parents: [root],
+     dohmh: ["Coffee/Tea", "Bakery Products/Desserts", "Juice, Smoothies, Fruit Salads", "Frozen Desserts",
+             "Bottled Beverages", "Sandwiches", "Sandwiches/Salads/Mixed Buffet", "Soups/Salads/Sandwiches",
+             "Salads", "Soups", "Nuts/Confectionary", "Fruits/Vegetables", "Vegan", "Vegetarian", "Fusion",
+             "Chicken", "Seafood", "Donuts", "Continental", "Haute Cuisine"]}
+
+  # --- American ---------------------------------------------------------------------------
+  - {id: american, name: American, dohmh: ["American"]}
+  - {id: new_american, name: New American, parents: [american], dohmh: ["New American"]}
+  - {id: californian, name: Californian, parents: [american], dohmh: ["Californian"]}
+  - {id: southwestern, name: Southwestern, parents: [american], dohmh: ["Southwestern"]}
+  - {id: tex_mex, name: Tex-Mex, parents: [american], dohmh: ["Tex-Mex"]}
+  - {id: soul_food, name: Soul Food, parents: [american], dohmh: ["Soul Food"]}
+  - {id: cajun, name: Cajun / Louisiana Creole, parents: [american, creole], dohmh: ["Cajun", "Creole/Cajun"]}
+  - {id: hamburgers, name: Hamburgers, kind: food_type, parents: [american], dohmh: ["Hamburgers"]}
+  - {id: hotdogs, name: Hot dogs, kind: food_type, parents: [american], dohmh: ["Hotdogs", "Hotdogs/Pretzels"]}
+  - {id: steakhouse, name: Steakhouse, kind: food_type, parents: [american], dohmh: ["Steakhouse"]}
+  - {id: barbecue, name: Barbecue, kind: food_type, parents: [american], dohmh: ["Barbecue"]}
+  - {id: pancakes, name: Pancakes / Waffles, kind: food_type, parents: [american], dohmh: ["Pancakes/Waffles"]}
+  - {id: bagels, name: Bagels / Pretzels, kind: food_type, parents: [american], dohmh: ["Bagels/Pretzels"]}
+  - {id: pizza, name: Pizza, kind: food_type, dohmh: ["Pizza"]}
+  - {id: hawaiian, name: Hawaiian / Polynesian, dohmh: ["Hawaiian", "Polynesian"]}
+  - {id: australian, name: Australian, dohmh: ["Australian"]}
+  - {id: jewish_kosher, name: Jewish / Kosher, dohmh: ["Jewish/Kosher"]}
+  - {id: creole, name: Creole (Haitian or Louisiana), kind: bucket, dohmh: ["Creole"]}
+
+  # --- Hispanic and Latin American -------------------------------------------------------------
+  - {id: spanish_hispanic, name: "Spanish (DOHMH: Spain or Latin American)", kind: bucket, dohmh: ["Spanish"]}
+  - {id: spanish_spain, name: Spanish (Spain), parents: [spanish_hispanic, european], dohmh: ["Tapas"]}
+  - {id: basque, name: Basque, parents: [spanish_spain, french], dohmh: ["Basque"]}
+  - {id: latin_american, name: Latin American, kind: bucket, parents: [spanish_hispanic], dohmh: ["Latin American", "Chimichurri"]}
+  - {id: mexican, name: Mexican, parents: [latin_american], dohmh: ["Mexican"]}
+  - {id: central_american, name: Central American, kind: bucket, parents: [latin_american]}
+  - {id: salvadoran, name: Salvadoran, parents: [central_american]}
+  - {id: guatemalan, name: Guatemalan, parents: [central_american]}
+  - {id: honduran, name: Honduran, parents: [central_american]}
+  - {id: nicaraguan, name: Nicaraguan, parents: [central_american]}
+  - {id: costa_rican, name: Costa Rican, parents: [central_american]}
+  - {id: panamanian, name: Panamanian, parents: [central_american]}
+  - {id: south_american, name: South American, kind: bucket, parents: [latin_american]}
+  - {id: argentinian, name: Argentinian, parents: [south_american]}
+  - {id: bolivian, name: Bolivian, parents: [south_american]}
+  - {id: chilean, name: Chilean, parents: [south_american], dohmh: ["Chilean"]}
+  - {id: colombian, name: Colombian, parents: [south_american]}
+  - {id: ecuadorian, name: Ecuadorian, parents: [south_american]}
+  - {id: paraguayan, name: Paraguayan, parents: [south_american]}
+  - {id: peruvian, name: Peruvian, parents: [south_american], dohmh: ["Peruvian"]}
+  - {id: uruguayan, name: Uruguayan, parents: [south_american]}
+  - {id: venezuelan, name: Venezuelan, parents: [south_american]}
+  - {id: brazilian, name: Brazilian, parents: [south_american], dohmh: ["Brazilian"]}
+
+  # --- Caribbean -------------------------------------------------------------------------------
+  - {id: caribbean, name: Caribbean, kind: bucket, dohmh: ["Caribbean"]}
+  - {id: cuban, name: Cuban, parents: [latin_american, caribbean]}
+  - {id: dominican, name: Dominican, parents: [latin_american, caribbean]}
+  - {id: puerto_rican, name: Puerto Rican, parents: [latin_american, caribbean]}
+  - {id: jamaican, name: Jamaican, parents: [caribbean]}
+  - {id: haitian, name: Haitian, parents: [caribbean, creole]}
+  - {id: trinidadian, name: Trinidadian, parents: [caribbean]}
+  - {id: guyanese, name: Guyanese, parents: [caribbean]}
+  - {id: chinese_cuban, name: Chinese-Cuban, parents: [chinese, cuban], dohmh: ["Chinese/Cuban"]}
+
+  # --- Asian -------------------------------------------------------------------------------------
+  - {id: asian, name: Asian, kind: bucket, dohmh: ["Asian/Asian Fusion"]}
+  - {id: east_asian, name: East Asian, kind: bucket, parents: [asian]}
+  - {id: chinese, name: Chinese, parents: [east_asian], dohmh: ["Chinese"]}
+  - {id: taiwanese, name: Taiwanese, parents: [chinese]}
+  - {id: japanese, name: Japanese, parents: [east_asian], dohmh: ["Japanese"]}
+  - {id: chinese_japanese, name: Chinese-Japanese, parents: [chinese, japanese], dohmh: ["Chinese/Japanese"]}
+  - {id: korean, name: Korean, parents: [east_asian], dohmh: ["Korean"]}
+  - {id: mongolian, name: Mongolian, parents: [east_asian]}
+  - {id: southeast_asian, name: Southeast Asian, kind: bucket, parents: [asian], dohmh: ["Southeast Asian"]}
+  - {id: thai, name: Thai, parents: [southeast_asian], dohmh: ["Thai"]}
+  - {id: vietnamese, name: Vietnamese, parents: [southeast_asian]}
+  - {id: filipino, name: Filipino, parents: [southeast_asian], dohmh: ["Filipino"]}
+  - {id: indonesian, name: Indonesian, parents: [southeast_asian], dohmh: ["Indonesian"]}
+  - {id: malaysian, name: Malaysian, parents: [southeast_asian]}
+  - {id: singaporean, name: Singaporean, parents: [southeast_asian]}
+  - {id: burmese, name: Burmese, parents: [southeast_asian]}
+  - {id: cambodian, name: Cambodian, parents: [southeast_asian]}
+  - {id: laotian, name: Laotian, parents: [southeast_asian]}
+  - {id: south_asian, name: South Asian, kind: bucket, parents: [asian]}
+  - {id: indian, name: Indian, parents: [south_asian], dohmh: ["Indian"]}
+  - {id: bangladeshi, name: Bangladeshi, parents: [south_asian], dohmh: ["Bangladeshi"]}
+  - {id: pakistani, name: Pakistani, parents: [south_asian], dohmh: ["Pakistani"]}
+  - {id: sri_lankan, name: Sri Lankan, parents: [south_asian]}
+  - {id: himalayan, name: Himalayan, kind: bucket, parents: [south_asian]}
+  - {id: nepali, name: Nepali, parents: [himalayan]}
+  - {id: tibetan, name: Tibetan, parents: [himalayan]}
+  - {id: central_asian, name: Central Asian, kind: bucket, parents: [asian]}
+  - {id: afghan, name: Afghan, parents: [central_asian], dohmh: ["Afghan"]}
+  - {id: uzbek, name: Uzbek, parents: [central_asian]}
+
+  # --- Middle East, North Africa, Mediterranean ------------------------------------------------------
+  - {id: middle_eastern, name: Middle Eastern, kind: bucket, dohmh: ["Middle Eastern"]}
+  - {id: mediterranean, name: Mediterranean, kind: bucket, dohmh: ["Mediterranean"]}
+  - {id: lebanese, name: Lebanese, parents: [middle_eastern, mediterranean], dohmh: ["Lebanese"]}
+  - {id: syrian, name: Syrian, parents: [middle_eastern]}
+  - {id: palestinian, name: Palestinian, parents: [middle_eastern]}
+  - {id: iraqi, name: Iraqi, parents: [middle_eastern]}
+  - {id: yemeni, name: Yemeni, parents: [middle_eastern]}
+  - {id: egyptian, name: Egyptian, parents: [middle_eastern], dohmh: ["Egyptian"]}
+  - {id: moroccan, name: Moroccan, parents: [middle_eastern], dohmh: ["Moroccan"]}
+  - {id: persian, name: Persian / Iranian, parents: [middle_eastern], dohmh: ["Iranian"]}
+  - {id: turkish, name: Turkish, parents: [middle_eastern, mediterranean], dohmh: ["Turkish"]}
+  - {id: israeli, name: Israeli, parents: [middle_eastern, mediterranean]}
+  - {id: armenian, name: Armenian, parents: [middle_eastern], dohmh: ["Armenian"]}
+  - {id: greek, name: Greek, parents: [mediterranean, european], dohmh: ["Greek"]}
+
+  # --- African ---------------------------------------------------------------------------------------
+  - {id: african, name: African, kind: bucket, dohmh: ["African"]}
+  - {id: west_african, name: West African, kind: bucket, parents: [african]}
+  - {id: nigerian, name: Nigerian, parents: [west_african]}
+  - {id: ghanaian, name: Ghanaian, parents: [west_african]}
+  - {id: senegalese, name: Senegalese, parents: [west_african]}
+  - {id: ivorian, name: Ivorian, parents: [west_african]}
+  - {id: liberian, name: Liberian, parents: [west_african]}
+  - {id: east_african, name: East African, kind: bucket, parents: [african]}
+  - {id: ethiopian, name: Ethiopian, parents: [east_african], dohmh: ["Ethiopian"]}
+  - {id: eritrean, name: Eritrean, parents: [ethiopian]}
+  - {id: somali, name: Somali, parents: [east_african]}
+
+  # --- European --------------------------------------------------------------------------------------
+  - {id: european, name: European, kind: bucket}
+  - {id: italian, name: Italian, parents: [european], dohmh: ["Italian"]}
+  - {id: french, name: French, parents: [european], dohmh: ["French"]}
+  - {id: new_french, name: New French, parents: [french], dohmh: ["New French"]}
+  - {id: german, name: German, parents: [european], dohmh: ["German"]}
+  - {id: irish, name: Irish, parents: [european], dohmh: ["Irish"]}
+  - {id: english, name: English / British, parents: [european], dohmh: ["English"]}
+  - {id: portuguese, name: Portuguese, parents: [european], dohmh: ["Portuguese"]}
+  - {id: scandinavian, name: Scandinavian, parents: [european], dohmh: ["Scandinavian"]}
+  - {id: eastern_european, name: Eastern European, kind: bucket, parents: [european], dohmh: ["Eastern European"]}
+  - {id: polish, name: Polish, parents: [eastern_european], dohmh: ["Polish"]}
+  - {id: russian, name: Russian, parents: [eastern_european], dohmh: ["Russian"]}
+  - {id: ukrainian, name: Ukrainian, parents: [eastern_european]}
+  - {id: hungarian, name: Hungarian, parents: [eastern_european]}
+  - {id: czech, name: Czech, parents: [eastern_european], dohmh: ["Czech"]}
+  - {id: romanian, name: Romanian, parents: [eastern_european]}
+  - {id: albanian, name: Albanian, parents: [eastern_european, balkan]}
+  - {id: balkan, name: Balkan, kind: bucket, parents: [eastern_european]}
+  - {id: georgian, name: Georgian, parents: [eastern_european]}

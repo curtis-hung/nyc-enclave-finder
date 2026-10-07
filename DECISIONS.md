@@ -45,3 +45,66 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - **Alternatives:** Geofabrik New York PBF extract (~400 MB, needs a PBF parser such as
   osmium, a heavy Windows dependency for a few thousand features).
 - **Limitations:** depends on a public Overpass instance at fetch time (retries built in).
+
+## D6. Every share in a dimension is "of all residents" (language: residents aged 5+)
+
+- **Decision:** each dimension has one numerator table and one explicit denominator
+  (`config/dimensions.yaml`). For B02015 (Asian-alone universe) and B05006 (foreign-born universe)
+  the denominator is total population (B01003), so "Thai share" means Asian-alone Thai residents
+  as a share of all residents. The numerator universe is stored and shown in the UI.
+- **Alternatives:** divide by each table's own universe (Thai as a share of Asian-alone residents;
+  Thai-born as a share of the foreign-born).
+- **Rationale:** the question is "where does the group live"; a within-universe share maps
+  over-representation *among Asians* or *among immigrants*, which rewards areas with few Asians or
+  immigrants. LQ still compares like with like: same numerator table, same denominator (§2.5).
+- **Limitations:** numerators remain partial (Asian-alone only; foreign-born only); the UI states it.
+
+## D7. Data states and the minimum-data rule
+
+- **Decision:** CV = (MOE/1.645)/estimate. reliable ≤ 0.30 < caution ≤ 0.60 < suppressed.
+  Estimate 0 → `zero`; no residents in the universe or missing estimate → `unavailable`;
+  denominator < 50 → `suppressed`; citywide group count < 200 → suppressed everywhere (no LQ).
+  MOE code −555555555 → 0; uncomputable MOE → `caution`. Sums use root-sum-of-squares with only the
+  largest zero-estimate MOE included (Census guidance).
+- **NTA fallback:** if < 50% of a group's citywide estimate sits in reliable/caution tracts, the
+  group×dimension is shown and analysed at NTA level by default, and the UI says so.
+- **Rationale:** simple, documented, standard thresholds (§2.7); not tuned to any neighbourhood.
+- **Limitations:** at tract level most granular groups are noisy; ~60% of groups default to NTA.
+
+## D8. Crosswalk rules
+
+- Ancestry is never summed across categories (a person can report two ancestries); broad groups
+  use a published subtotal (Arab, Subsaharan African, West Indian) or have no ancestry value.
+- Language is never derived for broad groups; most language mappings are flagged buckets.
+- Broad groups otherwise sum their children's exact categories within one dimension;
+  children without an exact category are listed as missing from the sum.
+- Indo-Caribbean has no census category: the only mapping is a flagged birthplace proxy
+  (Guyana + Trinidad & Tobago, all ethnicities). Sikh is shown as the ACS reports it (an Asian
+  write-in group) and never used to infer religion. Afghan defaults to ancestry because race
+  reporting for Afghans is inconsistent.
+- Top-level group renamed "Hispanic & Latin American" because Brazilians (not Hispanic in the
+  Census) sit under South American; its `hispanic` dimension excludes them.
+
+## D9. Cuisine hierarchy is a DAG
+
+- **Decision:** nodes may have several parents (Dominican under Latin American and Caribbean;
+  "Chinese/Cuban" under Chinese and Cuban; Haitian under Caribbean and Creole). "Below" =
+  descendant. DOHMH format values (Coffee/Tea, Bakery, Juice, Sandwiches, Chicken, Seafood, Donuts,
+  Vegan, …) are *generic*: they behave as the root, so an external cuisine label adds specificity
+  rather than conflicting. Dish-type values that imply a cuisine family (Pizza, Hamburgers,
+  Steakhouse, …) are not generic, so "Pizza" + OSM "thai" is a conflict (§4.4 example).
+  DOHMH "Spanish" is an ambiguous bucket above both Spain and Latin American; Tex-Mex sits under
+  American only.
+- **Rationale:** the real DOHMH vocabulary mixes national cuisines, regional buckets and formats;
+  a strict tree would force false conflicts or false matches.
+
+## D10. Cross-borough tract (Marble Hill)
+
+- Tract 36061030900 is legally Manhattan (New York County) but DCP assigns it to Bronx NTA
+  BX0802. Borough stats follow the legal county; NTA stats follow DCP. Recorded in the build log;
+  more than five such tracts would fail the build.
+
+## D11. Adjacency
+
+- Rook contiguity (shared boundary > 1 ft) on water-included tracts in EPSG:2263. Point contacts
+  are not neighbours. Five island tracts have no neighbours. NTA adjacency = any adjacent tract pair.

@@ -13,8 +13,15 @@ def _cmd_fetch(args: argparse.Namespace) -> int:
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
-    print("build: no build steps implemented yet")
-    return 0
+    from pipeline.build.run import run_build
+
+    return run_build()
+
+
+def _cmd_report(args: argparse.Namespace) -> int:
+    from pipeline.report import run_report
+
+    return run_report()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -28,6 +35,9 @@ def main(argv: list[str] | None = None) -> int:
 
     p_build = sub.add_parser("build", help="Build frontend assets from local snapshots")
     p_build.set_defaults(func=_cmd_build)
+
+    p_report = sub.add_parser("report", help="Write docs/TAXONOMY.md and review figures")
+    p_report.set_defaults(func=_cmd_report)
 
     args = parser.parse_args(argv)
     return int(args.func(args) or 0)
