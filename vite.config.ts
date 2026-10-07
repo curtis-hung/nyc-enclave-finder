@@ -1,3 +1,4 @@
+import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 
 // The deploy base path (e.g. "/nyc-enclave-finder/" for GitHub Pages project sites)
@@ -6,14 +7,15 @@ export default defineConfig({
   root: "web",
   base: process.env.VITE_BASE ?? "/",
   publicDir: "public",
+  plugins: [preact()],
   build: {
     outDir: "../dist",
     emptyOutDir: true,
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
   },
-  server: { port: 5173, strictPort: true },
-  preview: { port: 4173, strictPort: true },
+  server: { port: Number(process.env.PORT) || 5173, strictPort: false },
+  preview: { port: Number(process.env.PORT) || 4173, strictPort: true },
   test: {
     root: ".",
     include: ["web/src/**/*.test.ts"],

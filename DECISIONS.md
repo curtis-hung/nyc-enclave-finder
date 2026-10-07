@@ -132,3 +132,29 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - Display-only "PUMA (detailed)" level with detailed language/ancestry/birthplace from 2020-2024
   5-year PUMS, MOEs from 80 replicate weights; not used for enclaves, clusters or gaps. The Jewish
   proxy will use Yiddish itself at this level. See QUESTIONS Q1.
+
+## D14. Frontend stack and test harness
+
+- Preact (4 KB) for panels, plain MapLibre for the map, view state in the URL hash only.
+  MapLibre 6 needs `setWorkerUrl` with Vite's `?url` import of its ESM worker.
+- Choropleth colours are applied with a data-driven `["to-color", ["at", ["get","i"], colors]]`
+  expression and state textures via `in` filters, so switching groups never re-tiles geometry.
+- E2E runs `vite preview` on a dedicated port (4317, `reuseExistingServer: false`) with
+  `?basemap=none`, because other local projects use 5173/4173 and tests must not depend on a
+  remote tile server. Screenshot runs use the real basemap.
+
+## D15. Choropleth encoding
+
+- LQ: neutral greys below 1 ("not over-represented"), single-hue blue ramp above 1 at fixed breaks
+  1 / 1.5 / 2 / 3 / 5 / 10 (validated reference palette). Share and count: blue ramp on rounded
+  quantile breaks of usable values. Data states are textures, never hue: dots = caution,
+  diagonal hatch = suppressed, cross-hatch = unavailable / no residents, pale solid = zero.
+  Enclaves: orange (categorical slot 2); clusters: violet dashed (slot 7).
+- **Rationale:** colour stays reserved for values; states stay distinguishable for colour-blind
+  readers and never look like zero or like data (§1.2, §2.7).
+
+## D16. Enclave polygons
+
+- Union of the clipped land geometry of the enclave's units, closed by ±3 ft to dissolve hairline
+  gaps between clipped neighbours. Non-qualifying units inside an enclave remain holes.
+  Adjacency (and thus membership) still comes from unclipped geometry (D11).

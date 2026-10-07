@@ -1,4 +1,5 @@
+import { h, render } from "preact";
 import "./style.css";
+import { App } from "./ui/App";
 
-const app = document.querySelector<HTMLDivElement>("#app")!;
-app.innerHTML = `<main id="map" aria-label="Map of New York City"></main>`;
+render(h(App, {}), document.getElementById("app")!);

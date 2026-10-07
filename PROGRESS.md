@@ -7,7 +7,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M0 Scaffold
 - [x] M1 Fetch + provenance
 - [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (reviewed; changes in D12)
-- [ ] M3 Basemap + group focus
+- [x] M3 Basemap + group focus
 - [ ] M4 "Who's here?"
 - [ ] M5 Area focus **[CHECKPOINT]**
 - [ ] M6 Restaurants + labels + clusters
@@ -17,9 +17,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M2 checkpoint reviewed.** Taxonomy changes applied (D12): Indo-Caribbean removed, Sikh merged
-into Indian, Jewish added as a Yiddish-language proxy group. PUMS layer approved for M8 (D13).
-Next: M3 (basemap + group focus).
+**M3 complete.** Next: M4 ("Who's here?").
 
 ## Completed work
 
@@ -60,14 +58,31 @@ Next: M3 (basemap + group focus).
   Park West Germanic language rank 2). Korean cuisine check runs at M6.
 - Tests: 43 passing (unit, synthetic ranking, built-data invariants).
 
+### M3 Basemap + group focus
+- Enclaves (§6): threshold + connected components over rook adjacency at the group×dimension's
+  analysis level (tract, or NTA when sparse). Scope: default dimension × all three presets (MUST)
+  and other dimensions × default preset (SHOULD). Default-dimension enclaves: strict 455,
+  default 1,646, loose 2,733. Bundles `web/public/data/enclaves/<group>.json` (≤ 93 KB gzip).
+- Frontend (Vite + TS + Preact + MapLibre): OpenFreeMap Positron basemap (no key) with a blank
+  fallback; searchable hierarchical group picker; dimension switcher (all six shown, "no data"
+  disabled, bucket badges, default marked); LQ / % share / count; tract / NTA units with the
+  sparse-data notice; data states as textures (dots = caution, hatch = suppressed, cross =
+  unavailable, pale = zero); enclave fill + outline with a zoomable enclave table; preset
+  switcher under Advanced; hover tooltip with estimate ± MOE and state; URL hash state; mobile
+  bottom sheet with an on-map mini legend.
+- Commercial cluster outline layer is wired but empty until M6 provides clusters.
+- Tests: pytest 49, Vitest 8, Playwright 11 (desktop + mobile). Screenshots:
+  `docs/screenshots/m3-*.png`.
+
 ## Cuts
 
 None.
 
 ## Payload sizes
 
-M2 build: 273 files, 12.8 MB raw / 1.93 MB gzip in total (all lazy except geometry + meta).
-Tract geometry 215 KB gzip; NTA 92 KB; boroughs 43 KB; each group×dimension bundle ≤ 21 KB gzip.
+M3: app JS 293 KB gzip + CSS 13 KB; first-load data (meta, groups, tract/NTA/borough geometry)
+≈ 0.4 MB gzip. Lazy bundles: group×dimension ≤ 21 KB gzip; enclaves per group ≤ 93 KB gzip.
+Processed data total 22.8 MB raw / 3.96 MB gzip.
 
 ## Blockers
 

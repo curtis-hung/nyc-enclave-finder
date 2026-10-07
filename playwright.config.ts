@@ -9,17 +9,17 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   use: {
-    baseURL: "http://localhost:4173",
+    baseURL: "http://localhost:4317",
     trace: "retain-on-failure",
   },
   webServer: {
-    command: "npm run build && npm run preview",
-    url: "http://localhost:4173",
-    reuseExistingServer: !process.env.CI,
+    command: "npm run build && npx vite preview --port 4317 --strictPort",
+    url: "http://localhost:4317",
+    reuseExistingServer: false,
     timeout: 180_000,
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /screenshots\.spec/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /(screenshots|mobile)\.spec/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec/ },
     { name: "screenshots", testMatch: /screenshots\.spec/ },
   ],

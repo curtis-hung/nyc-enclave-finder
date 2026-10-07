@@ -14,10 +14,13 @@
   },
   "dependencies": {
     "@turf/turf": "^7.4.0",
-    "maplibre-gl": "^6.13.0"
+    "maplibre-gl": "^6.13.0",
+    "preact": "^11.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",
+    "@preact/preset-vite": "^2.10.6",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^26.6.4",
     "typescript": "^7.0.2",
     "vite": "^8.3.3",

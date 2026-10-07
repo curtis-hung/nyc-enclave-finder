@@ -12,6 +12,7 @@ import numpy as np
 from pipeline.analysis.stats import STATE_NAMES
 from pipeline.build import checks
 from pipeline.build.demographics import AcsSnapshot, GroupDim, build_denominators, build_group_dims
+from pipeline.build.enclaves_build import EnclaveGeometry, build_enclaves, write_enclaves
 from pipeline.build.geography import Geography, load_geography
 from pipeline.build.writer import arr, fmt_kb, sig_arr, simplify_for_display, size_report, write_geojson, write_json
 from pipeline.config import Config, load_config
@@ -142,12 +143,20 @@ def run_build() -> int:
         _log(f"  plausibility {flag}: {p['description']}: {p['nta_name']} rank {p['nta_rank']}/{p['ntas_ranked']} "
              f"(LQ {p['nta_lq']}); top: {', '.join(t['nta'] for t in p['top_3'])}")
 
+    eg = EnclaveGeometry(geo)
+    enclaves = build_enclaves(cfg, geo, gds, eg)
+    n_enc = {p: sum(1 for recs in enclaves.values() for r in recs
+                    if r.preset == p and r.dim == cfg.groups[r.group].default_dimension) for p in cfg.presets["presets"]}
+    _log(f"  enclaves on default dimensions by preset: {n_enc}; "
+         f"groups with none (default preset): {sum(1 for g, recs in enclaves.items() if not any(r.preset == 'default' and r.dim == cfg.groups[g].default_dimension for r in recs))}")
+
     _log("[build] writing assets")
-    for sub in ("demo", "geo"):
+    for sub in ("demo", "geo", "enclaves"):
         shutil.rmtree(WEB_DATA_DIR / sub, ignore_errors=True)
     write_geography(geo)
     write_meta(cfg, acs, geo, den)
     write_groups(cfg, acs, gds)
+    write_enclaves(enclaves)
 
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     log = {
