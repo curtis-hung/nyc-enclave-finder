@@ -126,3 +126,9 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   This knowingly departs from the spec's caution about inferring identity (§4.5) at the user's
   direction; the proxy is transparent in the UI and About page.
 - **Thresholds** (D7, presets.yaml) confirmed as-is.
+
+## D13. PUMS layer approved (STRETCH #1, M8)
+
+- Display-only "PUMA (detailed)" level with detailed language/ancestry/birthplace from 2020-2024
+  5-year PUMS, MOEs from 80 replicate weights; not used for enclaves, clusters or gaps. The Jewish
+  proxy will use Yiddish itself at this level. See QUESTIONS Q1.

@@ -18,7 +18,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 ## Current status
 
 **M2 checkpoint reviewed.** Taxonomy changes applied (D12): Indo-Caribbean removed, Sikh merged
-into Indian, Jewish added as a Yiddish-language proxy group. PUMS proposal pending (QUESTIONS Q1).
+into Indian, Jewish added as a Yiddish-language proxy group. PUMS layer approved for M8 (D13).
 Next: M3 (basemap + group focus).
 
 ## Completed work

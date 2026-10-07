@@ -2,7 +2,7 @@
 
 Issues that need user input. Each entry: context, what was tried, the default taken.
 
-## Q1. PUMS (PUMA-level microdata) layer: proposed path, awaiting yes/no before M8
+## Q1. PUMS (PUMA-level microdata) layer — APPROVED by the user (2026-10-07), build in M8
 
 **Context:** tract-level language is 12 buckets and ~60% of granular groups are too sparse at
 tract level. ACS PUMS has full detail (language incl. Yiddish/Bengali/Nepali/Thai, ancestry,
@@ -20,4 +20,4 @@ birthplace) but only for NYC's ~55 PUMAs (each roughly a community district).
 - Biggest payoff: the Jewish proxy could use Yiddish itself (not the West Germanic bucket) at
   PUMA level, and Bengali/Nepali/Thai/Russian get language maps.
 
-**Default if no answer:** not built (it is the first STRETCH item and gated on approval).
+**Resolution:** approved as proposed (display-only fourth level, replicate-weight MOEs). Built in M8 as STRETCH #1.
