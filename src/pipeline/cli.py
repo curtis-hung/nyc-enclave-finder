@@ -7,8 +7,9 @@ import sys
 
 
 def _cmd_fetch(args: argparse.Namespace) -> int:
-    print("fetch: no sources implemented yet")
-    return 0
+    from pipeline.fetch.registry import run_fetch
+
+    return run_fetch(refresh=args.refresh, only=args.only)
 
 
 def _cmd_build(args: argparse.Namespace) -> int:

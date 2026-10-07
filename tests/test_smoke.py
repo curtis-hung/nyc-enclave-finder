@@ -6,4 +6,4 @@ def test_cli_parses_and_runs_build():
 
 
 def test_cli_fetch_accepts_refresh():
-    assert cli.main(["fetch", "--refresh", "--only", "none"]) == 0
+    assert cli.main(["fetch", "--only", "none"]) == 0

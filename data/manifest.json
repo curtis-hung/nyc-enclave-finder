@@ -1,0 +1,393 @@
+{
+  "sources": {
+    "acs5": {
+      "source_id": "acs5",
+      "name": "American Community Survey 5-year estimates (detailed tables)",
+      "publisher": "U.S. Census Bureau",
+      "source_url": "https://api.census.gov/data/2024/acs/acs5",
+      "vintage": "2020-2024",
+      "vintage_end_year": 2024,
+      "fetched_at": "2026-10-07T17:56:32+00:00",
+      "method": "census-data-api",
+      "geography": "2020 census tracts and counties, NYC (state 36, counties 005/047/061/081/085)",
+      "tables": {
+        "B01003": {
+          "description": "Total population",
+          "concept": "Total Population",
+          "universe": "Total population",
+          "variables": 1,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B03002": {
+          "description": "Hispanic or Latino origin by race",
+          "concept": "Hispanic or Latino Origin by Race",
+          "universe": "Total population",
+          "variables": 21,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B03001": {
+          "description": "Detailed Hispanic or Latino origin",
+          "concept": "Hispanic or Latino Origin by Specific Origin",
+          "universe": "Total population",
+          "variables": 31,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B02015": {
+          "description": "Asian alone by selected groups",
+          "concept": "Asian Alone by Selected Groups",
+          "universe": "Total Asian alone population",
+          "variables": 35,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B04006": {
+          "description": "People reporting ancestry",
+          "concept": "People Reporting Ancestry",
+          "universe": "Total population",
+          "variables": 109,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B05006": {
+          "description": "Place of birth for the foreign-born population",
+          "concept": "Place of Birth for the Foreign-Born Population in the United States",
+          "universe": "Foreign-born population excluding population born at sea",
+          "variables": 178,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "C16001": {
+          "description": "Language spoken at home (collapsed) for the population 5 years and over",
+          "concept": "Language Spoken at Home for the Population 5 Years and Over",
+          "universe": "Population 5 years and over",
+          "variables": 38,
+          "tract_level_available": true,
+          "tracts_with_values": 2327
+        },
+        "B16001": {
+          "description": "Language spoken at home (detailed) for the population 5 years and over",
+          "concept": "Language Spoken at Home by Ability to Speak English for the Population 5 Years and Over",
+          "universe": "Population 5 years and over",
+          "variables": 128,
+          "tract_level_available": false,
+          "tracts_with_values": 0
+        }
+      },
+      "files": [
+        {
+          "path": "data/raw/acs5/2024/B01003_tract.csv",
+          "rows": 2327,
+          "bytes": 51130,
+          "sha256": "a47b600b36b5bd76103e82fc7a968ef7148e30ac6f083b23ca3388c8b0961fd9"
+        },
+        {
+          "path": "data/raw/acs5/2024/B01003_county.csv",
+          "rows": 5,
+          "bytes": 160,
+          "sha256": "f450bf96f43122a609ed8e8b35c61925eb44a6e819f0aa7ab823573276be4898"
+        },
+        {
+          "path": "data/raw/acs5/2024/B01003_variables.json",
+          "rows": 1,
+          "bytes": 125,
+          "sha256": "ce4c12cd229ee43fd87b1754874f25462159893d4a6a02c4cca3f232d383cd68"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03002_tract.csv",
+          "rows": 2327,
+          "bytes": 354011,
+          "sha256": "bc1855bafc508b2722172d1128199cc9a98d0d5f76c8145f4232e9343abfea5f"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03002_county.csv",
+          "rows": 5,
+          "bytes": 1769,
+          "sha256": "ae5b8772bd0d894e6521aace810e8d8d25ff38247e361817de971e7aad62427c"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03002_variables.json",
+          "rows": 21,
+          "bytes": 4067,
+          "sha256": "2854caa05484a56b94cb8d71ac89b9a022f1f162fc8bec0420ce93302bb86a3c"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03001_tract.csv",
+          "rows": 2327,
+          "bytes": 451999,
+          "sha256": "7ba4c857dab891e02766b8eef136e4565d8a7d43c51de4e707c21400a777acaf"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03001_county.csv",
+          "rows": 5,
+          "bytes": 2390,
+          "sha256": "b972f63ba189019ee41a0a4cc2b6d299bdc4d8d3e3d6a2ff0df05ea10fbfcec8"
+        },
+        {
+          "path": "data/raw/acs5/2024/B03001_variables.json",
+          "rows": 31,
+          "bytes": 6137,
+          "sha256": "2706704ecf29066df163a5d1a53c106bc68863508feb1e21787415012ef6a543"
+        },
+        {
+          "path": "data/raw/acs5/2024/B02015_tract.csv",
+          "rows": 2327,
+          "bytes": 457859,
+          "sha256": "96f706669fdcf528e3a724f9511660a5d74cd0a40383b5803f0f69a0e4541d54"
+        },
+        {
+          "path": "data/raw/acs5/2024/B02015_county.csv",
+          "rows": 5,
+          "bytes": 2272,
+          "sha256": "db4f655a3512cc0719ab62ebd2dbb1e1d04d1b4b71fc14f1301821ed967376bb"
+        },
+        {
+          "path": "data/raw/acs5/2024/B02015_variables.json",
+          "rows": 35,
+          "bytes": 6131,
+          "sha256": "a4220a7525176edb04020b4291fa791fc4531700244125328b75e8669739f792"
+        },
+        {
+          "path": "data/raw/acs5/2024/B04006_tract.csv",
+          "rows": 2327,
+          "bytes": 1389560,
+          "sha256": "cdd88f5045e0f96f675c815bbe61fea0fec8d32c2284b1190e2619c80737f734"
+        },
+        {
+          "path": "data/raw/acs5/2024/B04006_county.csv",
+          "rows": 5,
+          "bytes": 7431,
+          "sha256": "a95c4c6ebaa1581d7b14d78cff47b9c893f3ffb5eddfae6884479029020b26cc"
+        },
+        {
+          "path": "data/raw/acs5/2024/B04006_variables.json",
+          "rows": 109,
+          "bytes": 16537,
+          "sha256": "3c19581fc5ff34a23c30cf092c649aa9478fa4b28c393d4faee1992fbc075cc5"
+        },
+        {
+          "path": "data/raw/acs5/2024/B05006_tract.csv",
+          "rows": 2327,
+          "bytes": 2223307,
+          "sha256": "d43cb53c9a838ab48cbd719754e3cf05431db1efc8d912d8fe5d3cec55299503"
+        },
+        {
+          "path": "data/raw/acs5/2024/B05006_county.csv",
+          "rows": 5,
+          "bytes": 11832,
+          "sha256": "bd16f06abf1287f44ec17e5e3bcc7cf5c48be30d334fe1b031fb2bdb9746b93b"
+        },
+        {
+          "path": "data/raw/acs5/2024/B05006_variables.json",
+          "rows": 178,
+          "bytes": 45277,
+          "sha256": "359101e30eb95f809c1cac07587dab244ba9fc8ff7594264d156793599296249"
+        },
+        {
+          "path": "data/raw/acs5/2024/C16001_tract.csv",
+          "rows": 2327,
+          "bytes": 556008,
+          "sha256": "349d143bbd561cf43db5cbf109316a6e8ea004fecee9cd9bccf32f33535d03a8"
+        },
+        {
+          "path": "data/raw/acs5/2024/C16001_county.csv",
+          "rows": 5,
+          "bytes": 2899,
+          "sha256": "d8b60294f188e19dcd3b4434e13142b56a04b7e72f6a7a980ebae2b6472b70b4"
+        },
+        {
+          "path": "data/raw/acs5/2024/C16001_variables.json",
+          "rows": 38,
+          "bytes": 8555,
+          "sha256": "92a277ee7eabe7520f9abcffb23d56e227e16549174821616082d841a3095c75"
+        },
+        {
+          "path": "data/raw/acs5/2024/B16001_tract.csv",
+          "rows": 2327,
+          "bytes": 629042,
+          "sha256": "b4418e0dc6e15f919b7ef33b26ec3a09b974fbc466cc894f157796906a3a706e"
+        },
+        {
+          "path": "data/raw/acs5/2024/B16001_county.csv",
+          "rows": 5,
+          "bytes": 4394,
+          "sha256": "d621b984463e937cfe7d7e4187d8ff65dccc61b45bce47df603a0ceeea3eaa17"
+        },
+        {
+          "path": "data/raw/acs5/2024/B16001_variables.json",
+          "rows": 128,
+          "bytes": 32047,
+          "sha256": "6148db7fb6b0a5e2a2973a28f031db27a50ffbfb4a75db5cbcdc9b11a593722b"
+        }
+      ]
+    },
+    "dohmh": {
+      "source_id": "dohmh",
+      "name": "DOHMH New York City Restaurant Inspection Results",
+      "publisher": "NYC Department of Health and Mental Hygiene via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/43nn-pn8j",
+      "socrata_id": "43nn-pn8j",
+      "vintage": "2026-10-07",
+      "rows_updated_at": "2026-10-06T22:05:45+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:59:07+00:00",
+      "files": [
+        {
+          "path": "data/raw/dohmh/2026-10-07/dohmh_inspections.csv",
+          "rows": 296270,
+          "bytes": 145381595,
+          "sha256": "b1d333cabacc16d5ce93691beb1d7d7b36c9bbe4f062dfa2478d49dcd76483b8"
+        }
+      ]
+    },
+    "nyc_boroughs": {
+      "source_id": "nyc_boroughs",
+      "name": "Borough Boundaries",
+      "description": "Borough Boundaries, shoreline-clipped",
+      "publisher": "NYC Department of City Planning via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/gthc-hcne",
+      "socrata_id": "gthc-hcne",
+      "vintage": "2026-05-26",
+      "rows_updated_at": "2026-05-26T19:35:50+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:56:50+00:00",
+      "files": [
+        {
+          "path": "data/raw/nyc_boroughs/2026-05-26/gthc-hcne.geojson",
+          "rows": 5,
+          "bytes": 3167672,
+          "sha256": "7aa44d9fb611f2f518a226ff994a6516a261a8ce982ccf1e7b37d663687f443c"
+        }
+      ]
+    },
+    "nyc_ntas": {
+      "source_id": "nyc_ntas",
+      "name": "2020 Neighborhood Tabulation Areas (NTAs)",
+      "description": "2020 Neighborhood Tabulation Areas (NTAs), shoreline-clipped",
+      "publisher": "NYC Department of City Planning via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/9nt8-h7nd",
+      "socrata_id": "9nt8-h7nd",
+      "vintage": "2026-05-28",
+      "rows_updated_at": "2026-05-28T15:11:19+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:56:49+00:00",
+      "files": [
+        {
+          "path": "data/raw/nyc_ntas/2026-05-28/9nt8-h7nd.geojson",
+          "rows": 262,
+          "bytes": 4589305,
+          "sha256": "4a036c53ce665a73954f260ef4f3a8c49f33d75fb2fc859fe0baf92f4b7f8af8"
+        }
+      ]
+    },
+    "nyc_tract_nta_equiv": {
+      "source_id": "nyc_tract_nta_equiv",
+      "name": "2020 Census Tracts to 2020 NTAs and CDTAs Equivalency",
+      "description": "2020 Census Tracts to 2020 NTAs and CDTAs Equivalency",
+      "publisher": "NYC Department of City Planning via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/hm78-6dwm",
+      "socrata_id": "hm78-6dwm",
+      "vintage": "2021-09-20",
+      "rows_updated_at": "2021-09-20T20:18:04+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:56:51+00:00",
+      "files": [
+        {
+          "path": "data/raw/nyc_tract_nta_equiv/2021-09-20/hm78-6dwm.json",
+          "rows": 2327,
+          "bytes": 753302,
+          "sha256": "69142972dcbca2637984a972966858668a786a7f5538e19de34be28c52a151b6"
+        }
+      ]
+    },
+    "nyc_tracts_clipped": {
+      "source_id": "nyc_tracts_clipped",
+      "name": "2020 Census Tracts",
+      "description": "2020 Census Tracts, shoreline-clipped (display geometry)",
+      "publisher": "NYC Department of City Planning via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/63ge-mke6",
+      "socrata_id": "63ge-mke6",
+      "vintage": "2026-05-26",
+      "rows_updated_at": "2026-05-26T19:33:35+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:56:43+00:00",
+      "files": [
+        {
+          "path": "data/raw/nyc_tracts_clipped/2026-05-26/63ge-mke6.geojson",
+          "rows": 2325,
+          "bytes": 7766422,
+          "sha256": "2cf430498a673e69382cce3c16603a0d635cd28e38a49ede818afcc719170e18"
+        }
+      ]
+    },
+    "nyc_tracts_water": {
+      "source_id": "nyc_tracts_water",
+      "name": "2020 Census Tracts (water areas included)",
+      "description": "2020 Census Tracts, water areas included (adjacency geometry)",
+      "publisher": "NYC Department of City Planning via NYC Open Data",
+      "source_url": "https://data.cityofnewyork.us/d/imfq-nf3j",
+      "socrata_id": "imfq-nf3j",
+      "vintage": "2026-05-26",
+      "rows_updated_at": "2026-05-26T19:33:14+00:00",
+      "license": null,
+      "fetched_at": "2026-10-07T17:56:45+00:00",
+      "files": [
+        {
+          "path": "data/raw/nyc_tracts_water/2026-05-26/imfq-nf3j.geojson",
+          "rows": 2327,
+          "bytes": 5170330,
+          "sha256": "6ddc8997bc19fad3fd3b8bc8a4e9823530760b7c609bfaad36f9d3ea809df472"
+        }
+      ]
+    },
+    "osm": {
+      "source_id": "osm",
+      "name": "OpenStreetMap eating places and places of worship (NYC)",
+      "publisher": "OpenStreetMap contributors",
+      "license": "ODbL 1.0",
+      "source_url": "https://overpass-api.de/api/interpreter",
+      "query": "[out:json][timeout:600];\narea(id:3600175905)->.nyc;\n(\n  nwr[\"amenity\"~\"^(restaurant|fast_food|cafe)$\"](area.nyc);\n  nwr[\"amenity\"=\"place_of_worship\"](area.nyc);\n);\nout center tags;",
+      "vintage": "2026-10-07",
+      "osm_base_timestamp": "2026-10-07T17:57:50Z",
+      "fetched_at": "2026-10-07T17:59:59+00:00",
+      "counts": {
+        "elements": 18147,
+        "eating_places": 15271,
+        "places_of_worship": 2876
+      },
+      "files": [
+        {
+          "path": "data/raw/osm/2026-10-07/osm_eating_and_worship.json",
+          "rows": 18147,
+          "bytes": 7024570,
+          "sha256": "0b7da61b00714d7b99c187ea6e7b1137695af6c87ad0ec10160ce61a3f38b834"
+        }
+      ]
+    },
+    "overture": {
+      "source_id": "overture",
+      "name": "Overture Maps Places (food and drink, NYC bounding box)",
+      "publisher": "Overture Maps Foundation",
+      "license": "CDLA-Permissive-2.0 / ODbL (per-source, see release notes)",
+      "source_url": "s3://overturemaps-us-west-2/release/2026-09-23.1/theme=places/type=place/*",
+      "vintage": "2026-09-23.1",
+      "bbox": [
+        -74.2591,
+        40.4774,
+        -73.7004,
+        40.9176
+      ],
+      "fetched_at": "2026-10-07T18:00:09+00:00",
+      "files": [
+        {
+          "path": "data/raw/overture/2026-09-23.1/overture_places_food_nyc.parquet",
+          "rows": 70777,
+          "bytes": 5401114,
+          "sha256": "e55c830aa3c0647ddf66d92c991f921f506ee489ab01ac64fdc81413d37cfb49"
+        }
+      ]
+    }
+  }
+}
