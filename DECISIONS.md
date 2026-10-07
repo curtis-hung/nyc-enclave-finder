@@ -158,3 +158,11 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - Union of the clipped land geometry of the enclave's units, closed by ±3 ft to dissolve hairline
   gaps between clipped neighbours. Non-qualifying units inside an enclave remain holes.
   Adjacency (and thus membership) still comes from unclipped geometry (D11).
+
+## D17. "Who's here" candidates
+
+- Per dimension, rank the finest groups with an exact mapping (skip a group when a descendant also
+  has an exact mapping), so lists never double-count parent and child. Language ranks its own 12
+  categories (nearly every language mapping is a bucket) and labels them as language categories.
+  Proxy/bucket groups (e.g. Jewish) are not ranked as groups; their bucket category still appears
+  in the language list. Precomputed for tracts, NTAs and boroughs (exact tract sums).

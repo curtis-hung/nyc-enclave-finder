@@ -44,6 +44,8 @@ export interface Meta {
   levels: Record<Level, number>;
   ntas: { i: number; code: string; name: string; boro: string; type: string }[];
   boroughs: { i: number; code: string; name: string }[];
+  tract_geoids: string[];
+  tract_labels: string[];
   tract_nta: number[];
   tract_boro: number[];
 }
@@ -101,4 +103,20 @@ export interface EnclaveItem {
 export interface EnclaveBundle {
   stats: Record<string, Record<string, { level: "tract" | "nta"; items: EnclaveItem[] }>>;
   geojson: GeoJSON.FeatureCollection;
+}
+
+/** [candidate index, lq, share, count, moe, state] */
+export type WhoRow = [number, number | null, number | null, number | null, number | null, number];
+
+export interface WhoCandidate {
+  id: string;
+  label: string;
+  kind: "group" | "language";
+  city_share: number | null;
+}
+
+export interface WhosHereFile {
+  columns: string[];
+  candidates: Record<string, WhoCandidate[]>;
+  units: Record<string, { lq: WhoRow[]; share: WhoRow[] }>[];
 }

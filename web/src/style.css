@@ -120,6 +120,20 @@ select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; ba
 
 .mini-legend { display: none; }
 
+/* --- right panel: who's here / area focus ------------------------------------------------------- */
+.panel-right { left: auto; right: 12px; width: 380px; }
+.has-area .maplibregl-ctrl-top-right { right: 404px; }
+.whos { display: flex; flex-direction: column; gap: 8px; }
+.whos-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.whos-title { font-size: 17px; margin: 2px 0; }
+.whos-sub { font-size: 13px; margin: 4px 0 0; }
+.crumbs { font-size: 12px; color: var(--ink-3); }
+.close { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; width: 30px; height: 30px; font-size: 18px; line-height: 1; cursor: pointer; }
+.whos-dim h4 { font-size: 13px; margin: 6px 0 3px; }
+.whos-tbl td:first-child { max-width: 180px; }
+.badge.caution { background: #fff1d6; color: #8a5a00; }
+.largest summary { cursor: pointer; font-size: 12px; color: var(--ink-2); margin-top: 3px; }
+
 /* --- mobile: bottom sheet (§9.8) --------------------------------------------------------------- */
 @media (max-width: 767px) {
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 46vh; border-radius: 12px 12px 0 0; }
@@ -134,4 +148,6 @@ select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; ba
   .legend ul { grid-template-columns: 1fr 1fr; }
   .tooltip { display: none; }
   .maplibregl-ctrl-top-right { top: 0; }
+  .panel-right { left: 0; right: 0; width: auto; max-height: 60vh; z-index: 4; }
+  .has-area .maplibregl-ctrl-top-right { right: 0; }
 }

@@ -14,6 +14,7 @@ from pipeline.build import checks
 from pipeline.build.demographics import AcsSnapshot, GroupDim, build_denominators, build_group_dims
 from pipeline.build.enclaves_build import EnclaveGeometry, build_enclaves, write_enclaves
 from pipeline.build.geography import Geography, load_geography
+from pipeline.build.whoshere import build_candidates, write_whoshere
 from pipeline.build.writer import arr, fmt_kb, sig_arr, simplify_for_display, size_report, write_geojson, write_json
 from pipeline.config import Config, load_config
 from pipeline.fetch.common import load_manifest
@@ -109,6 +110,8 @@ def write_meta(cfg: Config, acs: AcsSnapshot, geo: Geography, den) -> None:
         "ntas": [{"i": i, "code": r.nta, "name": r.name, "boro": r.boro, "type": r.ntatype}
                  for i, r in enumerate(geo.ntas.itertuples())],
         "boroughs": [{"i": i, "code": r.boro, "name": r.name} for i, r in enumerate(geo.boroughs.itertuples())],
+        "tract_geoids": list(geo.tracts.geoid),
+        "tract_labels": list(geo.tracts.label),
         "tract_nta": [int(x) for x in geo.tract_nta_idx],
         "tract_boro": [int(x) for x in geo.tract_boro_idx],
     }
@@ -151,12 +154,15 @@ def run_build() -> int:
          f"groups with none (default preset): {sum(1 for g, recs in enclaves.items() if not any(r.preset == 'default' and r.dim == cfg.groups[g].default_dimension for r in recs))}")
 
     _log("[build] writing assets")
-    for sub in ("demo", "geo", "enclaves"):
+    for sub in ("demo", "geo", "enclaves", "whoshere"):
         shutil.rmtree(WEB_DATA_DIR / sub, ignore_errors=True)
     write_geography(geo)
     write_meta(cfg, acs, geo, den)
     write_groups(cfg, acs, gds)
     write_enclaves(enclaves)
+    cands = build_candidates(cfg, acs, geo, den, gds)
+    wh = write_whoshere(cfg, geo, cands)
+    _log(f"  who's here: candidates per dimension {({d: len(c) for d, c in cands.items()})}; ranked rows {wh}")
 
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     log = {

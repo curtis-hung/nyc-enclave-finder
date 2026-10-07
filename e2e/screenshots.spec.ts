@@ -7,6 +7,7 @@ const milestone = process.env.MILESTONE ?? "dev";
 const SHOTS: { name: string; hash: string }[] = [
   { name: "thai", hash: "g=thai" },
   { name: "dominican", hash: "g=dominican" },
+  { name: "whos-here-elmhurst", hash: "g=thai&a=n:QN0401" },
 ];
 
 async function settle(page: Page) {

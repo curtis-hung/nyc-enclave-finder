@@ -8,7 +8,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M1 Fetch + provenance
 - [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (reviewed; changes in D12)
 - [x] M3 Basemap + group focus
-- [ ] M4 "Who's here?"
+- [x] M4 "Who's here?"
 - [ ] M5 Area focus **[CHECKPOINT]**
 - [ ] M6 Restaurants + labels + clusters
 - [ ] M7 Gaps + presets **[CHECKPOINT]**
@@ -17,7 +17,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M3 complete.** Next: M4 ("Who's here?").
+**M4 complete.** Next: M5 (area focus, then checkpoint).
 
 ## Completed work
 
@@ -73,6 +73,18 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - Commercial cluster outline layer is wired but empty until M6 provides clusters.
 - Tests: pytest 49, Vitest 8, Playwright 11 (desktop + mobile). Screenshots:
   `docs/screenshots/m3-*.png`.
+
+### M4 "Who's here?"
+- Build: `whoshere/{tract,nta,boro}.json` — for every unit and dimension, all over-represented
+  candidates (LQ > 1, reliable/caution) ranked by LQ (top 10) plus the largest by share (top 6),
+  with share, LQ, count ± MOE and state. Candidates are the finest groups with an exact mapping
+  in the dimension (no parent/child duplicates); language ranks its 12 Census categories,
+  labelled as language buckets. Tract 421 KB gzip, NTA 103 KB, borough 3 KB (lazy).
+- UI: click any tract/NTA (or a borough button) → right panel (bottom sheet on phones) with
+  breadcrumbs tract → NTA → borough, six dimension sections, caution badges, group links that
+  select the group; selected unit outlined; URL `a=` holds the selection.
+- Cuisine over-representation in "Who's here" is added in M6 when restaurant data exists.
+- Tests: pytest 50, Vitest 11, Playwright 15. Screenshots `docs/screenshots/m4-*.png`.
 
 ## Cuts
 

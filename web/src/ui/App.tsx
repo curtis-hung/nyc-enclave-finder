@@ -6,7 +6,9 @@ import { bboxOf, MapView, type HoverInfo } from "../map/mapview";
 import { fmtCount, fmtLQ, fmtMetric, fmtShare, indicesWithState, scaleFor, STATE_LABEL, unitColors, type Scale } from "../scales";
 import { useView, view } from "../store";
 import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric } from "../types";
+import { resolveUnit, type UnitArea } from "../areas";
 import { GroupPicker } from "./GroupPicker";
+import { WhosHere } from "./WhosHere";
 import { Legend, MiniLegend } from "./Legend";
 
 const METRICS: { id: Metric; label: string }[] = [
@@ -35,6 +37,13 @@ export function App() {
     mapRef.current = mv;
     mv.whenReady().then(() => setMapReady(true));
     mv.onHover(setHover);
+    mv.onClick((h) => {
+      if (h.level === "boro") return;
+      const area: UnitArea = h.level === "tract"
+        ? { kind: "tract", id: String(h.props.geoid) }
+        : { kind: "nta", id: String(h.props.nta) };
+      view.set({ area });
+    });
     (window as unknown as { __map: MapView }).__map = mv; // for debugging and E2E
   }, []);
 
@@ -97,6 +106,14 @@ export function App() {
 
   const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null });
 
+  const unitArea = v.area && v.area.kind !== "radius" ? (v.area as UnitArea) : null;
+  const resolved = meta && unitArea ? resolveUnit(meta, unitArea) : null;
+  useEffect(() => {
+    const mv = mapRef.current;
+    if (!mv || !mapReady) return;
+    mv.setSelection(resolved ? { level: resolved.level, index: resolved.index } : null);
+  }, [resolved?.level, resolved?.index, mapReady]);
+
   const zoomToEnclave = (item: EnclaveItem) => {
     const f = enc?.geojson.features.find((x) => x.properties?.id === item.id);
     if (f) mapRef.current?.fitTo(bboxOf(f.geometry));
@@ -105,7 +122,7 @@ export function App() {
   const dimDef = meta && dim ? meta.dimensions[dim] : null;
 
   return (
-    <div class={`app${panelOpen ? "" : " panel-collapsed"}`}>
+    <div class={`app${panelOpen ? "" : " panel-collapsed"}${unitArea ? " has-area" : ""}`}>
       <div ref={mapEl} id="map" role="region" aria-label="Map of New York City" />
       <aside class="panel" aria-label="Controls">
         <header class="panel-head">
@@ -115,7 +132,16 @@ export function App() {
           </button>
         </header>
         <div id="panel-body" class="panel-body">
-          <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions.</p>
+          <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
+          <div class="ctl">
+            <span class="ctl-label" id="boro-label">Boroughs</span>
+            <div class="seg wrap" role="group" aria-labelledby="boro-label">
+              {meta?.boroughs.map((b) => (
+                <button key={b.code} aria-pressed={unitArea?.kind === "boro" && unitArea.id === b.code}
+                  onClick={() => view.set({ area: { kind: "boro", id: b.code } })}>{b.name}</button>
+              ))}
+            </div>
+          </div>
           {error && <p class="error">Could not load data: {error}</p>}
           {groups ? <GroupPicker groups={groups} selected={group?.id ?? null} onSelect={selectGroup} /> : <p class="muted">Loading…</p>}
 
@@ -229,6 +255,14 @@ export function App() {
           </footer>
         </div>
       </aside>
+      {meta && groups && unitArea && (
+        <aside class="panel panel-right" aria-label="Area details">
+          <div class="panel-body">
+            <WhosHere meta={meta} groups={groups} area={unitArea} onArea={(a) => view.set({ area: a })}
+              onGroup={selectGroup} onClose={() => view.set({ area: null })} />
+          </div>
+        </aside>
+      )}
       <MiniLegend metric={v.metric} scale={scale} />
       {hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}
     </div>

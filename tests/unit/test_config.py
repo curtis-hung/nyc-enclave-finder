@@ -182,3 +182,16 @@ def test_dohmh_values_map_once():
     cg = load_cuisines()
     m = cg.dohmh_map()
     assert m["Thai"] == "thai" and m["Other"] == "root"
+
+
+def test_whoshere_candidates_are_the_finest_exact_groups(cfg):
+    from pipeline.build.whoshere import candidate_groups
+
+    hisp = candidate_groups(cfg, "hispanic")
+    assert "salvadoran" in hisp and "central_american" not in hisp and "hispanic" not in hisp
+    anc = candidate_groups(cfg, "ancestry")
+    assert "jamaican" in anc and "caribbean" not in anc  # subtotal has finer children
+    assert "jewish" not in candidate_groups(cfg, "language")  # bucket proxies are never ranked as groups
+    for dim in cfg.dimensions:
+        for gid in candidate_groups(cfg, dim):
+            assert not cfg.groups[gid].dims[dim].is_bucket

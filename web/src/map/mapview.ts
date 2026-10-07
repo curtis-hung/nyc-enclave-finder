@@ -61,10 +61,14 @@ function pattern(kind: "hatch" | "dots" | "cross", ink: string): ImageData {
 }
 
 /** Keep the map's focus clear of the control panel (left on desktop, bottom sheet on phones). */
-export function panelPadding(): { left: number; bottom: number } {
-  const panel = document.querySelector(".panel") as HTMLElement | null;
-  if (window.innerWidth >= 768) return { left: (panel?.offsetWidth ?? 380) + 24, bottom: 20 };
-  return { left: 10, bottom: Math.min((panel?.offsetHeight ?? 0) + 10, window.innerHeight * 0.6) };
+export function panelPadding(): { left: number; right: number; bottom: number } {
+  const panel = document.querySelector(".panel:not(.panel-right)") as HTMLElement | null;
+  const right = document.querySelector(".panel-right") as HTMLElement | null;
+  if (window.innerWidth >= 768) {
+    return { left: (panel?.offsetWidth ?? 380) + 24, right: right ? right.offsetWidth + 24 : 0, bottom: 20 };
+  }
+  const sheet = right ?? panel;
+  return { left: 10, right: 0, bottom: Math.min((sheet?.offsetHeight ?? 0) + 10, window.innerHeight * 0.6) };
 }
 
 const EMPTY_FC: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -159,6 +163,9 @@ export class MapView {
     this.add({ id: "enclave-fill", type: "fill", source: "enclaves", paint: { "fill-color": ENCLAVE_COLOR, "fill-opacity": 0.16 } });
     this.add({ id: "enclave-line", type: "line", source: "enclaves", paint: { "line-color": ENCLAVE_COLOR, "line-width": 2.2 } });
     this.add({ id: "cluster-line", type: "line", source: "clusters", paint: { "line-color": CLUSTER_COLOR, "line-width": 2, "line-dasharray": [2, 1] } });
+    for (const [lvl, src] of [["tract", "tracts"], ["nta", "ntas"], ["boro", "boroughs"]] as const) {
+      this.add({ id: `${lvl}-sel`, type: "line", source: src, filter: NONE, paint: { "line-color": "#0b0b0b", "line-width": 3 } });
+    }
     for (const lvl of ["tract", "nta"] as const) {
       this.add({
         id: `${lvl}-hover`, type: "line", source: lvl === "tract" ? "tracts" : "ntas", filter: NONE,
@@ -221,6 +228,13 @@ export class MapView {
     m.setFilter(`${level}-unavail`, inList(idx.unavailable));
   }
 
+  /** Outline the selected unit (or clear the selection). */
+  setSelection(sel: { level: "tract" | "nta" | "boro"; index: number } | null) {
+    for (const lvl of ["tract", "nta", "boro"] as const) {
+      this.map.setFilter(`${lvl}-sel`, sel && sel.level === lvl ? ["==", ["get", "i"], sel.index] : NONE);
+    }
+  }
+
   setEnclaves(fc: GeoJSON.FeatureCollection | null, visible: boolean) {
     (this.map.getSource("enclaves") as GeoJSONSource).setData(fc ?? EMPTY_FC);
     for (const id of ["enclave-fill", "enclave-line"]) this.map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
@@ -229,7 +243,7 @@ export class MapView {
   fitTo(bounds: [[number, number], [number, number]], pad = 40, animate = true) {
     const p = panelPadding();
     this.map.fitBounds(bounds, {
-      padding: { top: pad, right: pad, left: p.left + pad, bottom: p.bottom + pad },
+      padding: { top: pad, right: p.right + pad, left: p.left + pad, bottom: p.bottom + pad },
       maxZoom: 15,
       duration: animate ? 600 : 0,
     });
