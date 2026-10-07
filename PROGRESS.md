@@ -9,7 +9,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (reviewed; changes in D12)
 - [x] M3 Basemap + group focus
 - [x] M4 "Who's here?"
-- [ ] M5 Area focus **[CHECKPOINT]**
+- [x] M5 Area focus **[CHECKPOINT]** (awaiting user review)
 - [ ] M6 Restaurants + labels + clusters
 - [ ] M7 Gaps + presets **[CHECKPOINT]**
 - [ ] M8 Remaining SHOULD / STRETCH
@@ -17,7 +17,8 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M4 complete.** Next: M5 (area focus, then checkpoint).
+**M5 complete — paused at the M5 checkpoint for UX feedback.** Next: M6 (restaurants + labels +
+clusters).
 
 ## Completed work
 
@@ -85,6 +86,21 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
   select the group; selected unit outlined; URL `a=` holds the selection.
 - Cuisine over-representation in "Who's here" is added in M6 when restaurant data exists.
 - Tests: pytest 50, Vitest 11, Playwright 15. Screenshots `docs/screenshots/m4-*.png`.
+
+### M5 Area focus
+- Focus modes: neighborhood (grouped select or map click at NTA level), borough (buttons),
+  radius (drop a pin, draggable, 0.1–3 mi slider) and 24 gazetteer presets
+  (`config/gazetteer.yaml`, navigation only). Inverse mask greys out the rest of the city; the
+  map fits the area clear of both panels; URL `a=` holds n:/b:/r:lat,lon,mi.
+- Stats panel: exact NTA/borough tract sums (precomputed) or radius area-weighted interpolation
+  (client-side, labelled approximate, approximate MOEs); per dimension the over-represented list
+  (by LQ) and the largest groups (by share); enclaves of the selected group intersecting the area.
+- Drill-down (SHOULD): tract-level SVG small multiples for the selected group plus the area's six
+  most over-represented groups, with the map's colour scale and state textures.
+- Pipeline adds `matrix/<dim>.json` (tract estimates/MOEs per candidate, 38–161 KB gzip each),
+  tract land areas and `gazetteer.json`. TS port of the data-state rules with parity tests.
+- Restaurant list, over-represented cuisines and intersecting clusters arrive with M6.
+- Tests: pytest 50, Vitest 20, Playwright 21. Screenshots `docs/screenshots/m5-*.png`.
 
 ## Cuts
 

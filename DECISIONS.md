@@ -166,3 +166,18 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   categories (nearly every language mapping is a bucket) and labels them as language categories.
   Proxy/bucket groups (e.g. Jewish) are not ranked as groups; their bucket category still appears
   in the language list. Precomputed for tracts, NTAs and boroughs (exact tract sums).
+
+## D18. Radius interpolation
+
+- Area-weighted: each tract's estimate × (share of its land area inside the circle), the share
+  estimated by sampling a 120×120 grid of points in the circle against tract polygons (land
+  only). Denominators are weighted the same way. Approximate MOE = root-sum-square of weighted
+  MOEs (weights treated as constants; largest zero-estimate MOE only). Data states and LQ use the
+  same rules as the pipeline (TS port with parity tests). Always labelled approximate.
+- **Alternatives:** exact polygon clipping in the browser (adds a clipping library; the sampling
+  error is far below the ACS sampling error); population-weighted interpolation (STRETCH).
+
+## D19. Focus semantics
+
+- Clicking a tract selects it for "who's here" (outlined, no mask, no zoom). NTA, borough and
+  radius are *focus* modes: inverse mask, fit to area, full stats panel and drill-down.

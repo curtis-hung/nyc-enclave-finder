@@ -46,6 +46,7 @@ export interface Meta {
   boroughs: { i: number; code: string; name: string }[];
   tract_geoids: string[];
   tract_labels: string[];
+  tract_area_sqmi: number[];
   tract_nta: number[];
   tract_boro: number[];
 }
@@ -119,4 +120,12 @@ export interface WhosHereFile {
   columns: string[];
   candidates: Record<string, WhoCandidate[]>;
   units: Record<string, { lq: WhoRow[]; share: WhoRow[] }>[];
+}
+
+export interface Place {
+  id: string;
+  name: string;
+  lat: number;
+  lon: number;
+  radius_mi: number;
 }

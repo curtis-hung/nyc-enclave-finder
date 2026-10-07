@@ -1,51 +1,75 @@
-// Application shell: map-first layout with a collapsible control panel (§1.2, §9.8).
+// Application shell: map-first layout with a collapsible control panel (§1.2, §9.8) and an area
+// panel for "who's here" and area focus (§9.2, §9.3).
 
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
-import { loadDemo, loadEnclaves, loadGroups, loadMeta } from "../data";
-import { bboxOf, MapView, type HoverInfo } from "../map/mapview";
-import { fmtCount, fmtLQ, fmtMetric, fmtShare, indicesWithState, scaleFor, STATE_LABEL, unitColors, type Scale } from "../scales";
-import { useView, view } from "../store";
-import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric } from "../types";
 import { resolveUnit, type UnitArea } from "../areas";
+import { loadDemo, loadEnclaves, loadGazetteer, loadGeo, loadGroups, loadMeta } from "../data";
+import { bounds, circlePolygon } from "../geo";
+import { MapView, type HoverInfo } from "../map/mapview";
+import { fmtCount, fmtMetric, indicesWithState, scaleFor, STATE_LABEL, unitColors, type Scale } from "../scales";
+import { useView, view } from "../store";
+import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric, type Place } from "../types";
+import type { Area } from "../url";
+import { AreaPanel } from "./AreaPanel";
+import { FocusControls } from "./FocusControls";
 import { GroupPicker } from "./GroupPicker";
-import { WhosHere } from "./WhosHere";
+import { GroupSection } from "./GroupSection";
 import { Legend, MiniLegend } from "./Legend";
 
-const METRICS: { id: Metric; label: string }[] = [
-  { id: "lq", label: "LQ" },
-  { id: "share", label: "% share" },
-  { id: "count", label: "Count" },
-];
+type FocusGeom = GeoJSON.Polygon | GeoJSON.MultiPolygon;
+
+async function areaGeometry(meta: Meta, a: Area): Promise<FocusGeom | null> {
+  if (a.kind === "radius") return circlePolygon(a.lon, a.lat, a.mi);
+  if (a.kind === "tract") return null; // tracts are selected (outlined), not masked
+  const unit = resolveUnit(meta, a as UnitArea);
+  if (!unit) return null;
+  const fc = await loadGeo(a.kind === "nta" ? "ntas" : "boroughs");
+  const f = fc.features.find((x) => Number(x.properties?.i) === unit.index);
+  return (f?.geometry as FocusGeom) ?? null;
+}
 
 export function App() {
   const v = useView();
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapView | null>(null);
+  const pickingRef = useRef(false);
   const [mapReady, setMapReady] = useState(false);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [groups, setGroups] = useState<GroupsFile | null>(null);
+  const [places, setPlaces] = useState<Place[]>([]);
   const [demo, setDemo] = useState<DemoBundle | null>(null);
   const [enc, setEnc] = useState<EnclaveBundle | null>(null);
   const [scale, setScale] = useState<Scale | null>(null);
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
+  const [picking, setPicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([loadMeta(), loadGroups()]).then(([m, g]) => { setMeta(m); setGroups(g); }).catch((e) => setError(String(e)));
+    loadGazetteer().then(setPlaces).catch(() => setPlaces([]));
     const mv = new MapView(mapEl.current!);
     mapRef.current = mv;
     mv.whenReady().then(() => setMapReady(true));
     mv.onHover(setHover);
-    mv.onClick((h) => {
-      if (h.level === "boro") return;
-      const area: UnitArea = h.level === "tract"
-        ? { kind: "tract", id: String(h.props.geoid) }
-        : { kind: "nta", id: String(h.props.nta) };
-      view.set({ area });
+    mv.onClick((at, unit) => {
+      if (pickingRef.current) {
+        const cur = view.get().area;
+        view.set({ area: { kind: "radius", lat: at.lat, lon: at.lon, mi: cur?.kind === "radius" ? cur.mi : 0.5 } });
+        setPickingBoth(false);
+        return;
+      }
+      if (!unit || unit.level === "boro") return;
+      view.set({ area: unit.level === "tract" ? { kind: "tract", id: String(unit.props.geoid) } : { kind: "nta", id: String(unit.props.nta) } });
     });
     (window as unknown as { __map: MapView }).__map = mv; // for debugging and E2E
   }, []);
+
+  const setPickingBoth = (on: boolean) => {
+    pickingRef.current = on;
+    setPicking(on);
+    mapRef.current?.setPicking(on);
+  };
 
   const group = groups && v.group ? groups.groups[v.group] ?? null : null;
   const dim = group ? (v.dim && group.dims[v.dim] ? v.dim : group.default_dimension) : null;
@@ -53,7 +77,6 @@ export function App() {
   const level = dimMeta ? (v.level ?? dimMeta.level) : "tract";
   const preset = meta && meta.presets.presets[v.preset] ? v.preset : meta?.presets.default_preset ?? "default";
 
-  // load the group x dimension bundle and enclaves
   useEffect(() => {
     setDemo(null);
     if (!group || !dim) return;
@@ -70,7 +93,7 @@ export function App() {
     return () => { live = false; };
   }, [group?.id]);
 
-  // paint the choropleth
+  // choropleth
   useEffect(() => {
     const mv = mapRef.current;
     if (!mv || !mapReady) return;
@@ -89,40 +112,51 @@ export function App() {
     });
   }, [demo, level, v.metric, mapReady]);
 
-  const enclaveSet = enc && dim ? enc.stats[dim]?.[preset] ?? null : null;
+  // enclaves
   const enclaveFC = useMemo(() => {
     if (!enc || !dim) return null;
-    return {
-      type: "FeatureCollection" as const,
-      features: enc.geojson.features.filter((f) => f.properties?.dim === dim && f.properties?.preset === preset),
-    };
+    return { type: "FeatureCollection" as const, features: enc.geojson.features.filter((f) => f.properties?.dim === dim && f.properties?.preset === preset) };
   }, [enc, dim, preset]);
-
   useEffect(() => {
-    const mv = mapRef.current;
-    if (!mv || !mapReady) return;
-    mv.setEnclaves(enclaveFC, v.enclaves);
+    if (mapRef.current && mapReady) mapRef.current.setEnclaves(enclaveFC, v.enclaves);
   }, [enclaveFC, v.enclaves, mapReady]);
 
-  const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null });
-
-  const unitArea = v.area && v.area.kind !== "radius" ? (v.area as UnitArea) : null;
-  const resolved = meta && unitArea ? resolveUnit(meta, unitArea) : null;
+  // area: selection outline, mask, fit, pin
+  const areaKey = v.area ? JSON.stringify(v.area) : "";
+  const resolved = meta && v.area && v.area.kind !== "radius" ? resolveUnit(meta, v.area as UnitArea) : null;
+  const lastFit = useRef<string>("");
   useEffect(() => {
     const mv = mapRef.current;
-    if (!mv || !mapReady) return;
+    if (!mv || !mapReady || !meta) return;
     mv.setSelection(resolved ? { level: resolved.level, index: resolved.index } : null);
-  }, [resolved?.level, resolved?.index, mapReady]);
+    const a = v.area;
+    mv.setPin(a?.kind === "radius" ? { lon: a.lon, lat: a.lat } : null, (at) => {
+      const cur = view.get().area;
+      if (cur?.kind === "radius") view.set({ area: { ...cur, lat: at.lat, lon: at.lon } });
+    });
+    let live = true;
+    (a ? areaGeometry(meta, a) : Promise.resolve(null)).then((g) => {
+      if (!live) return;
+      mv.setFocus(g);
+      // fit when the focused place changes (not on every radius-slider tick)
+      const fitKey = a ? (a.kind === "radius" ? `r:${a.lat.toFixed(4)},${a.lon.toFixed(4)}` : `${a.kind}:${a.id}`) : "";
+      if (g && fitKey !== lastFit.current) {
+        requestAnimationFrame(() => mv.fitTo(bounds(g), 30));
+      }
+      lastFit.current = fitKey;
+    });
+    return () => { live = false; };
+  }, [areaKey, mapReady, meta]);
 
-  const zoomToEnclave = (item: EnclaveItem) => {
-    const f = enc?.geojson.features.find((x) => x.properties?.id === item.id);
-    if (f) mapRef.current?.fitTo(bboxOf(f.geometry));
+  const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null });
+  const zoomToEnclave = (id: string) => {
+    const f = enc?.geojson.features.find((x) => x.properties?.id === id);
+    if (f) mapRef.current?.fitTo(bounds(f.geometry));
   };
 
-  const dimDef = meta && dim ? meta.dimensions[dim] : null;
-
+  const hasArea = !!v.area;
   return (
-    <div class={`app${panelOpen ? "" : " panel-collapsed"}${unitArea ? " has-area" : ""}`}>
+    <div class={`app${panelOpen ? "" : " panel-collapsed"}${hasArea ? " has-area" : ""}`}>
       <div ref={mapEl} id="map" role="region" aria-label="Map of New York City" />
       <aside class="panel" aria-label="Controls">
         <header class="panel-head">
@@ -133,108 +167,13 @@ export function App() {
         </header>
         <div id="panel-body" class="panel-body">
           <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
-          <div class="ctl">
-            <span class="ctl-label" id="boro-label">Boroughs</span>
-            <div class="seg wrap" role="group" aria-labelledby="boro-label">
-              {meta?.boroughs.map((b) => (
-                <button key={b.code} aria-pressed={unitArea?.kind === "boro" && unitArea.id === b.code}
-                  onClick={() => view.set({ area: { kind: "boro", id: b.code } })}>{b.name}</button>
-              ))}
-            </div>
-          </div>
           {error && <p class="error">Could not load data: {error}</p>}
           {groups ? <GroupPicker groups={groups} selected={group?.id ?? null} onSelect={selectGroup} /> : <p class="muted">Loading…</p>}
-
-          {group && meta && dim && dimMeta && (
-            <>
-              {group.proxy && (
-                <p class="notice proxy" role="note"><strong>Proxy measure.</strong> {group.rationale}</p>
-              )}
-              <div class="ctl">
-                <span class="ctl-label" id="dim-label">Dimension</span>
-                <div class="seg wrap" role="group" aria-labelledby="dim-label">
-                  {Object.entries(meta.dimensions).map(([id, d]) => {
-                    const has = !!group.dims[id];
-                    return (
-                      <button key={id} aria-pressed={id === dim} disabled={!has} title={has ? d.name : `No data: ${group.name} is not a category in ${d.name}`}
-                        onClick={() => view.set({ dim: id, level: null })}>
-                        {d.short}{!has && <span class="nodata"> · no data</span>}
-                        {has && group.dims[id].bucket && <span class="badge">bucket</span>}
-                        {id === group.default_dimension && <span class="dot" title="Default dimension">•</span>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-              <div class="ctl-row">
-                <div class="ctl">
-                  <span class="ctl-label" id="metric-label">Show</span>
-                  <div class="seg" role="group" aria-labelledby="metric-label">
-                    {METRICS.map((m) => (
-                      <button key={m.id} aria-pressed={v.metric === m.id} onClick={() => view.set({ metric: m.id })}>{m.label}</button>
-                    ))}
-                  </div>
-                </div>
-                <div class="ctl">
-                  <span class="ctl-label" id="level-label">Units</span>
-                  <div class="seg" role="group" aria-labelledby="level-label">
-                    <button aria-pressed={level === "tract"} onClick={() => view.set({ level: "tract" })}>Tracts</button>
-                    <button aria-pressed={level === "nta"} onClick={() => view.set({ level: "nta" })}>Neighborhoods</button>
-                  </div>
-                </div>
-              </div>
-              {dimMeta.level === "nta" && (
-                <p class="notice" role="note">
-                  Too sparse at tract level: only {Math.round(dimMeta.usable_share_tract * 100)}% of {group.name} residents in this dimension live in tracts with a usable estimate, so the map defaults to neighborhoods (NTAs).
-                </p>
-              )}
-
-              <section class="summary" aria-label="Group summary" role="region">
-                <h2>{group.name} <span class="muted">· {dimDef!.name}</span></h2>
-                <p class="def">
-                  Shares are of <strong>{dimDef!.share_of}</strong>. Counted: {dimDef!.numerator_universe}.
-                  {dimMeta.bucket && <> <span class="badge">bucket</span> Source category: {dimMeta.bucket}.</>}
-                  {dimMeta.derived && <> Summed from {dimMeta.labels.length} categories{dimMeta.missing_from_sum.length ? ` (not included: ${dimMeta.missing_from_sum.map((c) => groups!.groups[c]?.name ?? c).join(", ")})` : ""}.</>}
-                </p>
-                <dl class="kv">
-                  <dt>Citywide</dt>
-                  <dd>{fmtCount(dimMeta.city.e)}{dimMeta.city.m ? ` ± ${fmtCount(dimMeta.city.m)}` : ""} ({fmtShare(dimMeta.city.share)})</dd>
-                  <dt>Default dimension</dt>
-                  <dd>{meta.dimensions[group.default_dimension].name}. {group.rationale}</dd>
-                </dl>
-              </section>
-
-              <section class="enclaves" aria-label="Residential enclaves" role="region">
-                <div class="sec-head">
-                  <h3>Residential enclaves</h3>
-                  <label class="check"><input type="checkbox" checked={v.enclaves} onChange={(e) => view.set({ enclaves: (e.target as HTMLInputElement).checked })} /> Show</label>
-                </div>
-                {enclaveSet ? (
-                  enclaveSet.items.length ? (
-                    <>
-                      <p class="muted small">{enclaveSet.items.length} enclave{enclaveSet.items.length > 1 ? "s" : ""} under the {meta.presets.presets[preset].label.toLowerCase()} preset ({enclaveSet.level === "nta" ? "neighborhood" : "tract"} level). Click to zoom.</p>
-                      <table class="tbl">
-                        <thead><tr><th>#</th><th>Residents</th><th>Of citywide</th><th>Peak LQ</th><th>{enclaveSet.level === "nta" ? "NTAs" : "Tracts"}</th></tr></thead>
-                        <tbody>
-                          {enclaveSet.items.slice(0, 12).map((it, k) => (
-                            <tr key={it.id} tabIndex={0} class="clickable" onClick={() => zoomToEnclave(it)} onKeyDown={(e) => e.key === "Enter" && zoomToEnclave(it)}>
-                              <td>{k + 1}</td><td>{fmtCount(it.pop)}</td><td>{fmtShare(it.share)}</td><td>{fmtLQ(it.peak_lq)}</td><td>{it.n_units}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                      {enclaveSet.items.length > 12 && <p class="muted small">+ {enclaveSet.items.length - 12} smaller enclaves on the map.</p>}
-                    </>
-                  ) : (
-                    <p class="muted small">No area meets the {meta.presets.presets[preset].label.toLowerCase()} enclave thresholds for this dimension.</p>
-                  )
-                ) : (
-                  enc && <p class="muted small">Enclaves for non-default dimensions are computed under the default preset only.</p>
-                )}
-              </section>
-            </>
+          {meta && <FocusControls meta={meta} places={places} area={v.area} picking={picking} onArea={(a) => view.set({ area: a })} onPick={setPickingBoth} />}
+          {group && meta && groups && dim && (
+            <GroupSection meta={meta} groups={groups} group={group} dim={dim} level={level} preset={preset} v={v} enc={enc}
+              onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
           )}
-
           {meta && (
             <details class="advanced">
               <summary>Advanced</summary>
@@ -249,17 +188,19 @@ export function App() {
               </div>
             </details>
           )}
-          <Legend metric={v.metric} scale={scale} shareOf={dimDef?.share_of ?? "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={false} />
+          <Legend metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={false} />
           <footer class="foot muted small">
             Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
           </footer>
         </div>
       </aside>
-      {meta && groups && unitArea && (
+      {meta && groups && v.area && (
         <aside class="panel panel-right" aria-label="Area details">
           <div class="panel-body">
-            <WhosHere meta={meta} groups={groups} area={unitArea} onArea={(a) => view.set({ area: a })}
-              onGroup={selectGroup} onClose={() => view.set({ area: null })} />
+            <AreaPanel meta={meta} groups={groups} area={v.area} places={places}
+              selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
+              onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
+              onClose={() => view.set({ area: null })} />
           </div>
         </aside>
       )}
@@ -279,13 +220,13 @@ function Tooltip({ hover, demo, meta, metric, level }: { hover: HoverInfo; demo:
   return (
     <div class="tooltip" style={{ left: `${hover.point.x + 14}px`, top: `${hover.point.y + 14}px` }} role="status">
       <div class="tt-name">{name}</div>
-      {shown ? (
+      {shown && (
         <div>
           <strong>{fmtMetric(metric, val)}</strong>
           {metric !== "count" && <> · {fmtCount(d.e[i])}{d.m[i] !== null ? ` ± ${fmtCount(d.m[i])}` : ""} residents</>}
           {metric === "count" && d.m[i] !== null && <> ± {fmtCount(d.m[i])}</>}
         </div>
-      ) : null}
+      )}
       <div class={`tt-state st-${st}`}>{STATE_LABEL[st]}</div>
     </div>
   );

@@ -8,6 +8,7 @@ import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 maplibregl.setWorkerUrl(workerUrl);
 import { CLUSTER_COLOR, ENCLAVE_COLOR } from "../scales";
 import { geoURL } from "../data";
+import { inverseMask } from "../geo";
 
 const BASEMAP = "https://tiles.openfreemap.org/styles/positron";
 const NYC_BOUNDS: [[number, number], [number, number]] = [[-74.26, 40.49], [-73.69, 40.92]];
@@ -79,7 +80,8 @@ export class MapView {
   private ready: Promise<void>;
   private beforeId: string | undefined;
   private hoverCb: ((h: HoverInfo | null) => void) | null = null;
-  private clickCb: ((h: HoverInfo) => void) | null = null;
+  private clickCb: ((at: { lon: number; lat: number }, unit: HoverInfo | null) => void) | null = null;
+  private pin: maplibregl.Marker | null = null;
   private activeLevel: UnitLevel = "tract";
   basemapFailed = false;
 
@@ -163,6 +165,10 @@ export class MapView {
     this.add({ id: "enclave-fill", type: "fill", source: "enclaves", paint: { "fill-color": ENCLAVE_COLOR, "fill-opacity": 0.16 } });
     this.add({ id: "enclave-line", type: "line", source: "enclaves", paint: { "line-color": ENCLAVE_COLOR, "line-width": 2.2 } });
     this.add({ id: "cluster-line", type: "line", source: "clusters", paint: { "line-color": CLUSTER_COLOR, "line-width": 2, "line-dasharray": [2, 1] } });
+    m.addSource("mask", { type: "geojson", data: EMPTY_FC });
+    m.addSource("focus", { type: "geojson", data: EMPTY_FC });
+    this.add({ id: "mask-fill", type: "fill", source: "mask", paint: { "fill-color": "#e9e8e3", "fill-opacity": 0.82 } });
+    this.add({ id: "focus-line", type: "line", source: "focus", paint: { "line-color": "#0b0b0b", "line-width": 2.2 } });
     for (const [lvl, src] of [["tract", "tracts"], ["nta", "ntas"], ["boro", "boroughs"]] as const) {
       this.add({ id: `${lvl}-sel`, type: "line", source: src, filter: NONE, paint: { "line-color": "#0b0b0b", "line-width": 3 } });
     }
@@ -173,24 +179,26 @@ export class MapView {
       });
     }
 
+    m.on("click", (e) => {
+      const lvl = this.activeLevel;
+      const f = m.queryRenderedFeatures(e.point, { layers: [`${lvl}-fill`] })[0];
+      const unit = f ? { level: lvl, index: Number(f.properties?.i), props: f.properties ?? {}, point: e.point } : null;
+      this.clickCb?.({ lon: e.lngLat.lng, lat: e.lngLat.lat }, unit);
+    });
+
     for (const lvl of ["tract", "nta"] as const) {
       m.on("mousemove", `${lvl}-fill`, (e) => {
         if (lvl !== this.activeLevel || !e.features?.length) return;
         const f = e.features[0];
         const idx = Number(f.properties?.i);
         m.setFilter(`${lvl}-hover`, ["==", ["get", "i"], idx]);
-        m.getCanvas().style.cursor = "pointer";
+        if (m.getCanvas().style.cursor !== "crosshair") m.getCanvas().style.cursor = "pointer";
         this.hoverCb?.({ level: lvl, index: idx, props: f.properties ?? {}, point: e.point });
       });
       m.on("mouseleave", `${lvl}-fill`, () => {
         m.setFilter(`${lvl}-hover`, NONE);
-        m.getCanvas().style.cursor = "";
+        if (m.getCanvas().style.cursor !== "crosshair") m.getCanvas().style.cursor = "";
         this.hoverCb?.(null);
-      });
-      m.on("click", `${lvl}-fill`, (e) => {
-        if (lvl !== this.activeLevel || !e.features?.length) return;
-        const f = e.features[0];
-        this.clickCb?.({ level: lvl, index: Number(f.properties?.i), props: f.properties ?? {}, point: e.point });
       });
     }
   }
@@ -203,9 +211,50 @@ export class MapView {
     this.hoverCb = cb;
   }
 
-  onClick(cb: (h: HoverInfo) => void) {
+  onClick(cb: (at: { lon: number; lat: number }, unit: HoverInfo | null) => void) {
     this.clickCb = cb;
   }
+
+  /** Whether an inverse mask is shown (for tests and debugging). */
+  focusState(): { masked: boolean } {
+    return { masked: this.masked };
+  }
+  private masked = false;
+
+  setPicking(on: boolean) {
+    this.map.getCanvas().style.cursor = on ? "crosshair" : "";
+  }
+
+  /** Grey out everything outside the focused area and outline it (§9.3). */
+  setFocus(area: GeoJSON.Polygon | GeoJSON.MultiPolygon | null) {
+    (this.map.getSource("mask") as GeoJSONSource).setData(area ? inverseMask(area) : EMPTY_FC);
+    this.masked = !!area;
+    (this.map.getSource("focus") as GeoJSONSource).setData(area ? { type: "Feature", properties: {}, geometry: area } : EMPTY_FC);
+  }
+
+  /** Draggable radius pin. */
+  setPin(at: { lon: number; lat: number } | null, onMove?: (at: { lon: number; lat: number }) => void) {
+    if (!at) {
+      this.pin?.remove();
+      this.pin = null;
+      return;
+    }
+    if (!this.pin) {
+      this.pin = new maplibregl.Marker({ draggable: true, color: "#0b0b0b" }).setLngLat([at.lon, at.lat]).addTo(this.map);
+      this.pin.getElement().setAttribute("aria-label", "Radius center (drag to move)");
+    } else {
+      this.pin.setLngLat([at.lon, at.lat]);
+    }
+    this.pin.off("dragend", this.onPinDrag);
+    this.pinMove = onMove ?? null;
+    this.pin.on("dragend", this.onPinDrag);
+  }
+
+  private pinMove: ((at: { lon: number; lat: number }) => void) | null = null;
+  private onPinDrag = () => {
+    const ll = this.pin!.getLngLat();
+    this.pinMove?.({ lon: ll.lng, lat: ll.lat });
+  };
 
   /** Paint the choropleth for one level; the other level is hidden. */
   setChoropleth(level: UnitLevel, colors: string[] | null, idx: { caution: number[]; suppressed: number[]; unavailable: number[] }) {
@@ -243,8 +292,8 @@ export class MapView {
   fitTo(bounds: [[number, number], [number, number]], pad = 40, animate = true) {
     const p = panelPadding();
     this.map.fitBounds(bounds, {
-      padding: { top: pad, right: p.right + pad, left: p.left + pad, bottom: p.bottom + pad },
-      maxZoom: 15,
+      padding: { top: pad + (window.innerWidth < 768 ? 34 : 0), right: p.right + pad, left: p.left + pad, bottom: p.bottom + pad },
+      maxZoom: 14,
       duration: animate ? 600 : 0,
     });
   }

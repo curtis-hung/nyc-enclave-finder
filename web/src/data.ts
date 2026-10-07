@@ -1,6 +1,6 @@
 // Static data loaders. All data is precomputed at build time; the site makes no API calls (§3.1).
 
-import type { DemoBundle, EnclaveBundle, GroupsFile, Meta, WhosHereFile } from "./types";
+import type { DemoBundle, EnclaveBundle, GroupsFile, Meta, Place, WhosHereFile } from "./types";
 
 const BASE = `${import.meta.env.BASE_URL}data/`;
 const cache = new Map<string, Promise<unknown>>();
@@ -25,3 +25,4 @@ export const loadEnclaves = (group: string) => loadJSON<EnclaveBundle>(`enclaves
 export const geoURL = (name: "tracts" | "ntas" | "boroughs") => `${BASE}geo/${name}.json`;
 export const loadWhosHere = (level: "tract" | "nta" | "boro") => loadJSON<WhosHereFile>(`whoshere/${level}.json`);
 export const loadGeo = (name: "tracts" | "ntas" | "boroughs") => loadJSON<GeoJSON.FeatureCollection>(`geo/${name}.json`);
+export const loadGazetteer = () => loadJSON<Place[]>("gazetteer.json");

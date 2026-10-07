@@ -44,11 +44,11 @@ test.describe("who's here (M4)", () => {
 
   test("borough buttons and closing", async ({ page }) => {
     await openApp(page);
-    await page.getByRole("group", { name: "Boroughs" }).getByRole("button", { name: "Bronx" }).click();
+    await page.getByRole("group", { name: "Borough focus" }).getByRole("button", { name: "Bronx" }).click();
     await expectHash(page, "a", "b:2");
     const panel = page.getByRole("complementary", { name: "Area details" });
     await expect(panel.getByRole("heading", { level: 2 })).toHaveText("Bronx");
-    await panel.getByRole("button", { name: "Close who's here" }).click();
+    await panel.getByRole("button", { name: "Close area" }).click();
     await expectHash(page, "a", null);
     await expect(panel).toBeHidden();
   });
@@ -56,7 +56,7 @@ test.describe("who's here (M4)", () => {
   test("a group link in who's here selects that group", async ({ page }) => {
     await openApp(page, "a=n:QN0401");
     const panel = page.getByRole("complementary", { name: "Area details" });
-    await panel.getByRole("region", { name: /Who's here: Asian groups/ }).getByRole("button", { name: "Nepali" }).click();
+    await panel.getByRole("region", { name: /Who's here: Asian groups/ }).getByRole("button", { name: "Nepali" }).first().click();
     await expectHash(page, "g", "nepali");
   });
 });
