@@ -10,16 +10,14 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M3 Basemap + group focus
 - [x] M4 "Who's here?"
 - [x] M5 Area focus **[CHECKPOINT]** (reviewed; changes in D20–D21)
-- [ ] M6 Restaurants + labels + clusters
+- [x] M6 Restaurants + labels + clusters
 - [ ] M7 Gaps + presets **[CHECKPOINT]**
 - [ ] M8 Remaining SHOULD / STRETCH
 - [ ] M9 Finish
 
 ## Current status
 
-**M5 checkpoint reviewed and feedback applied** (hideable area panel, tract display caution band
-widened to CV 0.8, places select a suggested group and fit wider). Next: M6 (restaurants + labels
-+ clusters).
+**M6 complete.** Next: M7 (gap measures + presets, then checkpoint).
 
 ## Completed work
 
@@ -103,14 +101,36 @@ widened to CV 0.8, places select a suggested group and fit wider). Next: M6 (res
 - Restaurant list, over-represented cuisines and intersecting clusters arrive with M6.
 - Tests: pytest 50, Vitest 20, Playwright 21. Screenshots `docs/screenshots/m5-*.png`.
 
+### M6 Restaurants + labels + clusters
+- DOHMH backbone: 296,270 rows / 31,469 CAMIS → 30,300 retained (802 without valid coordinates,
+  356 inactive = no inspection in 3 years, 11 outside NYC tracts); one record per CAMIS by a
+  deterministic newest-inspection rule; coordinate parse rate 97.5%; all 90 cuisine values mapped.
+- Multi-location heuristic (normalized name at ≥ 5 active locations): 5,015 establishments /
+  330 names flagged, hidden by default. Analysis population (inspected, not flagged): 21,905.
+- Enrichment: OSM (33.4% of establishments matched), Overture (60.6%), 1,535 name-keyword hits;
+  one-to-one name+distance (75 m) matching. Tags: 751 high, 1,418 medium, 260 low; 1,765
+  conflicts on 1,404 restaurants (shown only under "Other sources say…").
+- Clusters: DBSCAN per paired cuisine node (102 nodes) per preset — strict 120, default 416,
+  loose 641 — qualified by non-circular catchment cuisine LQ; tag-based clusters report tag
+  coverage. Korean-cuisine plausibility passes (Midtown South rank 3; a default Korean cluster
+  covers W 32nd St).
+- UI: cuisine filter (hierarchy) + tag-confidence selector (default medium+) + multi-location
+  toggle; heatmap at low zoom, points at high zoom (hollow = inferred-tag-only match); paired-
+  cuisine chips; cluster table and outlines (catchment on selection); restaurant card (DOHMH
+  label, inferred tag chips with confidence/sources, collapsed conflicts, Google Maps search
+  link); area panel adds over-represented cuisines, the selected cuisine's clusters and a
+  filtered restaurant list. J1 passes end to end.
+- Tests: pytest 79, Vitest 26, Playwright 28.
+
 ## Cuts
 
 None.
 
 ## Payload sizes
 
-M3: app JS 293 KB gzip + CSS 13 KB; first-load data (meta, groups, tract/NTA/borough geometry)
-≈ 0.4 MB gzip. Lazy bundles: group×dimension ≤ 21 KB gzip; enclaves per group ≤ 93 KB gzip.
+M6: app JS ≈ 310 KB gzip + CSS 14 KB; first-load data (meta, groups, geometry, cuisines,
+restaurant points 245 KB) ≈ 0.7 MB gzip. Lazy: who's-here tract 626 KB, NTA 103 KB; restaurant
+details per NTA; clusters per cuisine. Lazy bundles: group×dimension ≤ 21 KB gzip; enclaves per group ≤ 93 KB gzip.
 Processed data total 22.8 MB raw / 3.96 MB gzip.
 
 ## Blockers

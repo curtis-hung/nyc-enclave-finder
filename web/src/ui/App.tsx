@@ -10,7 +10,10 @@ import { fmtCount, fmtMetric, indicesWithState, scaleFor, STATE_LABEL, unitColor
 import { useView, view } from "../store";
 import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric, type Place } from "../types";
 import type { Area } from "../url";
+import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadPoints, type ClusterFile, type Points } from "../cuisine";
 import { AreaPanel, areaTitle } from "./AreaPanel";
+import { AreaRestaurants } from "./AreaRestaurants";
+import { ClusterTable, defaultCuisine, RestaurantCard, RestaurantControls } from "./Restaurants";
 import { FocusControls } from "./FocusControls";
 import { GroupPicker } from "./GroupPicker";
 import { GroupSection } from "./GroupSection";
@@ -44,15 +47,21 @@ export function App() {
   const [panelOpen, setPanelOpen] = useState(true);
   const [picking, setPicking] = useState(false);
   const [areaOpen, setAreaOpen] = useState(true);
+  const [ix, setIx] = useState<CuisineIndex | null>(null);
+  const [pts, setPts] = useState<Points | null>(null);
+  const [clusterFile, setClusterFile] = useState<ClusterFile | null>(null);
+  const [selCluster, setSelCluster] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([loadMeta(), loadGroups()]).then(([m, g]) => { setMeta(m); setGroups(g); }).catch((e) => setError(String(e)));
     loadGazetteer().then(setPlaces).catch(() => setPlaces([]));
+    Promise.all([loadCuisines(), loadPoints()]).then(([c, p]) => { setIx(new CuisineIndex(c)); setPts(p); }).catch((e) => setError(String(e)));
     const mv = new MapView(mapEl.current!);
     mapRef.current = mv;
     mv.whenReady().then(() => setMapReady(true));
     mv.onHover(setHover);
+    mv.onRestaurant((i) => view.set({ restaurant: i }));
     mv.onClick((at, unit) => {
       if (pickingRef.current) {
         const cur = view.get().area;
@@ -152,7 +161,50 @@ export function App() {
     return () => { live = false; };
   }, [areaKey, mapReady, meta]);
 
-  const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null });
+  const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null, cuisine: defaultCuisine(groups?.groups[id] ?? null), restaurant: null });
+
+  // restaurants on the map: those matching the cuisine filter (§9.5)
+  const restaurantFC = useMemo(() => {
+    if (!ix || !pts || !v.cuisine) return { fc: null, total: 0, viaTags: 0 };
+    const target = v.cuisine === "root" ? null : ix.byId.get(v.cuisine);
+    if (target === undefined) return { fc: null, total: 0, viaTags: 0 };
+    const floor = CONF[v.conf];
+    const feats: GeoJSON.Feature[] = [];
+    let viaTags = 0;
+    for (let i = 0; i < pts.n; i++) {
+      const f = pts.flags[i];
+      if (!(f & FLAG.analysis) && !(v.multi && f & FLAG.multi)) continue;
+      const k = target === null ? 1 : ix.matchKind(pts, i, target, floor);
+      if (!k) continue;
+      if (k === 2) viaTags++;
+      feats.push({ type: "Feature", properties: { i, k, m: f & FLAG.multi ? 1 : 0 }, geometry: { type: "Point", coordinates: [pts.lon[i] / 1e5, pts.lat[i] / 1e5] } });
+    }
+    return { fc: { type: "FeatureCollection" as const, features: feats }, total: feats.length, viaTags };
+  }, [ix, pts, v.cuisine, v.conf, v.multi]);
+  useEffect(() => {
+    if (mapRef.current && mapReady) mapRef.current.setRestaurants(restaurantFC.fc, v.restaurant);
+  }, [restaurantFC, v.restaurant, mapReady]);
+
+  // clusters of the filtered cuisine (only paired cuisines are clustered)
+  useEffect(() => {
+    setClusterFile(null);
+    setSelCluster(null);
+    if (!v.cuisine || v.cuisine === "root") return;
+    let live = true;
+    loadClusters(v.cuisine).then((c) => live && setClusterFile(c)).catch(() => live && setClusterFile(null));
+    return () => { live = false; };
+  }, [v.cuisine]);
+  const clusterFC = useMemo(() => clusterFile
+    ? { type: "FeatureCollection" as const, features: clusterFile.geojson.features.filter((f) => f.properties?.preset === preset) }
+    : null, [clusterFile, preset]);
+  useEffect(() => {
+    if (mapRef.current && mapReady) mapRef.current.setClusters(clusterFC, selCluster);
+  }, [clusterFC, selCluster, mapReady]);
+  const focusCluster = (id: string) => {
+    setSelCluster(id);
+    const f = clusterFile?.geojson.features.find((x) => x.properties?.id === id && x.properties?.part === "catchment");
+    if (f) mapRef.current?.fitTo(bounds(f.geometry));
+  };
   const zoomToEnclave = (id: string) => {
     const f = enc?.geojson.features.find((x) => x.properties?.id === id);
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
@@ -177,13 +229,17 @@ export function App() {
             <FocusControls meta={meta} groups={groups} places={places} area={v.area} picking={picking} onArea={(a) => view.set({ area: a })} onPick={setPickingBoth}
               onPlace={(p) => view.set({
                 area: { kind: "radius", lat: p.lat, lon: p.lon, mi: p.radius_mi },
-                ...(p.group && groups?.groups[p.group] ? { group: p.group, dim: null, level: null } : {}),
+                ...(p.group && groups?.groups[p.group]
+                  ? { group: p.group, dim: null, level: null, cuisine: defaultCuisine(groups.groups[p.group]), restaurant: null }
+                  : {}),
               })} />
           )}
           {group && meta && groups && dim && (
             <GroupSection meta={meta} groups={groups} group={group} dim={dim} level={level} preset={preset} v={v} enc={enc}
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
           )}
+          {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} />}
           {meta && (
             <details class="advanced">
               <summary>Advanced</summary>
@@ -198,12 +254,19 @@ export function App() {
               </div>
             </details>
           )}
-          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={false} />
+          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={!!restaurantFC.total} />
           <footer class="foot muted small">
             Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
           </footer>
         </div>
       </aside>
+      {meta && ix && pts && v.restaurant !== null && v.restaurant < pts.n && (
+        <aside class={`panel panel-right card-panel${v.area ? " stacked" : ""}`} aria-label="Restaurant details">
+          <div class="panel-body">
+            <RestaurantCard ix={ix} pts={pts} meta={meta} index={v.restaurant} onClose={() => view.set({ restaurant: null })} />
+          </div>
+        </aside>
+      )}
       {meta && groups && v.area && (
         areaOpen ? (
           <aside class="panel panel-right" aria-label="Area details">
@@ -211,7 +274,12 @@ export function App() {
               <AreaPanel meta={meta} groups={groups} area={v.area} places={places}
                 selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
                 onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
-                onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)} />
+                onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)}
+                extra={(stats) => ix && pts && v.area ? (
+                  <AreaRestaurants meta={meta} ix={ix} pts={pts} tracts={stats.tracts} v={v} clusters={clusterFile} preset={preset} onCluster={focusCluster}
+                    level={v.area.kind === "radius" ? "radius" : v.area.kind}
+                    radius={v.area.kind === "radius" ? { lat: v.area.lat, lon: v.area.lon, mi: v.area.mi } : null} />
+                ) : null} />
             </div>
           </aside>
         ) : (

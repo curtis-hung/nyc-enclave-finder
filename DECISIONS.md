@@ -200,3 +200,42 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - Radius focus fits to a circle of max(2.5 × radius, 1 mi) so the surrounding pattern is visible.
 - The area panel has Hide/Show (keeps the focus and mask) in addition to Close; on phones the
   collapsed panel is a bottom bar.
+
+## D22. Restaurant backbone rules
+
+- One record per CAMIS: identity fields from the newest real inspection row that has them
+  (rows ordered by inspection date, then inspection type/action/violation code for ties);
+  coordinates from the newest row with coordinates inside the NYC bbox.
+- Active = latest inspection within 3 years of the snapshot. Never-inspected permits (DOHMH date
+  1900-01-01, no cuisine) stay on the map flagged "not yet inspected" but are outside the
+  analysis population.
+- Multi-location = normalized name (accents, punctuation, legal suffixes, store numbers removed)
+  at ≥ 5 active locations; hidden by default and excluded from the analysis population, so
+  clusters and cuisine LQ describe independents and small local multi-location businesses.
+  Overrides file exists but is empty; curation is not required.
+- **Limitations:** franchises with independent owners (e.g. many "Kennedy Fried Chicken") are
+  flagged; a regional 5+ location business is treated like a chain.
+
+## D23. Enrichment and tags
+
+- External labels are mapped in `config/cuisine_sources.yaml` from the enumerated OSM/Overture
+  vocabularies; format/dish labels (coffee, pizza, burger, bar…) are generic and ignored.
+  Matching: KD-tree within 75 m, normalized-name similarity = max(sequence ratio, token
+  Jaccard) ≥ 0.6, greedy one-to-one by (similarity, distance, ids).
+- Tag model per §4.4 (`analysis/labels.py`): most specific below-primary candidates become tags;
+  compatible ancestor evidence credits them; confidence from distinct sources (2+ high, one
+  structured medium, keyword low); incompatible evidence → conflicts only.
+
+## D24. Clusters
+
+- DBSCAN (EPSG:2263 feet) per paired cuisine node; nodes that are DOHMH values use primary labels
+  + any-confidence tags under them; other nodes use tags at medium+ (`presets.yaml
+  tag_confidence`), plus primaries below them. Footprint = convex hull of members (+60 ft);
+  catchment = footprint + `catchment_ft`. Cuisine LQ = cuisine share of ALL analysis-population
+  restaurants in the catchment ÷ citywide share; qualifies at `lq_min`. Each restaurant counts once
+  in every denominator. Tag coverage for tag-based clusters = share of catchment restaurants whose
+  primary is a parent bucket (nearest DOHMH-valued ancestor) that carry any medium+ tag.
+- Default parameters (eps 600 ft, min_samples 4, min size 5, catchment 1,000 ft, LQ ≥ 2) are
+  NYC-scale defaults, set once and never tuned to make places appear.
+- Only cuisine nodes paired with some group are clustered (102 nodes); cuisine over-representation
+  in "who's here" covers every non-generic, non-dish node.

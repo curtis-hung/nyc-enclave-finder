@@ -12,6 +12,10 @@ const SHOTS: { name: string; hash: string }[] = [
   { name: "focus-radius-koreatown", hash: "g=korean&a=r:40.74770,-73.98690,0.5" },
   { name: "place-flushing", hash: "g=chinese&a=r:40.75900,-73.83000,0.4" },
   { name: "thai-tracts", hash: "g=thai&l=tract" },
+  { name: "j1-thai-elmhurst", hash: "g=thai&a=n:QN0401&c=thai" },
+  { name: "card-himalayan-yak", hash: "g=nepali&a=n:QN0401&c=himalayan&rs=2022" },
+  { name: "korean-clusters", hash: "g=korean&c=korean&a=r:40.74770,-73.98690,0.5" },
+  { name: "ecuadorian-tag-clusters", hash: "g=ecuadorian&c=ecuadorian" },
   { name: "focus-borough-queens", hash: "g=bangladeshi&a=b:4" },
 ];
 

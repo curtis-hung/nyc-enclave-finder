@@ -1,6 +1,9 @@
 # Analytical presets (§11). Every consequential threshold lives here, nowhere else.
 # They are set once for the whole city and never tuned neighbourhood by neighbourhood.
 # The point is sensitivity analysis: compare how enclaves, clusters and gaps change.
+# Cluster membership: cuisine nodes that are DOHMH values use primary labels plus tags of any
+# confidence under the node; other (leaf/intermediate) nodes use tags at `tag_confidence` or above.
+tag_confidence: medium
 
 default_preset: default
 
@@ -13,6 +16,12 @@ presets:
       states: [reliable]     # data states allowed to qualify
       cv_max: 0.30
       min_enclave_pop: 1000  # connected component must hold at least this many group residents
+    cluster:
+      eps_ft: 400            # DBSCAN neighbourhood radius (EPSG:2263 feet)
+      min_samples: 6         # DBSCAN density: points within eps for a core point
+      min_cluster_size: 8    # smallest cluster kept
+      catchment_ft: 750      # catchment = cluster footprint buffered by this distance
+      lq_min: 3.0            # cuisine LQ in the catchment needed to qualify
   default:
     label: Default
     enclave:
@@ -21,6 +30,12 @@ presets:
       states: [reliable, caution]
       cv_max: 0.60           # qualifying units need CV <= this (keeps tract display relaxation out)
       min_enclave_pop: 400
+    cluster:
+      eps_ft: 600
+      min_samples: 4
+      min_cluster_size: 5
+      catchment_ft: 1000
+      lq_min: 2.0
   loose:
     label: Loose
     enclave:
@@ -29,3 +44,9 @@ presets:
       states: [reliable, caution]
       cv_max: 0.60
       min_enclave_pop: 150
+    cluster:
+      eps_ft: 900
+      min_samples: 3
+      min_cluster_size: 4
+      catchment_ft: 1300
+      lq_min: 1.5

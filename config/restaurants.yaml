@@ -1,0 +1,23 @@
+# Restaurant processing rules (§4.3, §4.4). Simple, documented heuristics; never tuned to places.
+
+# One record per CAMIS: identity fields (name, address, cuisine) come from the most recent
+# inspection row that has the field; coordinates from the most recent row with valid ones.
+active:
+  # "Looks active": latest real inspection within this many years of the snapshot date.
+  max_years_since_inspection: 3
+  # Establishments with a permit but no inspection yet (DOHMH date 1900-01-01) are kept on the
+  # map, flagged "not yet inspected"; they have no cuisine and are excluded from the analysis
+  # population (clusters, cuisine LQ), see below.
+  include_uninspected: true
+
+multi_location:
+  # A normalized business name at this many or more active locations is flagged as a
+  # multi-location business: hidden by default and excluded from the analysis population.
+  # This is a heuristic, not proof of a corporate chain. Overrides: multilocation_overrides.yaml.
+  min_locations: 5
+
+matching:
+  max_distance_m: 75
+  min_name_similarity: 0.6
+
+# Analysis population for clusters and cuisine LQ: active, inspected, not flagged multi-location.

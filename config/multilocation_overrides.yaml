@@ -1,0 +1,5 @@
+# Manual overrides for the multi-location heuristic (optional; curation is never required).
+# Names are matched after normalization (lowercase, accents/punctuation removed, legal suffixes
+# and store numbers dropped).
+force_multi_location: []
+force_independent: []

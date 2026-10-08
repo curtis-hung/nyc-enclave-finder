@@ -177,3 +177,33 @@ select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; ba
   .has-area .panel:not(.panel-right) { display: none; }
   .panel-right.collapsed { top: auto; bottom: 0; }
 }
+
+/* --- restaurants (M6) -------------------------------------------------------------------------- */
+.rest-ctl h3, .clusters h3 { font-size: 13px; margin: 0 0 4px; }
+.rest-ctl { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); padding-top: 10px; }
+.ctl.grow { flex: 1 1 160px; }
+.ctl.grow select { width: 100%; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; list-style: none; margin: 0; padding: 0; }
+.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 2px 9px; font-size: 12px; cursor: pointer; }
+.chip.on { background: #ece9f7; border-color: #4a3aa7; }
+.chip.tag { cursor: default; border-style: dashed; border-color: #4a3aa7; }
+.chip.tag details { display: inline; font-size: 11px; }
+.chip.tag details[open] { display: block; }
+.chip.tag details ul { margin: 2px 0 0; padding-left: 14px; }
+.inferred { font-weight: 700; color: #4a3aa7; }
+.tbl tr.sel { background: #ece9f7; }
+.card { display: flex; flex-direction: column; gap: 8px; }
+.primary-label strong { font-size: 15px; display: block; }
+.conflicts summary { cursor: pointer; font-size: 12.5px; }
+.conflicts ul { margin: 4px 0 0; padding-left: 16px; font-size: 12px; }
+.rest-list { list-style: none; margin: 0; padding: 0; font-size: 12.5px; max-height: 320px; overflow-y: auto; }
+.rest-list li { padding: 2px 0; border-bottom: 1px solid #f0efea; }
+a.btn { text-decoration: none; color: var(--ink); align-self: flex-start; }
+.dot-sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; border: 1.8px solid transparent; }
+.dot-sw.hollow { background: #fff; }
+.card-panel { z-index: 3; }
+.card-panel.stacked { top: 12px; bottom: auto; max-height: 52vh; box-shadow: 0 2px 16px rgba(0,0,0,.25); }
+@media (max-width: 767px) {
+  .card-panel { z-index: 5; max-height: 70vh; }
+  .card-panel.stacked { top: auto; bottom: 0; }
+}

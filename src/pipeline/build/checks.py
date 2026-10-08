@@ -125,6 +125,56 @@ RESIDENTIAL_CHECKS = [
 ]
 
 
+def check_restaurants(diag: dict[str, Any]) -> dict[str, Any]:
+    """Processed restaurant counts reconcile with the pipeline log (§13.3)."""
+    expect = (diag["unique_camis"] - diag["dropped_missing_or_invalid_coordinates"] - diag["filtered_inactive"]
+              - diag["dropped_outside_nyc_tracts"])
+    if expect != diag["retained_establishments"]:
+        raise InvariantError(f"restaurant counts do not reconcile: expected {expect}, kept {diag['retained_establishments']}")
+    rate = 1 - diag["dropped_missing_or_invalid_coordinates"] / diag["unique_camis"]
+    if rate < 0.9:
+        raise InvariantError(f"only {rate:.1%} of establishments have parseable coordinates")
+    return {"coordinate_parse_rate": round(rate, 4), "reconciled": True}
+
+
+def korean_cuisine_check(cfg: Config, geo: Geography, r: Any, clusters: dict[str, Any]) -> dict[str, Any]:
+    """Warn-only (§13.4): Korean-cuisine restaurants concentrated around W 32nd St."""
+    from pipeline.analysis.labels import matches_node
+
+    top_n = cfg.analysis["plausibility"]["top_n_ntas"]
+    pt = Point(-73.9869, 40.7477)
+    df = r.df[r.df.analysis]
+    member = np.array([matches_node("korean", p, [(t.label, t.confidence) for t in r.labels[i].tags], cfg.cuisines)
+                       for i, p in zip(df.index, df.primary)])
+    nta = geo.tract_nta_idx[df.tract.to_numpy()]
+    total = np.bincount(nta, minlength=len(geo.ntas))
+    kor = np.bincount(nta, weights=member, minlength=len(geo.ntas))
+    ref = member.sum() / len(member)
+    with np.errstate(divide="ignore", invalid="ignore"):
+        lq = (kor / total) / ref
+    eligible = total >= 20
+    order = [i for i in np.argsort(-np.nan_to_num(lq, nan=-1)) if eligible[i]]
+    hit = [i for i, g in enumerate(geo.ntas.geometry) if g is not None and g.contains(pt)]
+    target = hit[0] if hit else None
+    rank = order.index(target) + 1 if target in order else None
+    near = None
+    recs = [x for x in clusters.get("korean", []) if x.preset == cfg.presets["default_preset"]]
+    if recs:
+        p_proj = gpd.GeoSeries([pt], crs="EPSG:4326").to_crs("EPSG:2263").iloc[0]
+        near = round(min(x.cluster.footprint.distance(p_proj) for x in recs) / 5280, 2)
+    return {
+        "id": "korean_cuisine_w32", "description": "Korean-cuisine restaurants around W 32nd St (restaurant data)",
+        "place": "W 32nd St (Koreatown)", "nta": geo.ntas.nta.iloc[target] if target is not None else None,
+        "nta_name": geo.ntas.name.iloc[target] if target is not None else None,
+        "nta_lq": round(float(lq[target]), 2) if target is not None and np.isfinite(lq[target]) else None,
+        "nta_rank": rank, "ntas_ranked": len(order),
+        "top_3": [{"nta": geo.ntas.name.iloc[i], "lq": round(float(lq[i]), 2)} for i in order[:3]],
+        "nearest_default_cluster_mi": near,
+        "criterion": f"NTA containing W 32nd St ranks in the top {top_n} NTAs by Korean-cuisine LQ (NTAs with >= 20 restaurants)",
+        "passed": rank is not None and rank <= top_n,
+    }
+
+
 def run_plausibility(cfg: Config, acs: AcsSnapshot, geo: Geography, den: Denominators) -> list[dict[str, Any]]:
     rules = ReliabilityRules.from_config(cfg.analysis)
     top_n = cfg.analysis["plausibility"]["top_n_ntas"]

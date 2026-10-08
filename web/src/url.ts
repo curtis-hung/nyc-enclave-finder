@@ -21,6 +21,10 @@ export interface ViewState {
   reference: "city" | "boro";
   area: Area | null;
   enclaves: boolean;
+  cuisine: string | null; // cuisine filter node id
+  conf: "low" | "medium" | "high"; // tag-confidence floor (low = all)
+  multi: boolean; // show multi-location businesses
+  restaurant: number | null; // open restaurant card
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -32,6 +36,10 @@ export const DEFAULT_VIEW: ViewState = {
   reference: "city",
   area: null,
   enclaves: true,
+  cuisine: null,
+  conf: "medium",
+  multi: false,
+  restaurant: null,
 };
 
 const METRICS: Metric[] = ["lq", "share", "count"];
@@ -67,6 +75,10 @@ export function serialize(v: ViewState): string {
   if (v.reference !== DEFAULT_VIEW.reference) p.set("r", v.reference);
   if (v.area) p.set("a", areaToString(v.area));
   if (!v.enclaves) p.set("e", "0");
+  if (v.cuisine) p.set("c", v.cuisine);
+  if (v.conf !== DEFAULT_VIEW.conf) p.set("cf", v.conf);
+  if (v.multi) p.set("mc", "1");
+  if (v.restaurant !== null) p.set("rs", String(v.restaurant));
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -85,5 +97,9 @@ export function parse(hash: string): ViewState {
     reference: ref === "boro" ? "boro" : "city",
     area: parseArea(p.get("a")),
     enclaves: p.get("e") !== "0",
+    cuisine: p.get("c") || null,
+    conf: p.get("cf") === "low" || p.get("cf") === "high" ? (p.get("cf") as "low" | "high") : "medium",
+    multi: p.get("mc") === "1",
+    restaurant: /^\d+$/.test(p.get("rs") ?? "") ? Number(p.get("rs")) : null,
   };
 }

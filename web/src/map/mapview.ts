@@ -74,6 +74,7 @@ export function panelPadding(): { left: number; right: number; bottom: number } 
 
 const EMPTY_FC: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 const NONE: FilterSpecification = ["==", ["get", "i"], -1];
+const NONE_ID: FilterSpecification = ["==", ["get", "id"], "__none__"];
 
 export class MapView {
   readonly map: MLMap;
@@ -164,11 +165,36 @@ export class MapView {
     this.add({ id: "boro-line", type: "line", source: "boroughs", paint: { "line-color": "#6f6e69", "line-width": 1.2 } });
     this.add({ id: "enclave-fill", type: "fill", source: "enclaves", paint: { "fill-color": ENCLAVE_COLOR, "fill-opacity": 0.16 } });
     this.add({ id: "enclave-line", type: "line", source: "enclaves", paint: { "line-color": ENCLAVE_COLOR, "line-width": 2.2 } });
-    this.add({ id: "cluster-line", type: "line", source: "clusters", paint: { "line-color": CLUSTER_COLOR, "line-width": 2, "line-dasharray": [2, 1] } });
+    this.add({ id: "cluster-fill", type: "fill", source: "clusters", filter: ["==", ["get", "part"], "footprint"], paint: { "fill-color": CLUSTER_COLOR, "fill-opacity": 0.08 } });
+    this.add({ id: "cluster-line", type: "line", source: "clusters", filter: ["==", ["get", "part"], "footprint"], paint: { "line-color": CLUSTER_COLOR, "line-width": 2, "line-dasharray": [2, 1] } });
+    this.add({ id: "cluster-catch", type: "line", source: "clusters", filter: NONE_ID, paint: { "line-color": CLUSTER_COLOR, "line-width": 1.2, "line-dasharray": [1, 2], "line-opacity": 0.8 } });
+    this.add({ id: "cluster-sel", type: "line", source: "clusters", filter: NONE_ID, paint: { "line-color": CLUSTER_COLOR, "line-width": 3.5 } });
     m.addSource("mask", { type: "geojson", data: EMPTY_FC });
     m.addSource("focus", { type: "geojson", data: EMPTY_FC });
     this.add({ id: "mask-fill", type: "fill", source: "mask", paint: { "fill-color": "#e9e8e3", "fill-opacity": 0.82 } });
     this.add({ id: "focus-line", type: "line", source: "focus", paint: { "line-color": "#0b0b0b", "line-width": 2.2 } });
+    m.addSource("restaurants", { type: "geojson", data: EMPTY_FC });
+    this.add({
+      id: "rest-heat", type: "heatmap", source: "restaurants", maxzoom: 14,
+      paint: {
+        "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 9, 6, 13, 18],
+        "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 9, 0.6, 13, 1.2],
+        "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0.75, 14, 0],
+        "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"], 0, "rgba(74,58,167,0)", 0.2, "rgba(74,58,167,0.25)", 0.5, "rgba(74,58,167,0.55)", 1, "rgba(48,36,120,0.9)"],
+      },
+    });
+    this.add({
+      id: "rest-pt", type: "circle", source: "restaurants", minzoom: 12.5,
+      paint: {
+        "circle-radius": ["interpolate", ["linear"], ["zoom"], 12.5, 2.5, 16, 6],
+        "circle-color": ["case", ["==", ["get", "k"], 2], "#ffffff", ["==", ["get", "m"], 1], "#9a93cf", CLUSTER_COLOR],
+        "circle-stroke-color": CLUSTER_COLOR,
+        "circle-stroke-width": ["case", ["==", ["get", "k"], 2], 1.8, 0.8],
+        "circle-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.2, 1],
+        "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.2, 1],
+      },
+    });
+    this.add({ id: "rest-sel", type: "circle", source: "restaurants", filter: NONE, paint: { "circle-radius": 9, "circle-color": "rgba(0,0,0,0)", "circle-stroke-color": "#0b0b0b", "circle-stroke-width": 2.5 } });
     for (const [lvl, src] of [["tract", "tracts"], ["nta", "ntas"], ["boro", "boroughs"]] as const) {
       this.add({ id: `${lvl}-sel`, type: "line", source: src, filter: NONE, paint: { "line-color": "#0b0b0b", "line-width": 3 } });
     }
@@ -179,7 +205,14 @@ export class MapView {
       });
     }
 
+    m.on("mouseenter", "rest-pt", () => { m.getCanvas().style.cursor = "pointer"; });
+    m.on("mouseleave", "rest-pt", () => { m.getCanvas().style.cursor = ""; });
     m.on("click", (e) => {
+      const r = m.getLayer("rest-pt") && m.getZoom() >= 13 ? m.queryRenderedFeatures([[e.point.x - 4, e.point.y - 4], [e.point.x + 4, e.point.y + 4]], { layers: ["rest-pt"] })[0] : null;
+      if (r && this.restaurantCb && !this.pickingOn) {
+        this.restaurantCb(Number(r.properties?.i));
+        return;
+      }
       const lvl = this.activeLevel;
       const f = m.queryRenderedFeatures(e.point, { layers: [`${lvl}-fill`] })[0];
       const unit = f ? { level: lvl, index: Number(f.properties?.i), props: f.properties ?? {}, point: e.point } : null;
@@ -221,7 +254,28 @@ export class MapView {
   }
   private masked = false;
 
+  private restaurantCb: ((i: number) => void) | null = null;
+  private pickingOn = false;
+
+  onRestaurant(cb: (i: number) => void) {
+    this.restaurantCb = cb;
+  }
+
+  setRestaurants(fc: GeoJSON.FeatureCollection | null, selected: number | null) {
+    (this.map.getSource("restaurants") as GeoJSONSource).setData(fc ?? EMPTY_FC);
+    this.map.setFilter("rest-sel", selected === null ? NONE : ["==", ["get", "i"], selected]);
+  }
+
+  setClusters(fc: GeoJSON.FeatureCollection | null, selected: string | null) {
+    (this.map.getSource("clusters") as GeoJSONSource).setData(fc ?? EMPTY_FC);
+    const part = (p: string): FilterSpecification =>
+      selected ? ["all", ["==", ["get", "id"], selected], ["==", ["get", "part"], p]] : NONE_ID;
+    this.map.setFilter("cluster-catch", part("catchment"));
+    this.map.setFilter("cluster-sel", part("footprint"));
+  }
+
   setPicking(on: boolean) {
+    this.pickingOn = on;
     this.map.getCanvas().style.cursor = on ? "crosshair" : "";
   }
 

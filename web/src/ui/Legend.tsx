@@ -11,10 +11,11 @@ interface Props {
   shareOf: string;
   enclaves: boolean;
   clusters: boolean;
+  restaurants?: boolean;
 }
 
-export function Legend({ level, metric, scale, shareOf, enclaves, clusters }: Props) {
-  if (!scale) return null;
+export function Legend({ level, metric, scale, shareOf, enclaves, clusters, restaurants }: Props) {
+  if (!scale && !restaurants && !clusters) return null;
   const title =
     metric === "lq"
       ? "Location quotient — local share ÷ citywide share"
@@ -23,8 +24,8 @@ export function Legend({ level, metric, scale, shareOf, enclaves, clusters }: Pr
         : "Estimated residents";
   return (
     <div class="legend" aria-label="Map legend">
-      <div class="legend-title">{title}</div>
-      <ul class="legend-bins">
+      {scale && <div class="legend-title">{title}</div>}
+      {scale && <ul class="legend-bins">
         {scale.bins.map((b) => (
           <li key={b.label}>
             <span class="sw" style={{ background: b.color }} />
@@ -32,14 +33,16 @@ export function Legend({ level, metric, scale, shareOf, enclaves, clusters }: Pr
             {metric === "lq" && b.hi === 1 && <span class="muted"> (not over-represented)</span>}
           </li>
         ))}
-      </ul>
+      </ul>}
       <ul class="legend-states">
-        <li><span class="sw sw-caution" /> Caution: noisy estimate{level === "tract" ? " (tracts: CV ≤ 0.8)" : ""}</li>
+        {scale && <><li><span class="sw sw-caution" /> Caution: noisy estimate{level === "tract" ? " (tracts: CV ≤ 0.8)" : ""}</li>
         <li><span class="sw sw-suppressed" /> Suppressed: too uncertain to show</li>
         <li><span class="sw" style={{ background: ZERO_COLOR }} /> Zero estimated</li>
-        <li><span class="sw sw-unavail" /> No data / no residents</li>
+        <li><span class="sw sw-unavail" /> No data / no residents</li></>}
         {enclaves && <li><span class="sw sw-outline" style={{ borderColor: ENCLAVE_COLOR, background: `${ENCLAVE_COLOR}29` }} /> Residential enclave</li>}
         {clusters && <li><span class="sw sw-outline dashed" style={{ borderColor: CLUSTER_COLOR }} /> Restaurant cluster</li>}
+        {restaurants && <li><span class="dot-sw" style={{ background: CLUSTER_COLOR }} /> Restaurant (DOHMH label)</li>}
+        {restaurants && <li><span class="dot-sw hollow" style={{ borderColor: CLUSTER_COLOR }} /> Restaurant (inferred tag only)</li>}
       </ul>
     </div>
   );

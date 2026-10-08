@@ -1,0 +1,97 @@
+# Name keywords -> cuisine node (§4.4). Matched as whole words (accent- and case-insensitive)
+# against the DOHMH business name only. A keyword alone yields a LOW-confidence tag, which is
+# excluded from leaf/intermediate clustering at the default medium+ setting.
+# Ambiguous terms map to a parent node rather than a guessed leaf (e.g. "momo" -> Himalayan,
+# "arepa" -> South American, since arepas are both Venezuelan and Colombian).
+
+keywords:
+  pupuseria: salvadoran
+  pupuserias: salvadoran
+  pupusas: salvadoran
+  salvadoreno: salvadoran
+  salvadorena: salvadoran
+  ecuatoriano: ecuadorian
+  ecuatoriana: ecuadorian
+  colombiano: colombian
+  colombiana: colombian
+  dominicano: dominican
+  dominicana: dominican
+  peruano: peruvian
+  peruana: peruvian
+  cevicheria: peruvian
+  mexicano: mexican
+  mexicana: mexican
+  taqueria: mexican
+  venezolano: venezuelan
+  venezolana: venezuelan
+  hondureno: honduran
+  hondurena: honduran
+  guatemalteco: guatemalan
+  guatemalteca: guatemalan
+  chapin: guatemalan
+  boricua: puerto_rican
+  cubano: cuban
+  cubana: cuban
+  arepa: south_american
+  arepas: south_american
+  momo: himalayan
+  momos: himalayan
+  himalayan: himalayan
+  nepali: nepali
+  nepalese: nepali
+  tibetan: tibetan
+  pho: vietnamese
+  banh mi: vietnamese
+  vietnamese: vietnamese
+  thai: thai
+  ramen: japanese
+  sushi: japanese
+  izakaya: japanese
+  dim sum: chinese
+  korean: korean
+  bangladeshi: bangladeshi
+  pakistani: pakistani
+  lahori: pakistani
+  afghan: afghan
+  afghani: afghan
+  kabul: afghan
+  uzbek: uzbek
+  samarkand: uzbek
+  uyghur: central_asian
+  jamaican: jamaican
+  jerk: jamaican
+  haitian: haitian
+  guyanese: guyanese
+  trini: trinidadian
+  ethiopian: ethiopian
+  injera: ethiopian
+  eritrean: eritrean
+  senegalese: senegalese
+  nigerian: nigerian
+  naija: nigerian
+  ghana: west_african
+  yemeni: yemeni
+  lebanese: lebanese
+  egyptian: egyptian
+  turkish: turkish
+  persian: persian
+  georgian: georgian
+  khachapuri: georgian
+  pierogi: polish
+  polish: polish
+  ukrainian: ukrainian
+  russian: russian
+  filipino: filipino
+  pinoy: filipino
+  indonesian: indonesian
+  malaysian: malaysian
+  burmese: burmese
+  sri lankan: sri_lankan
+  szechuan: chinese
+  sichuan: chinese
+  cantonese: chinese
+  trattoria: italian
+  osteria: italian
+  brasserie: french
+  creperie: french
+  tapas: spanish_spain

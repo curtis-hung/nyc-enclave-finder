@@ -12,6 +12,10 @@ describe("URL state", () => {
       reference: "boro",
       area: { kind: "nta", id: "QN0401" },
       enclaves: false,
+      cuisine: "thai",
+      conf: "high",
+      multi: true,
+      restaurant: 1234,
     };
     expect(parse("#" + serialize(v))).toEqual(v);
   });

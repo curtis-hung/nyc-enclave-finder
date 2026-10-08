@@ -22,6 +22,7 @@ interface Props {
   onClose: () => void;
   onHide: () => void;
   children?: ComponentChildren;
+  extra?: (stats: AreaStats) => ComponentChildren;
 }
 
 export function areaTitle(meta: Meta, area: Area, places: Place[]): string {
@@ -35,7 +36,7 @@ export function radiusName(a: Extract<Area, { kind: "radius" }>, places: Place[]
   return p ? `${p.name} · ${r}` : `${r} around ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}`;
 }
 
-export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children }: Props) {
+export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children, extra }: Props) {
   const [stats, setStats] = useState<AreaStats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const key = JSON.stringify(area);
@@ -91,6 +92,7 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
         <>
           {selected && <EnclavesInArea meta={meta} stats={stats} selected={selected} onEnclave={onEnclave} />}
           {children}
+          {extra?.(stats)}
           <h3 class="whos-sub">Who's here — residents by dimension</h3>
           <p class="muted small">
             Over-represented = local share above the citywide share (LQ &gt; 1), with a usable estimate, ranked by LQ.

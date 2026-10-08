@@ -14,6 +14,8 @@ from pipeline.build import checks
 from pipeline.build.demographics import AcsSnapshot, GroupDim, build_denominators, build_group_dims
 from pipeline.build.enclaves_build import EnclaveGeometry, build_enclaves, write_enclaves
 from pipeline.build.geography import Geography, load_geography
+from pipeline.build.clusters_build import build_clusters, write_restaurant_assets
+from pipeline.build.restaurants import build_restaurants
 from pipeline.build.matrix import tract_land_areas, write_gazetteer, write_matrices
 from pipeline.build.whoshere import build_candidates, write_whoshere
 from pipeline.build.writer import arr, fmt_kb, sig_arr, simplify_for_display, size_report, write_geojson, write_json
@@ -155,8 +157,28 @@ def run_build() -> int:
     _log(f"  enclaves on default dimensions by preset: {n_enc}; "
          f"groups with none (default preset): {sum(1 for g, recs in enclaves.items() if not any(r.preset == 'default' and r.dim == cfg.groups[g].default_dimension for r in recs))}")
 
+    _log("[build] restaurants")
+    rest = build_restaurants(cfg, geo)
+    rd = rest.diagnostics
+    rchk = checks.check_restaurants(rd)
+    _log(f"  DOHMH: {rd['raw_rows']:,} rows, {rd['unique_camis']:,} CAMIS -> {rd['retained_establishments']:,} retained "
+         f"(dropped {rd['dropped_missing_or_invalid_coordinates']} without coordinates, {rd['filtered_inactive']} inactive, "
+         f"{rd['dropped_outside_nyc_tracts']} outside NYC); {rd['multi_location_flagged']:,} multi-location flagged; "
+         f"analysis population {rd['analysis_population']:,}; coordinate parse rate {rchk['coordinate_parse_rate']:.1%}")
+    m = rd["matching"]
+    _log(f"  enrichment: OSM matched {m['osm']['matched']:,} ({m['osm']['match_rate']:.1%} of establishments), "
+         f"Overture {m['overture']['matched']:,} ({m['overture']['match_rate']:.1%}), keyword hits {m['keyword']['keyword_hits']:,}; "
+         f"tags {rd['tags_by_confidence']}; conflicts {rd['conflicts']:,} on {rd['restaurants_with_conflicts']:,} restaurants")
+    clusters, cdiag = build_clusters(cfg, rest)
+    tot = {p: sum(v[p] for v in cdiag["per_node"].values()) for p in cfg.presets["presets"]}
+    _log(f"  clusters over {len(cdiag['per_node'])} paired cuisine nodes: {tot}")
+    kor = checks.korean_cuisine_check(cfg, geo, rest, clusters)
+    plaus.append(kor)
+    _log(f"  plausibility {'PASS' if kor['passed'] else 'WARN'}: {kor['description']}: {kor['nta_name']} rank {kor['nta_rank']}/{kor['ntas_ranked']} "
+         f"(LQ {kor['nta_lq']}); nearest default Korean cluster {kor['nearest_default_cluster_mi']} mi")
+
     _log("[build] writing assets")
-    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix"):
+    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix", "restaurants", "clusters"):
         shutil.rmtree(WEB_DATA_DIR / sub, ignore_errors=True)
     write_geography(geo)
     write_meta(cfg, acs, geo, den)
@@ -165,6 +187,7 @@ def run_build() -> int:
     cands = build_candidates(cfg, acs, geo, den, gds)
     wh = write_whoshere(cfg, geo, cands)
     write_matrices(cands)
+    write_restaurant_assets(cfg, geo, rest, clusters, cdiag["analysis_index"])
     places = write_gazetteer(set(cfg.groups))
     _log(f"  gazetteer: {len(places)} navigation presets")
     _log(f"  who's here: candidates per dimension {({d: len(c) for d, c in cands.items()})}; ranked rows {wh}")
@@ -175,6 +198,8 @@ def run_build() -> int:
         "reconciliation": recon,
         "outputs": outc,
         "plausibility": plaus,
+        "restaurants": {k: v for k, v in rd.items()},
+        "clusters": cdiag["per_node"],
         "group_dims": {
             gid: {dim: {"city_est": round(gd.city_est), "level": gd.recommended_level,
                         "usable_share_tract": round(gd.usable_share_tract, 3),
