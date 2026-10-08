@@ -27,6 +27,10 @@ export interface ViewState {
   restaurant: number | null; // open restaurant card
   gaps: boolean; // experiment view (gaps panel) open
   restOverlay: boolean; // restaurant points/heatmap shown on the map
+  connectors: boolean; // cluster -> nearest enclave connector lines
+  layer: "group" | "diversity"; // what the choropleth shows
+  pinned: Area | null; // compare mode: a second area pinned for comparison
+  worship: boolean; // Places of Worship layer (OSM, stretch)
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -44,6 +48,10 @@ export const DEFAULT_VIEW: ViewState = {
   restaurant: null,
   gaps: false,
   restOverlay: true,
+  connectors: true,
+  layer: "group",
+  pinned: null,
+  worship: false,
 };
 
 const METRICS: Metric[] = ["lq", "share", "count"];
@@ -85,6 +93,10 @@ export function serialize(v: ViewState): string {
   if (v.restaurant !== null) p.set("rs", String(v.restaurant));
   if (v.gaps) p.set("x", "1");
   if (!v.restOverlay) p.set("rm", "0");
+  if (!v.connectors) p.set("cn", "0");
+  if (v.layer === "diversity") p.set("ly", "div");
+  if (v.pinned) p.set("a2", areaToString(v.pinned));
+  if (v.worship) p.set("pw", "1");
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -109,5 +121,9 @@ export function parse(hash: string): ViewState {
     restaurant: /^\d+$/.test(p.get("rs") ?? "") ? Number(p.get("rs")) : null,
     gaps: p.get("x") === "1",
     restOverlay: p.get("rm") !== "0",
+    connectors: p.get("cn") !== "0",
+    layer: p.get("ly") === "div" ? "diversity" : "group",
+    pinned: parseArea(p.get("a2")),
+    worship: p.get("pw") === "1",
   };
 }

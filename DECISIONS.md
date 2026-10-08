@@ -363,3 +363,39 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   language rows under multi-language tract buckets (district-level, reliable only), and the paired
   group's split for the PUMA containing a selected cluster (labelled residential context). PUMS
   never feeds enclaves, clusters, gaps or the choropleth.
+
+## D34. Borough reference (SHOULD #8)
+
+- Client-side: map LQ = local share / the group's share in the unit's own borough (precomputed
+  borough values). Data states are unchanged; units whose borough share is unusable lose the LQ.
+  Enclaves, clusters, gaps and "who's here" keep the citywide reference (stated in the UI). URL `r=boro`.
+
+## D35. Connector lines (SHOULD #9)
+
+- For each exact-pairing cluster of the selected group (current preset, current dimension), a
+  dashed line between the nearest points of the cluster footprint and its nearest enclave
+  (polygon distance > 0 only), shaded on a continuous grey scale by distance. Labelled "distance
+  only" in the legend (§2.4). URL `cn=0` hides them.
+
+## D36. Diversity layer (SHOULD #10)
+
+- Normalized Shannon entropy of the eight B03002 race/Hispanic-origin categories, tract and NTA
+  (units below the 50-resident minimum get no value). Separate validated teal ramp (OKLCH hue 175)
+  so it is never confused with LQ; described as mix only, not a score. URL `ly=div`.
+
+## D37. Compare mode (SHOULD #11)
+
+- "Pin" in the area panel stores a second area (URL `a2=`); focusing another area shows, per
+  dimension, the LQs of the top-5 over-represented groups of either area side by side. The pinned
+  area keeps a dashed outline on the map.
+
+## D38. Stretch items
+
+- **Built:** Places of Worship (STRETCH #1): 2,876 OSM points, religion only as tagged (104
+  untagged), labelled incomplete and uneven; off by default (URL `pw=1`).
+- **Cut:** population-weighted radius interpolation (STRETCH #2) — needs sub-tract population
+  (2020 census block counts), a new source and an extra ~10 MB of geometry for a refinement of
+  values already labelled approximate. **Cut:** live threshold sliders (STRETCH #3) — enclave and
+  cluster recomputation in the browser would need the full tract matrices, adjacency and the
+  restaurant clustering pipeline client-side; the three precomputed presets already provide the
+  sensitivity analysis (§11).

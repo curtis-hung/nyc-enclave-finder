@@ -43,7 +43,7 @@ const shown = (page: import("@playwright/test").Page) =>
 test("J2: commercial vs. residential", async ({ page }) => {
   await openApp(page);
   // 1. jump to the Koreatown preset
-  await page.getByLabel("Places").selectOption({ label: "Koreatown (Manhattan) — Korean" });
+  await page.getByLabel("Places", { exact: true }).selectOption({ label: "Koreatown (Manhattan) — Korean" });
   await expectHash(page, "g", "korean");
   const panel = page.getByRole("complementary", { name: "Area details" });
   // 2. who's here shows over-represented cuisines AND residential groups

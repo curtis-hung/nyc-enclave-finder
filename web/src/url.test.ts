@@ -18,6 +18,10 @@ describe("URL state", () => {
       restaurant: 1234,
       gaps: true,
       restOverlay: false,
+      connectors: false,
+      layer: "diversity",
+      pinned: { kind: "boro", id: "2" },
+      worship: true,
     };
     expect(parse("#" + serialize(v))).toEqual(v);
   });

@@ -56,7 +56,7 @@ test.describe("area focus (M5)", () => {
 
   test("gazetteer preset sets a radius focus and its suggested group", async ({ page }) => {
     await openApp(page);
-    await page.getByLabel("Places").selectOption({ label: "Flushing (Main St) — Chinese" });
+    await page.getByLabel("Places", { exact: true }).selectOption({ label: "Flushing (Main St) — Chinese" });
     await expectHash(page, "a", "r:40.75900,-73.83000,0.4");
     await expectHash(page, "g", "chinese");
     await expect(areaPanel(page).getByRole("heading", { level: 2 })).toContainText("Flushing");

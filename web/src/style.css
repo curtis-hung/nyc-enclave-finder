@@ -264,3 +264,8 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
 .profile h3 { font-size: 13px; margin: 0 0 4px; }
 .cluster-residents { margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--line); border-radius: 6px; display: flex; flex-direction: column; gap: 4px; }
 .dia-note { margin: 0; }
+
+.sw-line { display: inline-block; width: 18px; height: 0; border-top: 2px dashed #3d3c39; margin-right: 6px; vertical-align: 3px; }
+
+.compare { border: 1px dashed var(--line); border-radius: 6px; padding: 6px 8px; }
+.panel-toggle[aria-pressed="true"] { background: #0b0b0b; color: #fff; }

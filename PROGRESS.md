@@ -12,7 +12,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M5 Area focus **[CHECKPOINT]** (reviewed; changes in D20–D21)
 - [x] M6 Restaurants + labels + clusters
 - [x] M7 Gaps + presets **[CHECKPOINT]** (reviewed; changes in D26-D30)
-- [ ] M8 Remaining SHOULD / STRETCH
+- [x] M8 Remaining SHOULD / STRETCH
 - [ ] M9 Finish
 
 ## Current status
@@ -21,8 +21,8 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 distance, 8-class LQ scale (from the other session's spec update, applied late), multi-location
 threshold 7, overlay toggle, click-to-deselect, hide/show panels; round 2 (D31-D32): share-gap
 cluster rule (Chinatown in Asian clusters), red restaurants, hover info, context follows cluster.
-M8 in progress: diaspora detail (SHOULD #3) done (D33); next SHOULD #8 borough reference,
-#9 connector lines, #10 diversity layer, #11 compare mode, then STRETCH.
+**M8 complete** (D33-D38). Next: M9 (About page, polish, size report, accessibility, deploy prep,
+README, final screenshots, full suite).
 
 ## Completed work
 
@@ -146,16 +146,23 @@ M8 in progress: diaspora detail (SHOULD #3) done (D33); next SHOULD #8 borough r
 - Vocabulary fix from the spot-check: DOHMH "Creole/Cajun" → Creole bucket (Haitian or Louisiana).
 - Tests: pytest 85, Vitest 26, Playwright 31 — J1, J2, J3, J4 all pass.
 
-### M8 (in progress)
+### M8 Remaining SHOULD / STRETCH
 - SHOULD #1, #2, #4-#7 were built in earlier milestones (enrichment, scatter, bucket context,
   drill-down, gazetteer, non-default-dimension enclaves/gaps).
 - SHOULD #3 diaspora detail from PUMS: 134 groups with a definition, 126 with a reliable citywide
   profile; group profile, "who's here" strips, detailed-language fill, cluster residential context;
   J5 passes. Generated `docs/PUMS.md`.
+- SHOULD #8 borough reference toggle, #9 connector lines, #10 diversity layer, #11 compare mode.
+- STRETCH #1 Places of Worship built; #2 population-weighted interpolation and #3 live sliders cut.
+- Tests: pytest 101, Vitest 32, Playwright 43 (J1-J5 all pass).
 
 ## Cuts
 
-None.
+- STRETCH #2 population-weighted radius interpolation — needs block-level population; radius
+  values stay area-weighted and labelled approximate (D38).
+- STRETCH #3 live threshold sliders — the three precomputed presets provide the sensitivity
+  analysis (D38).
+- No MUST or SHOULD item was cut.
 
 ## Payload sizes
 

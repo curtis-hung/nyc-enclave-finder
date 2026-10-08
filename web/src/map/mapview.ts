@@ -175,6 +175,28 @@ export class MapView {
     m.addSource("focus", { type: "geojson", data: EMPTY_FC });
     this.add({ id: "mask-fill", type: "fill", source: "mask", paint: { "fill-color": "#e9e8e3", "fill-opacity": 0.82 } });
     this.add({ id: "focus-line", type: "line", source: "focus", paint: { "line-color": "#0b0b0b", "line-width": 2.2 } });
+    m.addSource("worship", { type: "geojson", data: EMPTY_FC });
+    this.add({
+      id: "worship", type: "circle", source: "worship", minzoom: 11,
+      paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 5], "circle-color": "#ffffff",
+               "circle-stroke-color": "#52514e", "circle-stroke-width": 1.4 },
+    });
+    m.on("mousemove", "worship", (e) => {
+      const f = e.features?.[0];
+      if (f) this.worshipCb?.({ props: f.properties ?? {}, point: e.point });
+    });
+    m.on("mouseleave", "worship", () => this.worshipCb?.(null));
+    m.addSource("pinned", { type: "geojson", data: EMPTY_FC });
+    this.add({ id: "pinned-line", type: "line", source: "pinned", paint: { "line-color": "#0b0b0b", "line-width": 2, "line-dasharray": [4, 2] } });
+    m.addSource("connectors", { type: "geojson", data: EMPTY_FC });
+    // connectors: continuous grey by distance (light = near, dark = far); they show distance only
+    this.add({
+      id: "connectors", type: "line", source: "connectors",
+      paint: {
+        "line-color": ["interpolate", ["linear"], ["get", "d"], 0, "#b9b8b2", 1, "#7a7973", 3, "#3d3c39", 6, "#0b0b0b"],
+        "line-width": 1.6, "line-dasharray": [3, 2], "line-opacity": 0.9,
+      },
+    });
     m.addSource("gapfocus", { type: "geojson", data: EMPTY_FC });
     this.add({ id: "gap-enclave-fill", type: "fill", source: "gapfocus", filter: ["==", ["get", "part"], "enclave"], paint: { "fill-color": ENCLAVE_COLOR, "fill-opacity": 0.28 } });
     this.add({ id: "gap-enclave-line", type: "line", source: "gapfocus", filter: ["==", ["get", "part"], "enclave"], paint: { "line-color": ENCLAVE_COLOR, "line-width": 3.5 } });
@@ -296,6 +318,25 @@ export class MapView {
     this.map.setFilter("cluster-sel", part("footprint"));
   }
 
+  private worshipCb: ((h: { props: Record<string, unknown>; point: { x: number; y: number } } | null) => void) | null = null;
+  onWorshipHover(cb: (h: { props: Record<string, unknown>; point: { x: number; y: number } } | null) => void) {
+    this.worshipCb = cb;
+  }
+
+  setWorship(fc: GeoJSON.FeatureCollection | null) {
+    (this.map.getSource("worship") as GeoJSONSource).setData(fc ?? EMPTY_FC);
+    this.shown.worship = fc?.features.length ?? 0;
+  }
+
+  setPinned(area: GeoJSON.Polygon | GeoJSON.MultiPolygon | null) {
+    (this.map.getSource("pinned") as GeoJSONSource).setData(area ? { type: "Feature", properties: {}, geometry: area } : EMPTY_FC);
+  }
+
+  setConnectors(fc: GeoJSON.FeatureCollection | null) {
+    (this.map.getSource("connectors") as GeoJSONSource).setData(fc ?? EMPTY_FC);
+    this.shown.connectors = fc?.features.length ?? 0;
+  }
+
   /** Experiment view: highlight a cluster (footprint + catchment) and its nearest enclave. */
   setGapFocus(features: GeoJSON.Feature[]) {
     this.shown.gap = features.map((f) => String(f.properties?.part));
@@ -367,7 +408,7 @@ export class MapView {
   }
 
   /** What the map currently shows, for tests and debugging (behaviour, not pixels). */
-  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[], restaurants: 0 };
+  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[], restaurants: 0, connectors: 0, worship: 0 };
 
   setEnclaves(fc: GeoJSON.FeatureCollection | null, visible: boolean) {
     this.shown.enclaves = visible ? (fc?.features ?? []).map((f) => String(f.properties?.id)) : [];

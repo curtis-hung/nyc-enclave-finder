@@ -17,6 +17,7 @@ export interface GapRow {
   d: (number | null)[];
   edge: number | null; // signed: negative = cluster center inside the enclave by that many miles
   edge_enclave: string | null;
+  link: [[number, number], [number, number]] | null;
   nearest: string[];
   inter_sqmi: number;
   pct_cluster_in_enclaves: number | null;

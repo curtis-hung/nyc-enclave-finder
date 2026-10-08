@@ -12,6 +12,7 @@ import { DrillDown } from "./DrillDown";
 import { districtMeasures, districtOf, languageFill, type DiasporaIndex, type Measures, type PumaFile } from "../diaspora";
 import { loadDenominators } from "../focus";
 import { DiasporaStrip } from "./Diaspora";
+import { CompareTable } from "./Compare";
 
 interface Props {
   meta: Meta;
@@ -27,6 +28,8 @@ interface Props {
   children?: ComponentChildren;
   extra?: (stats: AreaStats) => ComponentChildren;
   dia: DiasporaIndex | null;
+  pinned: Area | null;
+  onPin: (a: Area | null) => void;
 }
 
 export function areaTitle(meta: Meta, area: Area, places: Place[]): string {
@@ -40,7 +43,7 @@ export function radiusName(a: Extract<Area, { kind: "radius" }>, places: Place[]
   return p ? `${p.name} · ${r}` : `${r} around ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}`;
 }
 
-export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children, extra, dia }: Props) {
+export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children, extra, dia, pinned, onPin }: Props) {
   const [stats, setStats] = useState<AreaStats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const key = JSON.stringify(area);
@@ -104,6 +107,8 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
           )}
         </div>
         <div class="head-btns">
+          <button class="panel-toggle" title="Pin this area, then focus another to compare them" aria-pressed={!!pinned && JSON.stringify(pinned) === key}
+            onClick={() => onPin(pinned && JSON.stringify(pinned) === key ? null : area)}>{pinned && JSON.stringify(pinned) === key ? "Pinned" : "Pin"}</button>
           <button class="panel-toggle" aria-label="Hide area details" onClick={onHide}>Hide</button>
           <button class="close" aria-label="Close area" onClick={onClose}>×</button>
         </div>
@@ -121,6 +126,13 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
       {!stats && !err && <p class="muted">Loading…</p>}
       {stats && (
         <>
+          {pinned && JSON.stringify(pinned) !== key && (
+            <CompareTable meta={meta} here={stats} pinned={pinned} onUnpin={() => onPin(null)}
+              pinnedName={pinned.kind === "radius" ? radiusName(pinned, places) : resolveUnit(meta, pinned as UnitArea)?.name ?? "pinned area"} />
+          )}
+          {pinned && JSON.stringify(pinned) === key && (
+            <p class="notice small" role="note">Pinned. Focus another area (neighborhood, borough, radius or a map click) to compare the two.</p>
+          )}
           {selected && <EnclavesInArea meta={meta} stats={stats} selected={selected} onEnclave={onEnclave} />}
           {children}
           {extra?.(stats)}

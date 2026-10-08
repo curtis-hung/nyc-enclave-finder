@@ -58,6 +58,15 @@ export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, 
             {METRICS.map((m) => <button key={m.id} aria-pressed={v.metric === m.id} onClick={() => view.set({ metric: m.id })}>{m.label}</button>)}
           </div>
         </div>
+        {v.metric === "lq" && (
+          <div class="ctl">
+            <span class="ctl-label" id="ref-label">Compared with</span>
+            <div class="seg" role="group" aria-labelledby="ref-label">
+              <button aria-pressed={v.reference === "city"} onClick={() => view.set({ reference: "city" })}>NYC</button>
+              <button aria-pressed={v.reference === "boro"} onClick={() => view.set({ reference: "boro" })}>Borough</button>
+            </div>
+          </div>
+        )}
         <div class="ctl">
           <span class="ctl-label" id="level-label">Units</span>
           <div class="seg" role="group" aria-labelledby="level-label">
@@ -66,6 +75,9 @@ export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, 
           </div>
         </div>
       </div>
+      {v.reference === "boro" && v.metric === "lq" && (
+        <p class="notice" role="note">Map LQs compare each area with its own borough (a higher bar where the group is common borough-wide). Enclaves, clusters and "who's here" still use the citywide reference.</p>
+      )}
       {dimMeta.level === "nta" && (
         <p class="notice" role="note">
           Too sparse at tract level: only {Math.round(dimMeta.usable_share_tract * 100)}% of {group.name} residents in this dimension live in tracts with a usable estimate, so the map defaults to neighborhoods (NTAs).
@@ -96,7 +108,10 @@ export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, 
       <section class="enclaves" aria-label="Residential enclaves" role="region">
         <div class="sec-head">
           <h3>Residential enclaves</h3>
-          <label class="check"><input type="checkbox" checked={v.enclaves} onChange={(e) => view.set({ enclaves: (e.target as HTMLInputElement).checked })} /> Show</label>
+          <span class="ctl-row">
+            <label class="check"><input type="checkbox" checked={v.enclaves} onChange={(e) => view.set({ enclaves: (e.target as HTMLInputElement).checked })} /> Show</label>
+            <label class="check" title="Dashed line from each restaurant cluster of this group's cuisine to its nearest enclave, darker = farther. It shows distance only."><input type="checkbox" checked={v.connectors} onChange={(e) => view.set({ connectors: (e.target as HTMLInputElement).checked })} /> Connectors</label>
+          </span>
         </div>
         {enclaveSet ? (
           enclaveSet.items.length ? (

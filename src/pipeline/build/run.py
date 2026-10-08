@@ -17,6 +17,8 @@ from pipeline.build.geography import Geography, InvariantError, load_geography
 from pipeline.build.clusters_build import build_clusters, write_restaurant_assets
 from pipeline.build.restaurants import build_restaurants
 from pipeline.build.pums_build import build_pums
+from pipeline.build.diversity import build_diversity
+from pipeline.build.worship import build_worship
 from pipeline.build.gaps_build import build_gaps, write_context, write_gaps
 from pipeline.build.matrix import tract_land_areas, write_gazetteer, write_matrices
 from pipeline.build.whoshere import build_candidates, write_whoshere
@@ -195,6 +197,9 @@ def run_build() -> int:
     write_restaurant_assets(cfg, geo, rest, clusters, cdiag["analysis_index"])
     write_gaps(gaps)
     write_context(context)
+    div = build_diversity(cfg, gds)
+    _log(f"  diversity index: {div}")
+    _log(f"  places of worship (OSM, stretch): {build_worship()}")
     try:
         pums_log = build_pums(cfg, acs, geo, gds)
         _log(f"  diaspora detail (PUMS): {pums_log['groups_with_detail']} groups with a definition, "

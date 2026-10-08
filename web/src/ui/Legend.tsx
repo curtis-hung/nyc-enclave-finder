@@ -5,6 +5,8 @@ import { ENCLAVE_COLOR, CLUSTER_COLOR, RESTAURANT_COLOR, ZERO_COLOR } from "../s
 import type { Metric } from "../types";
 
 interface Props {
+  diversity?: boolean;
+  reference?: "city" | "boro";
   level?: "tract" | "nta";
   metric: Metric;
   scale: Scale | null;
@@ -14,11 +16,12 @@ interface Props {
   restaurants?: boolean;
 }
 
-export function Legend({ level, metric, scale, shareOf, enclaves, clusters, restaurants }: Props) {
+export function Legend({ diversity, reference, level, metric, scale, shareOf, enclaves, clusters, restaurants }: Props) {
   if (!scale && !restaurants && !clusters) return null;
-  const title =
-    metric === "lq"
-      ? "Location quotient — local share ÷ citywide share"
+  const title = diversity
+    ? "Diversity index (0 = one category · 1 = all eight equal)"
+    : metric === "lq"
+      ? `Location quotient — local share ÷ ${reference === "boro" ? "borough" : "citywide"} share`
       : metric === "share"
         ? `Share of ${shareOf}`
         : "Estimated residents";
@@ -35,12 +38,14 @@ export function Legend({ level, metric, scale, shareOf, enclaves, clusters, rest
         ))}
       </ul>}
       <ul class="legend-states">
-        {scale && <><li><span class="sw sw-caution" /> Caution: noisy estimate{level === "tract" ? " (tracts: CV ≤ 0.8)" : ""}</li>
+        {scale && diversity && <li><span class="sw sw-unavail" /> Fewer than 50 residents</li>}
+        {scale && !diversity && <><li><span class="sw sw-caution" /> Caution: noisy estimate{level === "tract" ? " (tracts: CV ≤ 0.8)" : ""}</li>
         <li><span class="sw sw-suppressed" /> Suppressed: too uncertain to show</li>
         <li><span class="sw" style={{ background: ZERO_COLOR }} /> Zero estimated</li>
         <li><span class="sw sw-unavail" /> No data / no residents</li></>}
         {enclaves && <li><span class="sw sw-outline" style={{ borderColor: ENCLAVE_COLOR, background: `${ENCLAVE_COLOR}29` }} /> Residential enclave</li>}
         {clusters && <li><span class="sw sw-outline dashed" style={{ borderColor: CLUSTER_COLOR }} /> Restaurant cluster</li>}
+        {clusters && <li><span class="sw-line" /> Cluster → nearest enclave (darker = farther; distance only)</li>}
         {restaurants && <li><span class="dot-sw" style={{ background: RESTAURANT_COLOR }} /> Restaurant (DOHMH label)</li>}
         {restaurants && <li><span class="dot-sw hollow" style={{ borderColor: RESTAURANT_COLOR }} /> Restaurant (inferred tag only)</li>}
       </ul>

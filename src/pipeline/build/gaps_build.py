@@ -8,6 +8,8 @@ from typing import Any
 
 import numpy as np
 import shapely
+from pyproj import Transformer
+from shapely.ops import nearest_points
 
 from pipeline.analysis.gaps import (
     DISTANCE_BANDS_MI,
@@ -52,6 +54,12 @@ def build_gaps(cfg: Config, eg: EnclaveGeometry, gds: dict[str, dict[str, GroupD
         for r in recs:
             enc_by_key.setdefault((gid, r.dim, r.preset), []).append(r)
 
+    to_ll = Transformer.from_crs("EPSG:2263", "EPSG:4326", always_xy=True)
+
+    def link(footprint: Any, enclave: Any) -> list[list[float]]:
+        a, b = nearest_points(footprint, enclave)
+        return [[round(v, 5) for v in to_ll.transform(pt.x, pt.y)] for pt in (a, b)]
+
     unions: dict[tuple[str, str, str], Any] = {}
     out: dict[str, Any] = {}
     stats = Counter()
@@ -93,6 +101,8 @@ def build_gaps(cfg: Config, eg: EnclaveGeometry, gds: dict[str, dict[str, GroupD
                         "cuisine_lq": c.stats["lq"],
                         "d": [clean(x, 3) for x in m.distances_mi],
                         "edge": clean(m.edge_mi, 3),
+                        # connector (§9.1): nearest points of the cluster and its nearest enclave
+                        "link": link(c.cluster.footprint, egeoms[m.nearest[0]]) if m.distances_mi[0] else None,
                         "edge_enclave": encs[m.edge_enclave].id if m.edge_enclave is not None else None,
                         "nearest": [encs[i].id for i in m.nearest],
                         "inter_sqmi": round(m.intersection_sqmi, 4),

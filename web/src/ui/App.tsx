@@ -13,8 +13,11 @@ import type { Area } from "../url";
 import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadDetails, loadPoints, type ClusterFile, type Points, type RestaurantDetail } from "../cuisine";
 import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
-import { GapsPanel, type GapRow } from "./GapsPanel";
+import { GapsPanel, loadGaps, type GapRow, type GapsFile } from "./GapsPanel";
 import { BucketContext } from "./BucketContext";
+import { withBoroughReference } from "../reference";
+import { loadJSON } from "../data";
+import { diversityScale } from "../scales";
 import { districtMeasures, loadDiaspora, type DiasporaIndex, type Measures } from "../diaspora";
 import { loadTractIndex } from "../focus";
 import { pointInGeom } from "../geo";
@@ -59,6 +62,9 @@ export function App() {
   const [ctx, setCtx] = useState<{ node: string; cluster: string } | null>(null);
   const setCtxRef = useRef(setCtx);
   const [dia, setDia] = useState<DiasporaIndex | null>(null);
+  const [gapsFile, setGapsFile] = useState<GapsFile | null>(null);
+  const [worshipHover, setWorshipHover] = useState<{ props: Record<string, unknown>; point: { x: number; y: number } } | null>(null);
+  const [diversity, setDiversity] = useState<{ definition: string; tract: (number | null)[]; nta: (number | null)[] } | null>(null);
   const [clusterResidents, setClusterResidents] = useState<{ group: string; label: string; m: Measures; heritage: string[] } | null>(null);
   const [restHover, setRestHover] = useState<{ index: number; point: { x: number; y: number } } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +80,7 @@ export function App() {
     mv.onHover(setHover);
     mv.onRestaurant((i) => view.set({ restaurant: i }));
     mv.onRestaurantHover(setRestHover);
+    mv.onWorshipHover(setWorshipHover);
     mv.onClick((at, unit) => {
       if (pickingRef.current) {
         const cur = view.get().area;
@@ -120,16 +127,40 @@ export function App() {
     return () => { live = false; };
   }, [group?.id]);
 
+  // diversity layer (§9.6)
+  useEffect(() => {
+    if (v.layer !== "diversity" || diversity) return;
+    loadJSON<{ definition: string; tract: (number | null)[]; nta: (number | null)[] }>("diversity.json").then(setDiversity).catch((e) => setError(String(e)));
+  }, [v.layer]);
+  const divLevel: "tract" | "nta" = v.level ?? "tract";
+
   // choropleth
   useEffect(() => {
     const mv = mapRef.current;
     if (!mv || !mapReady) return;
+    if (v.layer === "diversity") {
+      if (!diversity) return;
+      const vals = diversity[divLevel];
+      const s = diversityScale();
+      setScale(s);
+      const unavailable: number[] = [];
+      const colors = vals.map((x, i) => {
+        if (x === null) {
+          unavailable.push(i);
+          return "rgba(0,0,0,0)";
+        }
+        return s.colorOf(x);
+      });
+      mv.setChoropleth(divLevel, colors, { caution: [], suppressed: [], unavailable });
+      return;
+    }
     if (!demo) {
       mv.setChoropleth(level, null, { caution: [], suppressed: [], unavailable: [] });
       setScale(null);
       return;
     }
-    const d = demo[level];
+    // borough reference (§9.3): LQ against the unit's own borough share
+    const d = v.reference === "boro" && v.metric === "lq" && meta ? withBoroughReference(meta, demo, level) : demo[level];
     const s = scaleFor(d, v.metric);
     setScale(s);
     mv.setChoropleth(level, unitColors(d, v.metric, s), {
@@ -137,7 +168,7 @@ export function App() {
       suppressed: indicesWithState(d, STATE.suppressed),
       unavailable: indicesWithState(d, STATE.unavailable),
     });
-  }, [demo, level, v.metric, mapReady]);
+  }, [demo, level, v.metric, v.reference, meta, mapReady, v.layer, diversity, divLevel]);
 
   // enclaves
   const enclaveFC = useMemo(() => {
@@ -177,6 +208,47 @@ export function App() {
     });
     return () => { live = false; };
   }, [areaKey, mapReady, meta]);
+
+  // Places of Worship (STRETCH, §4.5): OSM points, religion only as tagged
+  useEffect(() => {
+    const mv = mapRef.current;
+    if (!mv || !mapReady) return;
+    if (!v.worship) {
+      mv.setWorship(null);
+      return;
+    }
+    let live = true;
+    loadJSON<{ points: [number, number, string, string, string][] }>("worship.json").then((d) => {
+      if (!live) return;
+      mv.setWorship({
+        type: "FeatureCollection",
+        features: d.points.map(([lon, lat, religion, denomination, name]) => ({
+          type: "Feature", properties: { religion, denomination, name }, geometry: { type: "Point", coordinates: [lon, lat] },
+        })),
+      });
+    });
+    return () => { live = false; };
+  }, [v.worship, mapReady]);
+
+  // compare mode: outline the pinned area
+  useEffect(() => {
+    const mv = mapRef.current;
+    if (!mv || !mapReady || !meta) return;
+    let live = true;
+    (v.pinned ? areaGeometry(meta, v.pinned) : Promise.resolve(null)).then((g) => {
+      if (!live) return;
+      if (!g && v.pinned?.kind === "tract") {
+        const i = meta.tract_geoids.indexOf(v.pinned.id);
+        loadGeo("tracts").then((fc) => {
+          const f = fc.features.find((x) => Number(x.properties?.i) === i);
+          if (live) mv.setPinned((f?.geometry as FocusGeom) ?? null);
+        });
+        return;
+      }
+      mv.setPinned(g);
+    });
+    return () => { live = false; };
+  }, [v.pinned ? JSON.stringify(v.pinned) : "", mapReady, meta]);
 
   const selectGroup = (id: string) => view.set({ group: id, dim: null, level: null, cuisine: defaultCuisine(groups?.groups[id] ?? null), restaurant: null });
 
@@ -275,6 +347,27 @@ export function App() {
     return () => { live = false; };
   }, [selCluster, clusterFile, group?.id, dia]);
 
+  // connector lines (§9.1): each exact-pairing cluster -> its nearest enclave, current preset
+  useEffect(() => {
+    setGapsFile(null);
+    if (!group) return;
+    let live = true;
+    loadGaps(group.id).then((g) => live && setGapsFile(g)).catch(() => undefined);
+    return () => { live = false; };
+  }, [group?.id]);
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+    if (!v.connectors || !gapsFile || !group || !dim) {
+      mapRef.current.setConnectors(null);
+      return;
+    }
+    const rows = (gapsFile.rows[preset]?.[dim] ?? []).filter((r) => r.kind === "exact" && r.link && r.d[0] !== null);
+    mapRef.current.setConnectors({
+      type: "FeatureCollection",
+      features: rows.map((r) => ({ type: "Feature", properties: { d: r.d[0], id: r.cluster }, geometry: { type: "LineString", coordinates: r.link! } })),
+    });
+  }, [gapsFile, v.connectors, preset, dim, group?.id, mapReady]);
+
   const focusCluster = (id: string) => {
     setSelCluster(id);
     // an open residential-context pane follows the selected cluster (bucket cuisines only)
@@ -306,6 +399,16 @@ export function App() {
           <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
           {error && <p class="error">Could not load data: {error}</p>}
           {groups ? <GroupPicker groups={groups} selected={group?.id ?? null} onSelect={selectGroup} /> : <p class="muted">Loading…</p>}
+          <div class="ctl">
+            <span class="ctl-label" id="layer-label">Map shows</span>
+            <div class="seg" role="group" aria-labelledby="layer-label">
+              <button aria-pressed={v.layer === "group"} onClick={() => view.set({ layer: "group" })}>{group ? `${group.name} LQ` : "Selected group"}</button>
+              <button aria-pressed={v.layer === "diversity"} onClick={() => view.set({ layer: "diversity" })}>Diversity</button>
+            </div>
+            {v.layer === "diversity" && (
+              <p class="muted small">Diversity index: how evenly residents spread across the eight race/Hispanic-origin categories (0 = all in one, 1 = all eight equal). It describes mix only; it is not a score.</p>
+            )}
+          </div>
           {meta && (
             <FocusControls meta={meta} groups={groups} places={places} area={v.area} picking={picking} onArea={(a) => view.set({ area: a })} onPick={setPickingBoth}
               onPlace={(p) => view.set({
@@ -326,6 +429,9 @@ export function App() {
               {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}
             </button>
           )}
+          <label class="check" title="OpenStreetMap places of worship. Coverage is incomplete and uneven; religion is shown only as tagged in OSM and is never inferred.">
+            <input type="checkbox" checked={v.worship} onChange={(e) => view.set({ worship: (e.target as HTMLInputElement).checked })} /> Places of worship (OSM; incomplete, uneven coverage)
+          </label>
           {meta && (
             <details class="advanced">
               <summary>Advanced</summary>
@@ -340,7 +446,7 @@ export function App() {
               </div>
             </details>
           )}
-          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={v.restOverlay && !!restaurantFC.total} />
+          <Legend diversity={v.layer === "diversity"} reference={v.reference} level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={v.restOverlay && !!restaurantFC.total} />
           <footer class="foot muted small">
             Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
           </footer>
@@ -368,6 +474,7 @@ export function App() {
                 selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
                 onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
                 onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)} dia={dia}
+                pinned={v.pinned} onPin={(a) => view.set({ pinned: a })}
                 extra={(stats) => ix && pts && v.area ? (
                   <AreaRestaurants meta={meta} ix={ix} pts={pts} tracts={stats.tracts} v={v} clusters={clusterFile} preset={preset} onCluster={focusCluster}
                     level={v.area.kind === "radius" ? "radius" : v.area.kind}
@@ -394,8 +501,21 @@ export function App() {
         </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
+      {worshipHover && (
+        <div class="tooltip" style={{ left: `${worshipHover.point.x + 14}px`, top: `${worshipHover.point.y + 14}px` }} role="status">
+          <div class="tt-name">{String(worshipHover.props.name || "Place of worship")}</div>
+          <div>{worshipHover.props.religion ? `Religion (OSM tag): ${worshipHover.props.religion}` : "Religion not tagged in OSM"}{worshipHover.props.denomination ? ` · ${worshipHover.props.denomination}` : ""}</div>
+          <div class="tt-state">OpenStreetMap; coverage incomplete and uneven</div>
+        </div>
+      )}
       {restHover && meta && ix && pts && <RestaurantTooltip hover={restHover} meta={meta} ix={ix} pts={pts} />}
-      {!restHover && hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}
+      {!restHover && hover && v.layer === "diversity" && diversity && meta && (
+        <div class="tooltip" style={{ left: `${hover.point.x + 14}px`, top: `${hover.point.y + 14}px` }} role="status">
+          <div class="tt-name">{divLevel === "nta" ? meta.ntas[hover.index]?.name : `Tract ${hover.props.label}`}</div>
+          <div>Diversity <strong>{diversity[divLevel][hover.index] === null ? "—" : diversity[divLevel][hover.index]!.toFixed(2)}</strong></div>
+        </div>
+      )}
+      {!restHover && hover && v.layer === "group" && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} boroRef={v.reference === "boro"} />}
     </div>
   );
 }
@@ -422,8 +542,8 @@ function RestaurantTooltip({ hover, meta, ix, pts }: { hover: { index: number; p
   );
 }
 
-function Tooltip({ hover, demo, meta, metric, level }: { hover: HoverInfo; demo: DemoBundle; meta: Meta; metric: Metric; level: "tract" | "nta" }) {
-  const d = demo[level];
+function Tooltip({ hover, demo, meta, metric, level, boroRef }: { hover: HoverInfo; demo: DemoBundle; meta: Meta; metric: Metric; level: "tract" | "nta"; boroRef: boolean }) {
+  const d = boroRef && metric === "lq" ? withBoroughReference(meta, demo, level) : demo[level];
   const i = hover.index;
   const st = d.st[i];
   const name = level === "nta" ? meta.ntas[i]?.name : `Tract ${hover.props.label} · ${meta.ntas[meta.tract_nta[i]]?.name ?? ""}`;
@@ -434,7 +554,7 @@ function Tooltip({ hover, demo, meta, metric, level }: { hover: HoverInfo; demo:
       <div class="tt-name">{name}</div>
       {shown && (
         <div>
-          <strong>{fmtMetric(metric, val)}</strong>
+          <strong>{fmtMetric(metric, val)}</strong>{metric === "lq" && <span class="muted"> vs {boroRef ? "borough" : "NYC"}</span>}
           {metric !== "count" && <> · {fmtCount(d.e[i])}{d.m[i] !== null ? ` ± ${fmtCount(d.m[i])}` : ""} residents</>}
           {metric === "count" && d.m[i] !== null && <> ± {fmtCount(d.m[i])}</>}
         </div>

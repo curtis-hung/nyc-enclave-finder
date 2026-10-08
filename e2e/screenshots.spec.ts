@@ -119,3 +119,13 @@ test("desktop diaspora strips", async ({ page }) => {
   await page.waitForTimeout(500);
   await panel.screenshot({ path: `docs/screenshots/${milestone}-desktop-diaspora-language.png` });
 });
+
+for (const [name, hash] of [["diversity", "ly=div&l=nta"], ["connectors-dominican", "g=dominican&c=dominican"], ["compare", "a=b:2&a2=n:QN0401"], ["worship", "pw=1&a=n:BK1202"]]) {
+  test(`desktop m8 ${name}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/#${hash}`);
+    await settle(page);
+    await page.waitForTimeout(1200);
+    await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-${name}.png` });
+  });
+}
