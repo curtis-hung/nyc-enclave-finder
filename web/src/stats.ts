@@ -10,6 +10,12 @@ export interface Rules {
   cv_caution_max: number;
   min_denominator: number;
   min_city_count: number;
+  cv_caution_max_tract?: number;
+}
+
+/** Tract-level display rules: a wider caution band (analysis.yaml `cv_caution_max_tract`). */
+export function forTracts(r: Rules): Rules {
+  return r.cv_caution_max_tract ? { ...r, cv_caution_max: r.cv_caution_max_tract } : r;
 }
 
 export function rulesFrom(analysis: Record<string, unknown>): Rules {

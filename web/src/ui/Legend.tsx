@@ -5,6 +5,7 @@ import { ENCLAVE_COLOR, CLUSTER_COLOR, ZERO_COLOR } from "../scales";
 import type { Metric } from "../types";
 
 interface Props {
+  level?: "tract" | "nta";
   metric: Metric;
   scale: Scale | null;
   shareOf: string;
@@ -12,7 +13,7 @@ interface Props {
   clusters: boolean;
 }
 
-export function Legend({ metric, scale, shareOf, enclaves, clusters }: Props) {
+export function Legend({ level, metric, scale, shareOf, enclaves, clusters }: Props) {
   if (!scale) return null;
   const title =
     metric === "lq"
@@ -33,7 +34,7 @@ export function Legend({ metric, scale, shareOf, enclaves, clusters }: Props) {
         ))}
       </ul>
       <ul class="legend-states">
-        <li><span class="sw sw-caution" /> Caution: noisy estimate</li>
+        <li><span class="sw sw-caution" /> Caution: noisy estimate{level === "tract" ? " (tracts: CV ≤ 0.8)" : ""}</li>
         <li><span class="sw sw-suppressed" /> Suppressed: too uncertain to show</li>
         <li><span class="sw" style={{ background: ZERO_COLOR }} /> Zero estimated</li>
         <li><span class="sw sw-unavail" /> No data / no residents</li>

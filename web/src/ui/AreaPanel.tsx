@@ -20,7 +20,13 @@ interface Props {
   onGroup: (id: string) => void;
   onEnclave: (id: string) => void;
   onClose: () => void;
+  onHide: () => void;
   children?: ComponentChildren;
+}
+
+export function areaTitle(meta: Meta, area: Area, places: Place[]): string {
+  if (area.kind === "radius") return radiusName(area, places);
+  return resolveUnit(meta, area as UnitArea)?.name ?? "Unknown area";
 }
 
 export function radiusName(a: Extract<Area, { kind: "radius" }>, places: Place[]): string {
@@ -29,7 +35,7 @@ export function radiusName(a: Extract<Area, { kind: "radius" }>, places: Place[]
   return p ? `${p.name} · ${r}` : `${r} around ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}`;
 }
 
-export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, children }: Props) {
+export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children }: Props) {
   const [stats, setStats] = useState<AreaStats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const key = JSON.stringify(area);
@@ -65,7 +71,10 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
             </nav>
           )}
         </div>
-        <button class="close" aria-label="Close area" onClick={onClose}>×</button>
+        <div class="head-btns">
+          <button class="panel-toggle" aria-label="Hide area details" onClick={onHide}>Hide</button>
+          <button class="close" aria-label="Close area" onClick={onClose}>×</button>
+        </div>
       </div>
       {area.kind === "radius" && (
         <p class="notice" role="note">

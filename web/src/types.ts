@@ -128,4 +128,5 @@ export interface Place {
   lat: number;
   lon: number;
   radius_mi: number;
+  group?: string;
 }

@@ -11,6 +11,7 @@ presets:
       lq_min: 3.0            # residential LQ cutoff for a qualifying unit
       count_min: 150         # minimum estimated group residents in the unit
       states: [reliable]     # data states allowed to qualify
+      cv_max: 0.30
       min_enclave_pop: 1000  # connected component must hold at least this many group residents
   default:
     label: Default
@@ -18,6 +19,7 @@ presets:
       lq_min: 2.0
       count_min: 75
       states: [reliable, caution]
+      cv_max: 0.60           # qualifying units need CV <= this (keeps tract display relaxation out)
       min_enclave_pop: 400
   loose:
     label: Loose
@@ -25,4 +27,5 @@ presets:
       lq_min: 1.5
       count_min: 40
       states: [reliable, caution]
+      cv_max: 0.60
       min_enclave_pop: 150

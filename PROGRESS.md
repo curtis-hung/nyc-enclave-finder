@@ -9,7 +9,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M2 Demographic build + taxonomy **[CHECKPOINT]** (reviewed; changes in D12)
 - [x] M3 Basemap + group focus
 - [x] M4 "Who's here?"
-- [x] M5 Area focus **[CHECKPOINT]** (awaiting user review)
+- [x] M5 Area focus **[CHECKPOINT]** (reviewed; changes in D20–D21)
 - [ ] M6 Restaurants + labels + clusters
 - [ ] M7 Gaps + presets **[CHECKPOINT]**
 - [ ] M8 Remaining SHOULD / STRETCH
@@ -17,8 +17,9 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 ## Current status
 
-**M5 complete — paused at the M5 checkpoint for UX feedback.** Next: M6 (restaurants + labels +
-clusters).
+**M5 checkpoint reviewed and feedback applied** (hideable area panel, tract display caution band
+widened to CV 0.8, places select a suggested group and fit wider). Next: M6 (restaurants + labels
++ clusters).
 
 ## Completed work
 

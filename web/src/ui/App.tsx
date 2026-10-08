@@ -10,7 +10,7 @@ import { fmtCount, fmtMetric, indicesWithState, scaleFor, STATE_LABEL, unitColor
 import { useView, view } from "../store";
 import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric, type Place } from "../types";
 import type { Area } from "../url";
-import { AreaPanel } from "./AreaPanel";
+import { AreaPanel, areaTitle } from "./AreaPanel";
 import { FocusControls } from "./FocusControls";
 import { GroupPicker } from "./GroupPicker";
 import { GroupSection } from "./GroupSection";
@@ -43,6 +43,7 @@ export function App() {
   const [hover, setHover] = useState<HoverInfo | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
   const [picking, setPicking] = useState(false);
+  const [areaOpen, setAreaOpen] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -125,6 +126,7 @@ export function App() {
   const areaKey = v.area ? JSON.stringify(v.area) : "";
   const resolved = meta && v.area && v.area.kind !== "radius" ? resolveUnit(meta, v.area as UnitArea) : null;
   const lastFit = useRef<string>("");
+  useEffect(() => setAreaOpen(true), [areaKey]);
   useEffect(() => {
     const mv = mapRef.current;
     if (!mv || !mapReady || !meta) return;
@@ -141,7 +143,9 @@ export function App() {
       // fit when the focused place changes (not on every radius-slider tick)
       const fitKey = a ? (a.kind === "radius" ? `r:${a.lat.toFixed(4)},${a.lon.toFixed(4)}` : `${a.kind}:${a.id}`) : "";
       if (g && fitKey !== lastFit.current) {
-        requestAnimationFrame(() => mv.fitTo(bounds(g), 30));
+        // radius focus: show some context around the circle (at least ~1 mi each way)
+        const fitGeom = a?.kind === "radius" ? circlePolygon(a.lon, a.lat, Math.max(a.mi * 2.5, 1)) : g;
+        requestAnimationFrame(() => mv.fitTo(bounds(fitGeom), 30));
       }
       lastFit.current = fitKey;
     });
@@ -169,7 +173,13 @@ export function App() {
           <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
           {error && <p class="error">Could not load data: {error}</p>}
           {groups ? <GroupPicker groups={groups} selected={group?.id ?? null} onSelect={selectGroup} /> : <p class="muted">Loading…</p>}
-          {meta && <FocusControls meta={meta} places={places} area={v.area} picking={picking} onArea={(a) => view.set({ area: a })} onPick={setPickingBoth} />}
+          {meta && (
+            <FocusControls meta={meta} groups={groups} places={places} area={v.area} picking={picking} onArea={(a) => view.set({ area: a })} onPick={setPickingBoth}
+              onPlace={(p) => view.set({
+                area: { kind: "radius", lat: p.lat, lon: p.lon, mi: p.radius_mi },
+                ...(p.group && groups?.groups[p.group] ? { group: p.group, dim: null, level: null } : {}),
+              })} />
+          )}
           {group && meta && groups && dim && (
             <GroupSection meta={meta} groups={groups} group={group} dim={dim} level={level} preset={preset} v={v} enc={enc}
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
@@ -188,21 +198,33 @@ export function App() {
               </div>
             </details>
           )}
-          <Legend metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={false} />
+          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={false} />
           <footer class="foot muted small">
             Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
           </footer>
         </div>
       </aside>
       {meta && groups && v.area && (
-        <aside class="panel panel-right" aria-label="Area details">
-          <div class="panel-body">
-            <AreaPanel meta={meta} groups={groups} area={v.area} places={places}
-              selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
-              onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
-              onClose={() => view.set({ area: null })} />
-          </div>
-        </aside>
+        areaOpen ? (
+          <aside class="panel panel-right" aria-label="Area details">
+            <div class="panel-body">
+              <AreaPanel meta={meta} groups={groups} area={v.area} places={places}
+                selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
+                onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
+                onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)} />
+            </div>
+          </aside>
+        ) : (
+          <aside class="panel panel-right collapsed" aria-label="Area details">
+            <div class="panel-head">
+              <span class="collapsed-title">{areaTitle(meta, v.area, places)}</span>
+              <div class="head-btns">
+                <button class="panel-toggle" aria-label="Show area details" onClick={() => setAreaOpen(true)}>Show</button>
+                <button class="close" aria-label="Close area" onClick={() => view.set({ area: null })}>×</button>
+              </div>
+            </div>
+          </aside>
+        )
       )}
       <MiniLegend metric={v.metric} scale={scale} />
       {hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}

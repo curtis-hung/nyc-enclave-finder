@@ -23,6 +23,15 @@ class ReliabilityRules:
     cv_caution_max: float = 0.60
     min_denominator: float = 50
     min_city_count: float = 200
+    cv_caution_max_tract: float | None = None  # tract-level display relaxation (analysis.yaml)
+
+    def for_level(self, level: str) -> "ReliabilityRules":
+        """Rules used to classify values at `level` (tracts may use a relaxed caution band)."""
+        if level == "tract" and self.cv_caution_max_tract is not None:
+            from dataclasses import replace
+
+            return replace(self, cv_caution_max=self.cv_caution_max_tract, cv_caution_max_tract=None)
+        return self
 
     @classmethod
     def from_config(cls, analysis: dict[str, Any]) -> "ReliabilityRules":
@@ -33,6 +42,7 @@ class ReliabilityRules:
             cv_caution_max=r["cv_caution_max"],
             min_denominator=r["min_denominator"],
             min_city_count=r["min_city_count"],
+            cv_caution_max_tract=r.get("cv_caution_max_tract"),
         )
 
 
@@ -172,6 +182,7 @@ class LevelValues:
     share: np.ndarray  # fraction; NaN where not shown
     lq: np.ndarray  # NaN where not shown
     state: np.ndarray
+    cv: np.ndarray | None = None  # coefficient of variation of the estimate (NaN where undefined)
 
 
 def compute_level(
@@ -196,4 +207,5 @@ def compute_level(
     zero = state == ZERO
     share = np.where(zero, 0.0, share)
     lq = np.where(zero, 0.0, lq)
-    return LevelValues(est=est, moe=moe, denom=denom, share=share, lq=lq, state=state)
+    cv = coefficient_of_variation(est, moe, rules.z)
+    return LevelValues(est=est, moe=moe, denom=denom, share=share, lq=lq, state=state, cv=cv)

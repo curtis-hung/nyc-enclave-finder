@@ -4,7 +4,7 @@
 
 import { loadGeo, loadJSON, loadWhosHere } from "./data";
 import { indexFeatures, radiusWeights, type Indexed } from "./geo";
-import { areaValue, rulesFrom, weightedSum, type AreaValue } from "./stats";
+import { areaValue, forTracts, rulesFrom, weightedSum, type AreaValue } from "./stats";
 import { STATE, type Meta, type WhoCandidate, type WhoRow, type WhosHereFile } from "./types";
 import type { Area } from "./url";
 
@@ -99,7 +99,7 @@ export async function computeAreaStats(meta: Meta, area: Area): Promise<AreaStat
 
 /** Per-tract values of one candidate (for drill-down small multiples). */
 export function tractValues(meta: Meta, dim: string, mat: Matrix, den: Denominators, cand: WhoCandidate, k: number, tracts: number[]): Map<number, AreaValue> {
-  const rules = rulesFrom(meta.analysis);
+  const rules = forTracts(rulesFrom(meta.analysis));
   const cityDen = meta.dimensions[dim].city_denominator;
   const out = new Map<number, AreaValue>();
   for (const i of tracts) {

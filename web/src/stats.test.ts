@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { areaValue, classify, weightedSum, type Rules } from "./stats";
+import { areaValue, classify, forTracts, weightedSum, type Rules } from "./stats";
 import { STATE } from "./types";
 
 const R: Rules = { z: 1.645, cv_reliable_max: 0.3, cv_caution_max: 0.6, min_denominator: 50, min_city_count: 200 };
@@ -16,6 +16,13 @@ describe("client stats parity with the pipeline", () => {
       [500, 50, 0, STATE.unavailable],
     ];
     for (const [e, m, d, want] of cases) expect(classify(e, m, d, R)).toBe(want);
+  });
+
+  it("tract display rules widen only the caution band", () => {
+    const r = { ...R, cv_caution_max_tract: 0.8 };
+    expect(classify(100, 115, 4000, r)).toBe(STATE.suppressed); // CV 0.70
+    expect(classify(100, 115, 4000, forTracts(r))).toBe(STATE.caution);
+    expect(classify(100, 150, 4000, forTracts(r))).toBe(STATE.suppressed); // CV 0.91
   });
 
   it("never reports a noisy small estimate as zero", () => {

@@ -181,3 +181,22 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 
 - Clicking a tract selects it for "who's here" (outlined, no mask, no zoom). NTA, borough and
   radius are *focus* modes: inverse mask, fit to area, full stats panel and drill-down.
+
+## D20. Tract-level display caution band (user decision at the M5 checkpoint)
+
+- Tract values with 0.60 < CV ≤ 0.80 are shown as `caution` (dotted) instead of `suppressed`
+  (`analysis.yaml: cv_caution_max_tract`), roughly doubling coloured tracts for sparse groups.
+  NTA, borough and radius values keep CV ≤ 0.60. The NTA-fallback rule still uses 0.60, so sparse
+  groups still default to neighborhoods with the sparse-data notice, and the tract view adds a
+  "treat as rough" caveat. Enclave qualification is unchanged: presets add `cv_max` (strict 0.30,
+  default/loose 0.60), and enclave counts are identical before and after (455 / 1,646 / 2,733).
+
+## D21. Places suggest a group; radius focus fits wider (user decision at the M5 checkpoint)
+
+- Each gazetteer place names the group it is colloquially associated with (e.g. Flushing →
+  Chinese). Choosing a place sets the radius focus *and* selects that group. This is navigation
+  only: the pairing is never used in any computation, threshold or test, and the UI does not claim
+  the area belongs to the group (§2.4).
+- Radius focus fits to a circle of max(2.5 × radius, 1 mi) so the surrounding pattern is visible.
+- The area panel has Hide/Show (keeps the focus and mask) in addition to Close; on phones the
+  collapsed panel is a bottom bar.

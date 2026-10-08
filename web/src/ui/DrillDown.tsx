@@ -93,7 +93,7 @@ export function DrillDown({ meta, stats, selected }: { meta: Meta; stats: AreaSt
   return (
     <section class="drill" aria-label="Drill-down">
       <h3>Drill-down: tracts in this area</h3>
-      <p class="muted small">Tract-level LQ for the selected group and the area's most over-represented groups (same colour scale as the map; hatching = too uncertain to show; dots = caution). Tract estimates are noisy.</p>
+      <p class="muted small">Tract-level LQ for the selected group and the area's most over-represented groups (same colour scale as the map; hatching = too uncertain to show; dots = caution, including very noisy tract estimates up to CV 0.8). Tract data is sparse: treat these as rough.</p>
       <svg width="0" height="0" aria-hidden="true" style={{ position: "absolute" }}>
         <defs>
           <pattern id="dd-hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">

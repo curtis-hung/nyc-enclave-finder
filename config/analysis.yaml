@@ -6,6 +6,11 @@ reliability:
   z: 1.645
   cv_reliable_max: 0.30   # CV <= 0.30 -> reliable
   cv_caution_max: 0.60    # 0.30 < CV <= 0.60 -> caution; above -> suppressed
+  # Tract-level display only (user decision at the M5 checkpoint): tract values with
+  # 0.60 < CV <= 0.80 are shown as `caution` instead of `suppressed`, so tract maps colour more
+  # tracts. NTA/borough/radius values, the NTA-fallback rule and enclave qualification still use
+  # cv_caution_max (enclaves additionally cap CV via the preset's `cv_max`).
+  cv_caution_max_tract: 0.80
   # Minimum-data rule: a share or LQ is not shown when the denominator (universe) is this small.
   min_denominator: 50
   # A group whose citywide estimate in a dimension is below this has no usable LQ anywhere.

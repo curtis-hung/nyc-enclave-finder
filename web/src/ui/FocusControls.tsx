@@ -1,19 +1,21 @@
 // Area focus controls (§9.3): neighborhood, borough, radius pin with a 0.1-3 mi slider, and
 // gazetteer presets (navigation only).
 
-import type { Meta, Place } from "../types";
+import type { GroupsFile, Meta, Place } from "../types";
 import type { Area } from "../url";
 
 interface Props {
   meta: Meta;
+  groups: GroupsFile | null;
   places: Place[];
   area: Area | null;
   picking: boolean;
   onArea: (a: Area | null) => void;
   onPick: (on: boolean) => void;
+  onPlace: (p: Place) => void;
 }
 
-export function FocusControls({ meta, places, area, picking, onArea, onPick }: Props) {
+export function FocusControls({ meta, groups, places, area, picking, onArea, onPick, onPlace }: Props) {
   const byBoro = meta.boroughs.map((b) => ({
     b,
     ntas: meta.ntas.filter((n) => n.boro === b.code).sort((x, y) => x.name.localeCompare(y.name)),
@@ -44,10 +46,14 @@ export function FocusControls({ meta, places, area, picking, onArea, onPick }: P
             <select id="place-select" value={placeId}
               onChange={(e) => {
                 const p = places.find((x) => x.id === (e.target as HTMLSelectElement).value);
-                if (p) onArea({ kind: "radius", lat: p.lat, lon: p.lon, mi: p.radius_mi });
+                if (p) onPlace(p);
               }}>
               <option value="">Places…</option>
-              {places.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {places.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}{p.group && groups?.groups[p.group] ? ` — ${groups.groups[p.group].name}` : ""}
+                </option>
+              ))}
             </select>
           </>
         )}
@@ -72,7 +78,7 @@ export function FocusControls({ meta, places, area, picking, onArea, onPick }: P
             onInput={(e) => onArea({ ...radius, mi: +(e.target as HTMLInputElement).value })} />
         </div>
       )}
-      <p class="muted small">Places are approximate navigation presets, not analytical boundaries.</p>
+      <p class="muted small">Places are approximate navigation presets, not analytical boundaries. Choosing one also selects the group it is commonly associated with, so you can see how that group's residential pattern looks around it.</p>
     </div>
   );
 }

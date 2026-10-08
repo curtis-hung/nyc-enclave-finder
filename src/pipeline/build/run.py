@@ -165,7 +165,7 @@ def run_build() -> int:
     cands = build_candidates(cfg, acs, geo, den, gds)
     wh = write_whoshere(cfg, geo, cands)
     write_matrices(cands)
-    places = write_gazetteer()
+    places = write_gazetteer(set(cfg.groups))
     _log(f"  gazetteer: {len(places)} navigation presets")
     _log(f"  who's here: candidates per dimension {({d: len(c) for d, c in cands.items()})}; ranked rows {wh}")
 

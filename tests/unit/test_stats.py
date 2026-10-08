@@ -99,6 +99,15 @@ def test_tiny_reference_population_cannot_produce_lq():
     assert np.isnan(lv.lq[0])
 
 
+def test_tract_level_uses_relaxed_caution_band_only_for_tracts():
+    rules = ReliabilityRules(z=1.645, cv_reliable_max=0.30, cv_caution_max=0.60, min_denominator=50,
+                             min_city_count=200, cv_caution_max_tract=0.80)
+    est, moe, den = np.array([100.0]), np.array([115.0]), np.array([4000.0])  # CV = 0.70
+    assert classify(est, moe, den, rules)[0] == SUPPRESSED
+    assert classify(est, moe, den, rules.for_level("nta"))[0] == SUPPRESSED
+    assert classify(est, moe, den, rules.for_level("tract"))[0] == CAUTION
+
+
 def test_aggregate_exact_sums_with_moe():
     est = np.array([10.0, 20.0, 0.0, 0.0, 5.0])
     moe = np.array([3.0, 4.0, 10.0, 12.0, 1.0])

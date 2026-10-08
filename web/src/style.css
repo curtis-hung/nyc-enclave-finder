@@ -167,3 +167,13 @@ select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; ba
 .mini { margin: 0; border: 1px solid var(--line); border-radius: 6px; padding: 4px; background: #fff; }
 .mini svg { display: block; margin: 0 auto; }
 .mini figcaption { font-size: 11.5px; line-height: 1.3; }
+
+/* --- hideable area panel (M5 checkpoint feedback) --------------------------------------------- */
+.head-btns { display: flex; gap: 6px; align-items: center; }
+.panel-right.collapsed { bottom: auto; }
+.panel-right.collapsed .panel-head { border-bottom: 0; gap: 10px; }
+.collapsed-title { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 767px) {
+  .has-area .panel:not(.panel-right) { display: none; }
+  .panel-right.collapsed { top: auto; bottom: 0; }
+}

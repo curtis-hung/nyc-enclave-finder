@@ -54,11 +54,24 @@ test.describe("area focus (M5)", () => {
     await expect.poll(async () => race.locator("details tbody tr").first().locator("td").last().textContent()).not.toBe(before);
   });
 
-  test("gazetteer preset sets a radius focus", async ({ page }) => {
+  test("gazetteer preset sets a radius focus and its suggested group", async ({ page }) => {
     await openApp(page);
-    await page.getByLabel("Places").selectOption({ label: "Koreatown (Manhattan)" });
-    await expectHash(page, "a", "r:40.77700,-73.98690,0.15".replace("77700", "74770"));
-    await expect(areaPanel(page).getByRole("heading", { level: 2 })).toContainText("Koreatown");
+    await page.getByLabel("Places").selectOption({ label: "Flushing (Main St) — Chinese" });
+    await expectHash(page, "a", "r:40.75900,-73.83000,0.4");
+    await expectHash(page, "g", "chinese");
+    await expect(areaPanel(page).getByRole("heading", { level: 2 })).toContainText("Flushing");
+    await expect(page.getByRole("heading", { level: 2 }).first()).toBeVisible();
+  });
+
+  test("the area panel can be hidden without losing the focus", async ({ page }) => {
+    await openApp(page, "g=thai&a=n:QN0401");
+    await areaPanel(page).getByRole("button", { name: "Hide area details" }).click();
+    await expect(areaPanel(page).getByRole("region", { name: /Who's here: Race/ })).toBeHidden();
+    await expectHash(page, "a", "n:QN0401");
+    expect(await masked(page)).toBe(true);
+    await expect(areaPanel(page)).toContainText("Elmhurst");
+    await areaPanel(page).getByRole("button", { name: "Show area details" }).click();
+    await expect(areaPanel(page).getByRole("region", { name: /Who's here: Race/ })).toBeVisible();
   });
 
   test("drill-down shows small multiples for the focused area", async ({ page }) => {

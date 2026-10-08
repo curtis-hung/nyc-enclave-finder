@@ -17,6 +17,7 @@ import numpy as np
 from pipeline.analysis.stats import (
     CAUTION,
     RELIABLE,
+    classify,
     LevelValues,
     ReliabilityRules,
     aggregate,
@@ -168,9 +169,11 @@ def build_group_dims(cfg: Config, acs: AcsSnapshot, geo: Geography, den: Denomin
             sums = unit_sums(geo, e, m)
             for lvl in LEVELS:
                 le, lm = sums[lvl]
-                gd.levels[lvl] = compute_level(le, lm, den.est[dim_id][lvl], city_share, rules, city_est)
+                gd.levels[lvl] = compute_level(le, lm, den.est[dim_id][lvl], city_share, rules.for_level(lvl), city_est)
             tract = gd.levels["tract"]
-            usable = np.isin(tract.state, [RELIABLE, CAUTION])
+            # The NTA-fallback decision uses the standard (unrelaxed) rules (analysis.yaml).
+            std_state = classify(tract.est, tract.moe, tract.denom, rules)
+            usable = np.isin(std_state, [RELIABLE, CAUTION])
             gd.usable_share_tract = float(np.nansum(np.where(usable, tract.est, 0)) / city_est) if city_est > 0 else 0.0
             gd.sparse_citywide = city_est < rules.min_city_count
             gd.recommended_level = "tract" if gd.usable_share_tract >= min_usable else "nta"

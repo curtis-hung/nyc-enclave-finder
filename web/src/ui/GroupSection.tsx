@@ -65,6 +65,7 @@ export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, 
       {dimMeta.level === "nta" && (
         <p class="notice" role="note">
           Too sparse at tract level: only {Math.round(dimMeta.usable_share_tract * 100)}% of {group.name} residents in this dimension live in tracts with a usable estimate, so the map defaults to neighborhoods (NTAs).
+          {level === "tract" && " The tract view also colours very noisy estimates (dotted) — treat them as rough."}
         </p>
       )}
       <section class="summary" aria-label="Group summary" role="region">

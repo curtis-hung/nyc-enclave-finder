@@ -78,7 +78,7 @@ def build_enclaves(cfg: Config, geo: Geography, gds: dict[str, dict[str, GroupDi
             level = gd.recommended_level
             lv = gd.levels[level]
             rule = EnclaveRule.from_preset(cfg.presets["presets"][preset])
-            for k, e in enumerate(detect_enclaves(lv.lq, lv.est, lv.state, adjacency[level], rule)):
+            for k, e in enumerate(detect_enclaves(lv.lq, lv.est, lv.state, adjacency[level], rule, lv.cv)):
                 recs.append(EnclaveRecord(
                     id=f"{gid}.{dim}.{preset}.{k}", group=gid, dim=dim, preset=preset, level=level,
                     units=e.units, population=e.population,

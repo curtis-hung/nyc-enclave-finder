@@ -66,7 +66,7 @@ def build_candidates(cfg: Config, acs: AcsSnapshot, geo: Geography, den: Denomin
                 city = float(np.nansum(ee))
                 share = city / den.city[dim]
                 sums = unit_sums(geo, ee, mm)
-                levels = {lvl: compute_level(*sums[lvl], den.est[dim][lvl], share, rules, city) for lvl in LEVELS}
+                levels = {lvl: compute_level(*sums[lvl], den.est[dim][lvl], share, rules.for_level(lvl), city) for lvl in LEVELS}
                 label = table.labels[var].split("!!")[-1].rstrip(":")
                 cands.append(Candidate(f"lang:{var}", label, dim, "language", levels, share))
         else:

@@ -22,6 +22,7 @@ class EnclaveRule:
     count_min: float
     states: tuple[int, ...]
     min_enclave_pop: float
+    cv_max: float = float("inf")
 
     @classmethod
     def from_preset(cls, preset: dict[str, Any]) -> "EnclaveRule":
@@ -31,6 +32,7 @@ class EnclaveRule:
             count_min=float(e["count_min"]),
             states=tuple(STATE_CODES[s] for s in e["states"]),
             min_enclave_pop=float(e["min_enclave_pop"]),
+            cv_max=float(e.get("cv_max", float("inf"))),
         )
 
 
@@ -41,8 +43,11 @@ class Enclave:
     peak_lq: float
 
 
-def qualifying(lq: np.ndarray, est: np.ndarray, state: np.ndarray, rule: EnclaveRule) -> np.ndarray:
+def qualifying(lq: np.ndarray, est: np.ndarray, state: np.ndarray, rule: EnclaveRule,
+               cv: np.ndarray | None = None) -> np.ndarray:
     ok_state = np.isin(state, rule.states)
+    if cv is not None:
+        ok_state &= np.nan_to_num(cv, nan=np.inf) <= rule.cv_max
     lq_ok = np.nan_to_num(lq, nan=-np.inf) >= rule.lq_min
     est_ok = np.nan_to_num(est, nan=-np.inf) >= rule.count_min
     return ok_state & lq_ok & est_ok
@@ -68,8 +73,8 @@ def connected_components(mask: np.ndarray, adjacency: list[list[int]]) -> list[l
 
 
 def detect_enclaves(lq: np.ndarray, est: np.ndarray, state: np.ndarray, adjacency: list[list[int]],
-                    rule: EnclaveRule) -> list[Enclave]:
-    mask = qualifying(lq, est, state, rule)
+                    rule: EnclaveRule, cv: np.ndarray | None = None) -> list[Enclave]:
+    mask = qualifying(lq, est, state, rule, cv)
     out = []
     for comp in connected_components(mask, adjacency):
         pop = float(np.nansum(est[comp]))

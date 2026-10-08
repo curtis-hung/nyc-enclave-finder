@@ -34,9 +34,11 @@ def tract_land_areas(geo: Geography) -> list[float]:
     return [round(float(x.area) / SQFT_PER_SQMI, 5) if x is not None else 0.0 for x in g]
 
 
-def write_gazetteer() -> list[dict[str, Any]]:
+def write_gazetteer(group_ids: set[str] | None = None) -> list[dict[str, Any]]:
     places = load_yaml("gazetteer.yaml")["places"]
     for p in places:
+        if group_ids is not None and p.get("group") and p["group"] not in group_ids:
+            raise ValueError(f"gazetteer {p['id']}: unknown group {p['group']}")
         if not 0.1 <= float(p["radius_mi"]) <= 3:
             raise ValueError(f"gazetteer {p['id']}: radius outside 0.1-3 mi")
     write_json(WEB_DATA_DIR / "gazetteer.json", places)
