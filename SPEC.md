@@ -16,19 +16,19 @@ Every feature is tagged **[MUST]**, **[SHOULD]** or **[STRETCH]**.
   - **SHOULD, keep first → cut first:**
     1. cuisine enrichment (external tag sources)
     2. scatter plot
-    3. bucket context panel
-    4. drill-down small multiples
-    5. gazetteer presets
-    6. enclaves and gap measures for non-default dimensions
-    7. borough reference toggle
-    8. connector lines
-    9. diversity layer
-    10. compare mode
+    3. diaspora detail from PUMS (§4.6)
+    4. bucket context panel
+    5. drill-down small multiples
+    6. gazetteer presets
+    7. enclaves and gap measures for non-default dimensions
+    8. borough reference toggle
+    9. connector lines
+    10. diversity layer
+    11. compare mode
   - **STRETCH, keep first → cut first:**
-    1. PUMS layer (only if the user approves it at M2)
-    2. Places of Worship
-    3. population-weighted radius interpolation
-    4. live threshold sliders
+    1. Places of Worship
+    2. population-weighted radius interpolation
+    3. live threshold sliders
 - Record every cut in `PROGRESS.md` and `DECISIONS.md`.
 - Never cut a MUST. If a MUST proves infeasible, that's a checkpoint (§15.4).
 
@@ -71,6 +71,11 @@ These describe what the user can **do**, never what they will **find**. Each one
   1. On a phone-sized viewport, pick a group, focus on Queens and collapse the panels.
   2. Copy the URL.
   3. Opening that URL on desktop recreates the same view.
+- **J5: Diaspora detail** (§4.6)
+  1. Pick "Korean". The group profile shows the citywide split by birthplace and language at home.
+  2. Focus on a neighborhood. In "Who's here", Korean shows a diaspora strip for the surrounding district, or no strip at all if the data there is too thin.
+  3. Open a Korean restaurant cluster. Its residential context shows the same split for the surrounding district.
+  4. The E2E test checks both cases: a strip renders where the data qualifies, and is absent (not zero) where it doesn't.
 
 ### 1.2 Visual direction [MUST]
 
@@ -79,6 +84,11 @@ These describe what the user can **do**, never what they will **find**. Each one
 - Legible at a glance.
 - Data states (§2.7) and inferred labels (§4.4) are distinguishable without reading fine print.
 - Secondary panels stay out of the way until needed.
+- **LQ choropleth scale** (user decision, 2026-10-08):
+  - Two neutral greys below 1 (< 0.5, 0.5–1).
+  - **8 sequential blue classes** above 1, with breaks at 1 / 1.5 / 2 / 3 / 4 / 6 / 10 / 20. That gives the classes 1–1.5, 1.5–2, 2–3, 3–4, 4–6, 6–10, 10–20 and ≥ 20.
+  - Validate the 8-step ramp (dataviz palette validator): adjacent classes must stay distinguishable, the lightest blue must stay distinct from the greys, and the legend must stay readable on mobile.
+  - Share and count may use the same 8-step ramp.
 
 ---
 
@@ -197,7 +207,7 @@ The optional 2020 Census detailed race/ethnicity products (DHC-A) may help with 
 
 **Expect tract-level language data to be heavily bucketed.** It is believed to have only about 12 categories: Yiddish grouped with German/West Germanic, Russian with Polish/Slavic, and Thai, Bengali and Nepali under "Other Asian". Verify this against the snapshot, treat language as bucketed wherever it is, and report the actual granularity at M2.
 
-**[STRETCH, user approval required] PUMS layer.** ACS Public Use Microdata has full detail on language, ancestry and birthplace, but only for PUMAs (about 55 areas in NYC, each roughly community-district size). If tract-level dimensions are too coarse, *propose* a PUMA-level granular layer at the M2 checkpoint. Don't build it unprompted.
+Detailed language, plus birthplace and language at home *within* a group, come from ACS microdata (PUMS) and are shown inline only where reliable (§4.6).
 
 - Use `CENSUS_API_KEY` from the environment if set. The build must not depend on it.
 - Absence is valid data: not every group appears in every dimension.
@@ -305,6 +315,68 @@ External sources are snapshotted and recorded in the manifest like any other sou
 
 The Census has no religion data, and religion must never be inferred from ethnicity. The proxy is a Places of Worship layer from the OSM extract (`amenity=place_of_worship` with `religion`/`denomination`), labeled as having incomplete and uneven coverage.
 
+### 4.6 Diaspora detail from PUMS [SHOULD]
+
+**Purpose.** The tract tables count everyone who identifies with a group, but they can't split that group by where people were born or what they speak at home. US-born and English-speaking members are counted, yet invisible as a distinct part of the group. PUMS microdata can cross-tabulate identity × birthplace × language, which makes the diaspora visible: where a group is mostly immigrants, where it is mostly US-born, and where the heritage language persists or has faded.
+
+**No separate view (user decision, 2026-10-08).**
+- There is no PUMA choropleth or map level. The map stays at tract level.
+- This detail appears **only inside existing panels**, and **only where the data is reliable**.
+- It supersedes the display-only "PUMA (detailed)" map level approved at M2 (`QUESTIONS.md` Q1, `DECISIONS.md` D13).
+
+#### Source
+
+- ACS 5-year PUMS person records for NYC PUMAs, same vintage as the tract tables, snapshotted like every other source.
+- Verify the PUMA vintage. A 5-year file may mix 2010 and 2020 PUMA codes; handle that with the official crosswalk or a documented restriction.
+- Estimates come from person weights (`PWGTP`). MOEs come from the 80 replicate weights (successive difference replication).
+
+#### Defining each group
+
+- Each group is defined in PUMS by the variable matching its `default_dimension`: detailed race, Hispanic origin, ancestry (first or second), or place of birth.
+- Enumerate the real codes and record the mapping in `groups.yaml`.
+- A group with no valid PUMS definition simply gets no diaspora detail.
+
+#### Measures (per group × geography: PUMA, combined PUMAs, borough, city)
+
+- **Birthplace:** born in the 50 states/DC / born in Puerto Rico or a US territory / born abroad.
+  - Puerto Rico is its own category because island-born people count as US-born in Census data.
+  - Among those born abroad: arrived < 10 years ago vs. 10+ years ago.
+- **Language at home:** heritage language(s) / English only / another language. Each group's heritage language(s) are declared in `groups.yaml` from real PUMS language codes.
+- **Heritage language among the US-born.**
+- **English ability** among those who speak another language at home: "very well" vs. "less than very well".
+
+**Wording.** Always say "Born in the US". Never say "second generation": the data can't tell second generation from third and later.
+
+#### Reliability gating ("hide when too thin")
+
+- Each individual number is shown only if it meets the **reliable** state: a CV threshold plus a minimum unweighted sample count, both documented in `config/analysis.yaml`.
+- Anything else is **hidden silently**: no placeholder, no "not enough data" note.
+- If every number in a strip is hidden, the strip doesn't render at all.
+- Hidden must never render as, or be computed as, zero.
+- The About page explains the rule.
+
+#### Where it appears
+
+1. **Group profile (§9.1):** the selected group's citywide split, next to the legend.
+2. **"Who's here" / area focus (§9.2–9.3):** a thin strip under each listed group, describing the surrounding district.
+   - The district is the PUMA(s) whose population overlaps the focused area, combined directly from the microdata (re-weighted, never by averaging percentages).
+   - A borough focus uses the borough.
+   - The strip's label names the PUMA(s) it describes, so a small radius is never presented as if measured at radius scale.
+3. **Restaurant clusters (§7, §8.3):** in the cluster's details, the paired group's split for the PUMA containing the cluster, shown as **residential context** under the same rule as §2.3: it is never evidence of what the restaurants serve, and it never feeds labels, tags or clustering.
+
+#### Detailed language fill
+
+In the "Who's here" language section, where tract-level language is a bucket (e.g. "Other Indo-European"), detailed PUMS languages for the surrounding district fill in beneath it (e.g. Bengali, Hindi, Nepali, Yiddish), with share and LQ against the city. The same gating applies: reliable values only, hidden otherwise. These rows are labeled as district-level.
+
+#### Never used for
+
+- enclaves
+- clusters
+- gap measures
+- the choropleth
+
+PUMAs are too coarse for neighborhood- or restaurant-scale analysis.
+
 ---
 
 ## 5. Group and cuisine hierarchies [MUST]
@@ -396,6 +468,7 @@ Restaurant density alone must never qualify a cluster.
 - footprint geometry
 - label basis: primary vs. tags, with the tag confidence mix
 - tag coverage (for tag-based clusters)
+- **[SHOULD]** diaspora detail for the paired group around the cluster, shown as residential context only (§4.6)
 
 ---
 
@@ -436,6 +509,7 @@ A searchable, hierarchical group picker. Selecting a group shows:
   - residential enclaves (filled)
   - commercial cluster outlines
 - **[SHOULD]** connector lines from each cluster to its nearest enclave, shaded on a continuous distance scale
+- **[SHOULD]** a group profile next to the legend: the citywide diaspora split, reliable values only (§4.6)
 - **[STRETCH]** Places of Worship
 
 ### 9.2 "Who's here?" [MUST]
@@ -444,6 +518,7 @@ Click a tract, NTA or borough to see:
 
 - the top over-represented groups per dimension, with share, LQ, count and reliability
 - the top over-represented cuisines (marked as approximate at tract level, where counts are small)
+- **[SHOULD]** a diaspora strip under each listed group, plus detailed-language rows under language buckets, for the surrounding district. Shown only where reliable; otherwise absent (§4.6).
 
 Always show multiple groups.
 
@@ -525,6 +600,7 @@ In plain language, explain:
 - why radius results are approximate
 - the limits of the multi-location heuristic
 - the religion proxy, if built
+- diaspora detail, if built: what it measures, why "Born in the US" is not "second generation", why Puerto Rico is separate, that it describes the surrounding district (PUMA), and why some groups or areas show no strip (§4.6)
 
 Include verbatim:
 
@@ -608,6 +684,10 @@ Small fake cities with planted answers:
 - a name keyword alone → low confidence, excluded from leaf clustering at medium+
 - the ambiguous keyword "Himalayan" → an intermediate-node tag, not a guessed leaf
 - primary "Other" → any external label is accepted as a tag
+- a PUMS cell below the sample-size or CV threshold → hidden, never rendered or computed as 0
+- a person born in Puerto Rico → counted as "born in PR/territory", not "born in the 50 states/DC"
+- a replicate-weight MOE → matches a hand-computed example
+- a focus area spanning two PUMAs → combined from the microdata (not by averaging percentages), with both PUMAs named in the label
 
 ### 13.3 Hard data invariants (failure fails the build)
 
@@ -641,7 +721,7 @@ No test may require a real cluster to have any particular relationship to a resi
 
 ### 13.6 E2E (Playwright)
 
-- **The user journeys J1–J4 (§1.1), end to end.**
+- **The user journeys J1–J5 (§1.1), end to end.**
 - In addition:
   - group and dimension switching updates the map
   - each focus mode masks the city and updates the stats
@@ -803,7 +883,7 @@ Don't pause for anything a straightforward fallback handles.
 ## 17. Done when
 
 - Every milestone is checked in `PROGRESS.md`, and any cuts are listed with reasons.
-- All §13 suites pass: unit, synthetic, invariants, and E2E including J1–J4. Plausibility results have been reported to the user.
+- All §13 suites pass: unit, synthetic, invariants, and E2E including J1–J5. Plausibility results have been reported to the user.
 - `npm run preview` serves a working site, usable on desktop and mobile. Payload targets are met or the exceptions are documented.
 - The documentation is complete:
   - README (fetch, build, run, refresh; every major metric)

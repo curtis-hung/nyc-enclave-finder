@@ -21,3 +21,15 @@ birthplace) but only for NYC's ~55 PUMAs (each roughly a community district).
   PUMA level, and Bengali/Nepali/Thai/Russian get language maps.
 
 **Resolution:** approved as proposed (display-only fourth level, replicate-weight MOEs). Built in M8 as STRETCH #1.
+
+**Superseded by Q2 (2026-10-08):** no separate PUMA map level; PUMS detail is shown inline and gated by reliability. See SPEC §4.6.
+
+## Q2. M5 feedback: LQ scale + diaspora detail (decided by the user 2026-10-08)
+
+Decided in a planning session while the build was paused at the M5 checkpoint. `SPEC.md` has been updated; re-read §0, §1.1 (J5), §1.2, §4.1, §4.6, §9.1–9.2, §10 and §13.2.
+
+1. **LQ scale: 8 blue classes above 1.** Breaks at 1 / 1.5 / 2 / 3 / 4 / 6 / 10 / 20, keeping the two greys below 1. Validate the 8-step ramp and update `web/src/scales.ts`, its tests, the legend and the screenshots. Apply now, before M6.
+2. **Diaspora detail (SPEC §4.6), SHOULD #3, built in M8.** For each group, PUMS cross-tabs of birthplace (50 states/DC / PR or territory / abroad, plus arrival period) and language at home (heritage / English only / other, plus heritage language among the US-born and English ability). Shown **inline only**: in a group profile, as strips under groups in "Who's here", and as cluster residential context. There is no separate view or map level.
+3. **Hide when too thin.** Any number below the reliable state is hidden silently, with no placeholder. A strip with nothing reliable doesn't render. Hidden never means zero.
+4. **Detailed-language fill.** In "Who's here", PUMS detailed languages fill in under tract language buckets for the surrounding district, where reliable; hidden otherwise.
+5. Replaces Q1/D13's display-only "PUMA (detailed)" level. PUMS still never feeds enclaves, clusters, gaps or the choropleth.
