@@ -1,0 +1,54 @@
+# Refresh the data snapshots, rebuild, run the full suite and open a pull request.
+# Manual only (SPEC §14). It never pushes to main: changes go to a new branch and a PR for review.
+name: Refresh data
+
+on:
+  workflow_dispatch:
+  # Optional monthly refresh — uncomment to enable (see DEPLOY.md).
+  # schedule:
+  #   - cron: "0 6 1 * *"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: uv sync --frozen
+      - run: npm ci
+      - name: Fetch source snapshots (re-resolves "latest")
+        run: uv run pipeline fetch --refresh
+        env:
+          # Optional: without it the pipeline falls back to the ACS summary files.
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+      - run: uv run pipeline build
+      - run: uv run pipeline report
+      - name: Full test suite
+        run: |
+          uv run pytest
+          npm test
+          npx playwright install --with-deps chromium
+          npx playwright test --project=desktop --project=mobile
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: data-refresh/${{ github.run_id }}
+          base: main
+          commit-message: "Data refresh ${{ github.run_id }}"
+          title: "Data refresh (${{ github.run_id }})"
+          body: |
+            Automated refresh: fetch --refresh, build, report, full test suite passed.
+            Review `data/manifest.json` for new source vintages and `docs/OBSERVATIONS.md` for changes before merging.
+          add-paths: |
+            web/public/data/**
+            data/manifest.json
+            docs/**

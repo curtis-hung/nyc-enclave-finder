@@ -22,6 +22,7 @@ describe("URL state", () => {
       layer: "diversity",
       pinned: { kind: "boro", id: "2" },
       worship: true,
+      about: true,
     };
     expect(parse("#" + serialize(v))).toEqual(v);
   });

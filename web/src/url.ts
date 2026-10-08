@@ -31,6 +31,7 @@ export interface ViewState {
   layer: "group" | "diversity"; // what the choropleth shows
   pinned: Area | null; // compare mode: a second area pinned for comparison
   worship: boolean; // Places of Worship layer (OSM, stretch)
+  about: boolean; // About / methodology dialog open
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -52,6 +53,7 @@ export const DEFAULT_VIEW: ViewState = {
   layer: "group",
   pinned: null,
   worship: false,
+  about: false,
 };
 
 const METRICS: Metric[] = ["lq", "share", "count"];
@@ -97,6 +99,7 @@ export function serialize(v: ViewState): string {
   if (v.layer === "diversity") p.set("ly", "div");
   if (v.pinned) p.set("a2", areaToString(v.pinned));
   if (v.worship) p.set("pw", "1");
+  if (v.about) p.set("ab", "1");
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -125,5 +128,6 @@ export function parse(hash: string): ViewState {
     layer: p.get("ly") === "div" ? "diversity" : "group",
     pinned: parseArea(p.get("a2")),
     worship: p.get("pw") === "1",
+    about: p.get("ab") === "1",
   };
 }

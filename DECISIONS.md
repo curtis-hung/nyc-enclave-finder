@@ -399,3 +399,20 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   cluster recomputation in the browser would need the full tract matrices, adjacency and the
   restaurant clustering pipeline client-side; the three precomputed presets already provide the
   sensitivity analysis (§11).
+
+## D39. About page as an in-app dialog (§10)
+
+- A modal dialog rather than a separate route, so it opens over the current view without losing
+  state and is shareable (`ab=1`). Sources and preset parameters are rendered from `meta.json`, so
+  the page cannot drift from the build. Accessibility: focus moves to the close button, Escape and
+  backdrop click close it, global `:focus-visible` outlines, `prefers-reduced-motion` honoured.
+
+## D40. Deployment prepared, not executed (§14)
+
+- GitHub Pages via the official Actions (`configure-pages` / `upload-pages-artifact` /
+  `deploy-pages`). The Vite base defaults to the Pages base path (`/<repo>/`) and can be
+  overridden with a repository variable `VITE_BASE`, so no repository name is hard-coded. Tests
+  (pytest, Vitest, Playwright desktop + mobile) gate the deploy and also run on PRs.
+- Data refresh is manual (`workflow_dispatch`; cron commented) and opens a PR on a new branch via
+  `peter-evans/create-pull-request`; it never pushes to `main`. `CENSUS_API_KEY` is an optional
+  secret; without it the summary-file fallback is used.

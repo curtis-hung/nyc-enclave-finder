@@ -17,6 +17,10 @@ const SHOTS: { name: string; hash: string }[] = [
   { name: "korean-clusters", hash: "g=korean&c=korean&a=r:40.74770,-73.98690,0.5" },
   { name: "ecuadorian-tag-clusters", hash: "g=ecuadorian&c=ecuadorian" },
   { name: "focus-borough-queens", hash: "g=bangladeshi&a=b:4" },
+  { name: "about", hash: "ab=1" },
+  { name: "diversity", hash: "ly=div" },
+  { name: "asian-clusters", hash: "g=chinese&c=asian" },
+  { name: "borough-reference", hash: "g=dominican&r=boro" },
 ];
 
 async function settle(page: Page) {

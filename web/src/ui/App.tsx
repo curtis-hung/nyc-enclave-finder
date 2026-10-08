@@ -15,6 +15,7 @@ import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
 import { GapsPanel, loadGaps, type GapRow, type GapsFile } from "./GapsPanel";
 import { BucketContext } from "./BucketContext";
+import { About } from "./About";
 import { withBoroughReference } from "../reference";
 import { loadJSON } from "../data";
 import { diversityScale } from "../scales";
@@ -387,6 +388,7 @@ export function App() {
       <aside class="panel" aria-label="Controls">
         <header class="panel-head">
           <h1>NYC Enclave Finder</h1>
+          <button class="link about-link" onClick={() => view.set({ about: true })}>About &amp; methods</button>
           {panelOpen ? (
             <button class="panel-toggle" aria-expanded={true} aria-controls="panel-body" onClick={() => { setPanelOpen(false); setAreaOpen(false); }}>Hide panels</button>
           ) : (
@@ -448,7 +450,8 @@ export function App() {
           )}
           <Legend diversity={v.layer === "diversity"} reference={v.reference} level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={v.restOverlay && !!restaurantFC.total} />
           <footer class="foot muted small">
-            Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
+            Data: ACS {meta?.acs_vintage} 5-year and PUMS (U.S. Census Bureau); NYC DCP geography; NYC DOHMH inspections; OpenStreetMap; Overture Maps.
+            "Lives here" means census-measured residence; "eats here" means restaurant location. <button class="link" onClick={() => view.set({ about: true })}>About &amp; methods</button>
           </footer>
         </div>
       </aside>
@@ -501,6 +504,7 @@ export function App() {
         </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
+      {v.about && meta && <About meta={meta} onClose={() => view.set({ about: false })} />}
       {worshipHover && (
         <div class="tooltip" style={{ left: `${worshipHover.point.x + 14}px`, top: `${worshipHover.point.y + 14}px` }} role="status">
           <div class="tt-name">{String(worshipHover.props.name || "Place of worship")}</div>

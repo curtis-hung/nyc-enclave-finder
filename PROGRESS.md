@@ -13,7 +13,7 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M6 Restaurants + labels + clusters
 - [x] M7 Gaps + presets **[CHECKPOINT]** (reviewed; changes in D26-D30)
 - [x] M8 Remaining SHOULD / STRETCH
-- [ ] M9 Finish
+- [x] M9 Finish
 
 ## Current status
 
@@ -21,8 +21,8 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 distance, 8-class LQ scale (from the other session's spec update, applied late), multi-location
 threshold 7, overlay toggle, click-to-deselect, hide/show panels; round 2 (D31-D32): share-gap
 cluster rule (Chinatown in Asian clusters), red restaurants, hover info, context follows cluster.
-**M8 complete** (D33-D38). Next: M9 (About page, polish, size report, accessibility, deploy prep,
-README, final screenshots, full suite).
+**M8 complete** (D33-D38). **M9 complete** (D39-D40): all milestones done. Nothing has been
+pushed or published; deployment is prepared in `.github/workflows/` and `DEPLOY.md`.
 
 ## Completed work
 
@@ -156,6 +156,23 @@ README, final screenshots, full suite).
 - STRETCH #1 Places of Worship built; #2 population-weighted interpolation and #3 live sliders cut.
 - Tests: pytest 101, Vitest 32, Playwright 43 (J1-J5 all pass).
 
+### M9 Finish
+- About & methods dialog (§10), linked from the panel header and footer, URL `ab=1`: the §1
+  statement verbatim, every §2 principle, sources with snapshot dates (read from `meta.json`),
+  the cuisine label model, enclave and cluster detection (non-circular cuisine LQ, seeding,
+  share-gap rule), gap measures, presets with their parameters (from `meta.json`), why radius
+  values are approximate, multi-location limits, diaspora detail, diversity, the Yiddish proxy
+  and Places of Worship coverage.
+- Accessibility basics: visible keyboard focus on every control, dialog semantics with focus on
+  open and Escape to close, reduced-motion support; existing labelled regions/groups kept.
+- Deploy prep (§14, not executed): `.github/workflows/deploy.yml` (tests + Pages deploy, base
+  path from Pages or the `VITE_BASE` variable), `.github/workflows/refresh-data.yml` (manual
+  only, cron commented, fetch → build → report → full suite → PR on a new branch),
+  `DEPLOY.md`.
+- README: run, fetch, build, refresh, tests and every major metric.
+- Final screenshots `docs/screenshots/m9-*.png` (desktop + mobile, incl. the About page).
+- Tests: pytest 101, Vitest 32, Playwright 46 (desktop + mobile; J1-J5 pass).
+
 ## Cuts
 
 - STRETCH #2 population-weighted radius interpolation — needs block-level population; radius
@@ -165,6 +182,15 @@ README, final screenshots, full suite).
 - No MUST or SHOULD item was cut.
 
 ## Payload sizes
+
+**Final (M9)** — targets met:
+- First load: app JS 310 KB gzip + MapLibre worker 140 KB + CSS 14 KB; data (meta, groups,
+  geometry for tracts/NTAs/boroughs, cuisines, restaurant points, diaspora index, gazetteer)
+  667 KB gzip → **≈ 1.13 MB gzip** (target < 5 MB; basemap tiles come from OpenFreeMap).
+- Largest lazy bundle: `whoshere/tract.json` **625 KB gzip** (target < 1 MB); next
+  `matrix/birthplace.json` 161 KB, the largest PUMA diaspora file 124 KB. Restaurant details load
+  on demand per neighbourhood (NTA).
+- All processed data: 1,013 files, 13 MB gzip (68 MB raw) in `web/public/data/`.
 
 M7: app JS 313 KB gzip + CSS 14 KB; first-load data (meta, groups, geometry, cuisines,
 restaurant points, gazetteer) 639 KB gzip → first load ≈ 1.0 MB gzip (target < 5 MB). Largest
