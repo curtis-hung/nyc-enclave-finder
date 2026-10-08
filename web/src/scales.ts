@@ -1,15 +1,18 @@
 // Colour scales and legend logic for the residential choropleth (§1.2, §2.7).
 //
-// Colours come from the validated reference palette (dataviz skill): LQ uses neutral greys
-// below 1 (not over-represented) and a single-hue blue ramp above 1. Share and count use the
-// blue ramp on quantile breaks. Data states are carried by texture, not hue, so they stay
-// distinguishable for colour-blind readers and never look like a value.
+// LQ scale (SPEC §1.2, user decision 2026-10-08): two neutral greys below 1 (not
+// over-represented) and 8 sequential blue classes above 1, breaks 1/1.5/2/3/4/6/10/20.
+// The 8 blues are evenly spaced in OKLCH lightness (L 0.76 → 0.27, hue 256°, the reference
+// palette's blue); validated with the dataviz palette validator as an ordinal ramp (monotone,
+// adjacent ΔL ≥ 0.06, light end ≥ 2:1 on the surface) and against the 0.5–1 grey (normal-vision
+// ΔE 17.8, protan 15.6). Share and count use the same ramp on quantile breaks. Data states are
+// carried by texture, not hue, so they stay distinguishable and never look like a value.
 
 import { STATE, type LevelValues, type Metric } from "./types";
 
-export const BLUE = ["#b7d3f6", "#86b6ef", "#5598e7", "#2a78d6", "#1c5cab", "#104281"];
-export const LQ_BREAKS = [0.5, 1, 1.5, 2, 3, 5, 10];
-export const LQ_COLORS = ["#ebeae6", "#d6d5cf", ...BLUE];
+export const BLUE = ["#87b4f0", "#689de5", "#4987d9", "#2970c9", "#065bb5", "#004799", "#003479", "#002455"];
+export const LQ_BREAKS = [0.5, 1, 1.5, 2, 3, 4, 6, 10, 20];
+export const LQ_COLORS = ["#f1f0ee", "#e0e0dd", ...BLUE];
 export const ZERO_COLOR = "#fbfaf7";
 export const SUPPRESSED_BASE = "#ffffff";
 export const ENCLAVE_COLOR = "#eb6834";

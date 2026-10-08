@@ -54,14 +54,14 @@ test("J2: commercial vs. residential", async ({ page }) => {
   await expectHash(page, "x", "1");
   const gaps = page.getByRole("region", { name: "Gaps panel" });
   await expect(gaps.getByRole("columnheader", { name: /Nearest enclave/ })).toBeVisible();
-  const rows = gaps.locator("tbody tr");
-  await expect(rows.first()).toContainText("Korean");
+  const korean = gaps.locator("tbody tr").filter({ hasText: /^Korean #/ });
+  await expect(korean.first()).toBeVisible();
   // 4. clicking a row focuses the cluster together with its nearest enclave
-  await rows.first().click();
+  await korean.first().click();
   await expect.poll(async () => (await shown(page)).gap).toContain("footprint");
   const parts = (await shown(page)).gap;
-  const d0 = await rows.first().locator("td").nth(3).textContent();
-  if (!d0?.includes("no enclave")) expect(parts).toContain("enclave");
+  const edge = await korean.first().locator("td").nth(3).textContent();
+  if (!edge?.includes("no enclave")) expect(parts).toContain("enclave");
 });
 
 test("J3: bucket -> leaf, with sensitivity", async ({ page }) => {

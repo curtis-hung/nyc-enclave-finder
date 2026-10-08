@@ -73,7 +73,10 @@ export function App() {
         return;
       }
       if (!unit || unit.level === "boro") return;
-      view.set({ area: unit.level === "tract" ? { kind: "tract", id: String(unit.props.geoid) } : { kind: "nta", id: String(unit.props.nta) } });
+      const next: Area = unit.level === "tract" ? { kind: "tract", id: String(unit.props.geoid) } : { kind: "nta", id: String(unit.props.nta) };
+      const cur = view.get().area;
+      // clicking the selected tract/neighborhood again deselects it
+      view.set({ area: cur && cur.kind === next.kind && "id" in cur && cur.id === next.id ? null : next });
     });
     (window as unknown as { __map: MapView }).__map = mv; // for debugging and E2E
   }, []);
@@ -185,8 +188,8 @@ export function App() {
     return { fc: { type: "FeatureCollection" as const, features: feats }, total: feats.length, viaTags };
   }, [ix, pts, v.cuisine, v.conf, v.multi]);
   useEffect(() => {
-    if (mapRef.current && mapReady) mapRef.current.setRestaurants(restaurantFC.fc, v.restaurant);
-  }, [restaurantFC, v.restaurant, mapReady]);
+    if (mapRef.current && mapReady) mapRef.current.setRestaurants(v.restOverlay ? restaurantFC.fc : null, v.restaurant);
+  }, [restaurantFC, v.restaurant, v.restOverlay, mapReady]);
 
   // clusters of the filtered cuisine (only paired cuisines are clustered)
   useEffect(() => {
@@ -210,7 +213,8 @@ export function App() {
     const [cf, ef] = await Promise.all([loadClusters(r.node), loadEnclaves(r.enclave_group)]);
     const parts = cf.geojson.features.filter((f) => f.properties?.id === r.cluster)
       .map((f) => ({ ...f, properties: { ...f.properties, part: f.properties?.part } }));
-    const enc = r.nearest[0] ? ef.geojson.features.find((f) => f.properties?.id === r.nearest[0]) : undefined;
+    const encId = r.edge_enclave ?? r.nearest[0];
+    const enc = encId ? ef.geojson.features.find((f) => f.properties?.id === encId) : undefined;
     const feats: GeoJSON.Feature[] = [...parts];
     if (enc) feats.push({ ...enc, properties: { ...enc.properties, part: "enclave" } });
     gapFeatures.current.focus = feats;
@@ -251,14 +255,18 @@ export function App() {
 
   const hasArea = !!v.area;
   return (
-    <div class={`app${panelOpen ? "" : " panel-collapsed"}${hasArea ? " has-area" : ""}${v.gaps && group ? " has-gaps" : ""}`}>
+    <div class={`app${panelOpen ? "" : " panel-collapsed"}${hasArea && areaOpen && panelOpen ? " has-area" : ""}${hasArea && panelOpen ? " any-area" : ""}${hasArea && !areaOpen && panelOpen ? " area-collapsed" : ""}${v.gaps && group ? " has-gaps" : ""}`}>
       <div ref={mapEl} id="map" role="region" aria-label="Map of New York City" />
       <aside class="panel" aria-label="Controls">
         <header class="panel-head">
           <h1>NYC Enclave Finder</h1>
-          <button class="panel-toggle" aria-expanded={panelOpen} aria-controls="panel-body" onClick={() => setPanelOpen(!panelOpen)}>
-            {panelOpen ? "Hide panel" : group ? `${group.name} ▴` : "Show panel"}
-          </button>
+          {panelOpen ? (
+            <button class="panel-toggle" aria-expanded={true} aria-controls="panel-body" onClick={() => { setPanelOpen(false); setAreaOpen(false); }}>Hide panels</button>
+          ) : (
+            <button class="panel-toggle show-panels" aria-expanded={false} aria-controls="panel-body" onClick={() => { setPanelOpen(true); setAreaOpen(true); }}>
+              ☰ Show panels{group ? ` · ${group.name}` : ""}
+            </button>
+          )}
         </header>
         <div id="panel-body" class="panel-body">
           <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
@@ -278,7 +286,7 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} />}
           {group && (
             <button class={`btn${v.gaps ? " active" : ""}`} aria-pressed={v.gaps} onClick={() => view.set({ gaps: !v.gaps })}>
               {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}
@@ -298,7 +306,7 @@ export function App() {
               </div>
             </details>
           )}
-          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={!!restaurantFC.total} />
+          <Legend level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={v.restOverlay && !!restaurantFC.total} />
           <footer class="foot muted small">
             Data: ACS {meta?.acs_vintage} 5-year (U.S. Census Bureau); NYC DCP geography. "Lives here" means census-measured residence.
           </footer>
@@ -318,7 +326,7 @@ export function App() {
           </div>
         </aside>
       )}
-      {meta && groups && v.area && (
+      {meta && groups && v.area && panelOpen && (
         areaOpen ? (
           <aside class="panel panel-right" aria-label="Area details">
             <div class="panel-body">

@@ -92,6 +92,8 @@ def build_gaps(cfg: Config, eg: EnclaveGeometry, gds: dict[str, dict[str, GroupD
                         "restaurants": c.stats["restaurants"],
                         "cuisine_lq": c.stats["lq"],
                         "d": [clean(x, 3) for x in m.distances_mi],
+                        "edge": clean(m.edge_mi, 3),
+                        "edge_enclave": encs[m.edge_enclave].id if m.edge_enclave is not None else None,
                         "nearest": [encs[i].id for i in m.nearest],
                         "inter_sqmi": round(m.intersection_sqmi, 4),
                         "pct_cluster_in_enclaves": clean(m.pct_cluster_in_enclaves, 3),

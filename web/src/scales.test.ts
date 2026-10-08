@@ -3,6 +3,15 @@ import { lqScale, nice, quantileBreaks, unitColors, ZERO_COLOR, SUPPRESSED_BASE,
 import type { LevelValues } from "./types";
 
 describe("scales", () => {
+  it("has two greys and 8 blue classes with the decided breaks", () => {
+    const s = lqScale();
+    expect(s.bins).toHaveLength(10);
+    expect(s.bins.map((b) => b.label)).toEqual(["< 0.5", "0.5–1", "1–1.5", "1.5–2", "2–3", "3–4", "4–6", "6–10", "10–20", "≥ 20"]);
+    expect(new Set(s.bins.map((b) => b.color)).size).toBe(10);
+    expect(s.colorOf(19.9)).toBe(s.bins[8].color);
+    expect(s.colorOf(20)).toBe(s.bins[9].color);
+  });
+
   it("bins LQ with neutral colours below 1 and the ramp above", () => {
     const s = lqScale();
     expect(s.colorOf(0.2)).toBe(s.bins[0].color);

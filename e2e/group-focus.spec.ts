@@ -75,3 +75,46 @@ test.describe("group focus (M3)", () => {
     await expectHash(page, "e", "0");
   });
 });
+
+test.describe("panel and selection behaviour (M7 feedback)", () => {
+  test("clicking a selected unit again deselects it", async ({ page }) => {
+    await openApp(page, "g=thai&l=tract");
+    const click = async () => {
+      const pt = await page.evaluate(() => {
+        const m = (window as any).__map.map;
+        const p = m.project([-73.945, 40.805]); // Harlem: clear of both panels
+        const r = m.getCanvas().getBoundingClientRect();
+        return { x: r.left + p.x, y: r.top + p.y };
+      });
+      await page.mouse.click(pt.x, pt.y);
+    };
+    await click();
+    await expect.poll(() => new URL(page.url()).hash).toMatch(/a=t:\d{11}/);
+    await click();
+    await expect.poll(() => new URL(page.url()).hash).not.toMatch(/a=/);
+  });
+
+  test("hiding panels moves zoom to the corner and a clear button restores them", async ({ page }) => {
+    await openApp(page, "g=chinese&a=b:4");
+    await page.getByRole("button", { name: "Hide panels" }).click();
+    await expect(page.locator("#panel-body")).toBeHidden();
+    const ctrl = page.locator(".maplibregl-ctrl-top-right");
+    const box = await ctrl.boundingBox();
+    const vw = page.viewportSize()!.width;
+    expect(vw - (box!.x + box!.width)).toBeLessThan(20);
+    await expect(page.getByRole("complementary", { name: "Area details" })).toBeHidden(); // nothing covers the zoom
+    await page.getByRole("button", { name: /Show panels/ }).click();
+    await expect(page.locator("#panel-body")).toBeVisible();
+    await expect(page.getByRole("complementary", { name: "Area details" }).getByRole("region", { name: /Who's here: Race/ })).toBeVisible();
+  });
+
+  test("restaurant overlay can be toggled off and on", async ({ page }) => {
+    await openApp(page, "c=korean");
+    const count = () => page.evaluate(() => (window as any).__map.shown.restaurants as number);
+    await page.getByLabel("Show restaurants on map").uncheck();
+    await expect.poll(() => new URL(page.url()).hash).toContain("rm=0");
+    await expect.poll(count).toBe(0);
+    await page.getByLabel("Show restaurants on map").check();
+    await expect.poll(count).toBeGreaterThan(0);
+  });
+});

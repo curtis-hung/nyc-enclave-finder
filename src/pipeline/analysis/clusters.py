@@ -1,8 +1,13 @@
 """Commercial clusters (§7): density-based clustering of one cuisine's restaurants, qualified by a
 non-circular cuisine LQ.
 
-1. DBSCAN on the cuisine's restaurant points in a projected CRS (feet), eps/min_samples from the
-   preset. Components smaller than `min_cluster_size` are dropped.
+1. Seeds: a cuisine restaurant can join a cluster only if, within `eps` of it, the cuisine's share
+   of ALL restaurants is at least `lq_min` × its citywide share (a local LQ). This stops DBSCAN
+   from chaining concentrations through dense ordinary-mix areas into one huge component (seen in
+   lower Manhattan: a 5.35 sq mi "Asian" component with LQ 1.03). It uses the preset's existing
+   eps and lq_min; no new parameter.
+   Then DBSCAN on the seed points in a projected CRS (feet), eps/min_samples from the preset.
+   Components smaller than `min_cluster_size` are dropped.
 2. Footprint = convex hull of the member points (buffered slightly so 1-2 point hulls have area).
 3. Catchment = footprint buffered by `catchment_ft`. It is defined by geometry only, never by
    cuisine membership.
@@ -19,6 +24,7 @@ from typing import Any
 
 import numpy as np
 import shapely
+from scipy.spatial import cKDTree
 from shapely.geometry import MultiPoint
 from sklearn.cluster import DBSCAN
 
@@ -63,6 +69,15 @@ def in_polygon(poly: Any, xy: np.ndarray) -> np.ndarray:
     return shapely.contains_xy(poly, xy[:, 0], xy[:, 1])
 
 
+def local_lq_seeds(xy: np.ndarray, member: np.ndarray, idx: np.ndarray, radius: float, min_share: float) -> np.ndarray:
+    """Cuisine points whose neighbourhood (all restaurants within `radius`) has a cuisine share of
+    at least `min_share`."""
+    tree = cKDTree(xy)
+    nbrs = tree.query_ball_point(xy[idx], r=radius)
+    share = np.array([member[n].sum() / len(n) for n in nbrs])
+    return idx[share >= min_share]
+
+
 def find_clusters(xy: np.ndarray, member: np.ndarray, rule: ClusterRule) -> list[Cluster]:
     """All qualifying clusters of the restaurants flagged by `member` (bool array over xy)."""
     n_all = len(xy)
@@ -70,10 +85,13 @@ def find_clusters(xy: np.ndarray, member: np.ndarray, rule: ClusterRule) -> list
     if n_all == 0 or len(idx) < max(rule.min_samples, rule.min_cluster_size):
         return []
     ref_share = len(idx) / n_all
-    labels = DBSCAN(eps=rule.eps_ft, min_samples=rule.min_samples).fit(xy[idx]).labels_
+    seeds = local_lq_seeds(xy, member, idx, rule.eps_ft, rule.lq_min * ref_share)
+    if len(seeds) < max(rule.min_samples, rule.min_cluster_size):
+        return []
+    labels = DBSCAN(eps=rule.eps_ft, min_samples=rule.min_samples).fit(xy[seeds]).labels_
     out: list[Cluster] = []
     for lab in sorted(set(labels) - {-1}):
-        mem = idx[labels == lab]
+        mem = seeds[labels == lab]
         if len(mem) < rule.min_cluster_size:
             continue
         foot, catch = catchment_of(xy[mem], rule.catchment_ft)

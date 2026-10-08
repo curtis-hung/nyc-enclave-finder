@@ -73,6 +73,28 @@ def test_multi_tag_restaurant_counts_once_in_every_denominator():
     assert c1.ref_share == pytest.approx(len(both) / len(xy))
 
 
+def test_concentrations_do_not_chain_through_an_ordinary_dense_corridor():
+    # Two concentrations joined by a dense corridor where the cuisine has its ordinary 10% share.
+    # Plain DBSCAN would chain them into one large, diluted component; seeds only come from
+    # neighbourhoods where the cuisine is over-represented, so they stay two clusters.
+    bg = background(2000)
+    corridor_x = np.linspace(10_000, 16_000, 900)
+    corridor = np.c_[corridor_x, 10_000 + rng.uniform(-200, 200, 900)]
+    a, b = blob(30, 9_600, 10_000, r=120), blob(30, 16_400, 10_000, r=120)
+    xy = np.vstack([bg, corridor, a, b])
+    member = np.zeros(len(xy), bool)
+    member[: len(bg) + len(corridor) : 10] = True  # the same ordinary 10% share everywhere, corridor included
+    member[len(bg) + len(corridor):] = True
+    cl = find_clusters(xy, member, RULE)
+    ia = set(range(len(bg) + len(corridor), len(bg) + len(corridor) + 30))
+    ib = set(range(len(bg) + len(corridor) + 30, len(xy)))
+    in_a = [c for c in cl if ia & set(c.members.tolist())]
+    in_b = [c for c in cl if ib & set(c.members.tolist())]
+    assert in_a and in_b  # both concentrations are found...
+    assert not any(ia & set(c.members.tolist()) and ib & set(c.members.tolist()) for c in cl)  # ...never chained
+    assert all(c.footprint.bounds[2] - c.footprint.bounds[0] < 3_000 for c in cl)  # no corridor-long cluster
+
+
 def test_too_few_points_yield_no_cluster():
     bg = background(1000)
     xy = np.vstack([bg, blob(3, 1000, 1000)])

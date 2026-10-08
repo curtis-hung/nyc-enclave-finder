@@ -58,7 +58,7 @@ test("mobile panel collapsed", async ({ page }) => {
   await page.goto("/#g=dominican&a=b:2");
   await settle(page);
   await page.getByRole("button", { name: "Close area" }).click();
-  await page.getByRole("button", { name: "Hide panel" }).click();
+  await page.getByRole("button", { name: "Hide panels" }).click();
   await page.waitForTimeout(800);
   await page.screenshot({ path: `docs/screenshots/${milestone}-mobile-collapsed.png` });
 });
@@ -98,3 +98,12 @@ for (const p of ["strict", "default", "loose"]) {
     await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-preset-${p}.png` });
   });
 }
+
+test("desktop panels hidden", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#g=chinese&a=n:QN0705&c=chinese");
+  await settle(page);
+  await page.getByRole("button", { name: "Hide panels" }).click();
+  await page.waitForTimeout(800);
+  await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-panels-hidden.png` });
+});

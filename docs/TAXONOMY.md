@@ -606,7 +606,7 @@ Unmapped values: none.
 | Dominican origin around Washington Heights | Washington Heights (South) | 3 of 187 | 5.34 | Inwood (6.17); University Heights (North)-Fordham (5.87); Washington Heights (South) (5.34) | pass |
 | Chinese population around Flushing | Flushing-Willets Point | 1 of 171 | 8.52 | Flushing-Willets Point (8.52); Chinatown-Two Bridges (8.09); Queensboro Hill (8.06) | pass |
 | Yiddish (language category: German or other West Germanic) around Borough Park | Borough Park | 2 of 96 | 36.25 | South Williamsburg (36.74); Borough Park (36.25); Mapleton-Midwood (West) (9.5) | pass |
-| Korean-cuisine restaurants around W 32nd St (restaurant data) | Midtown South-Flatiron-Union Square | 3 of 185 | 7.49 | Murray Hill-Broadway Flushing (26.19); Auburndale (10.19); Midtown South-Flatiron-Union Square (7.49) | pass |
+| Korean-cuisine restaurants around W 32nd St (restaurant data) | Midtown South-Flatiron-Union Square | 4 of 185 | 7.2 | Murray Hill-Broadway Flushing (25.68); Auburndale (9.94); Bayside (7.93) | pass |
 
 Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 

@@ -83,10 +83,13 @@ export function RestaurantControls({ ix, v, group, shown }: ControlsProps) {
           </select>
         </div>
       </div>
-      <label class="check"><input type="checkbox" checked={v.multi} onChange={(e) => view.set({ multi: (e.target as HTMLInputElement).checked })} /> Show multi-location businesses</label>
+      <div class="ctl-row">
+        <label class="check"><input type="checkbox" checked={v.restOverlay} onChange={(e) => view.set({ restOverlay: (e.target as HTMLInputElement).checked })} /> Show restaurants on map</label>
+        <label class="check"><input type="checkbox" checked={v.multi} onChange={(e) => view.set({ multi: (e.target as HTMLInputElement).checked })} /> Show multi-location businesses</label>
+      </div>
       {v.cuisine && (
         <p class="muted small">
-          {shown.total.toLocaleString("en-US")} restaurants on the map{shown.viaTags ? `, ${shown.viaTags.toLocaleString("en-US")} of them only via an inferred tag (hollow dots)` : ""}. Labels come only from restaurant data: DOHMH's category, plus tags inferred from OpenStreetMap, Overture and name keywords ({CONF_LABEL[v.conf]}).
+          {shown.total.toLocaleString("en-US")} restaurants{v.restOverlay ? " on the map" : " match (hidden from the map)"}{shown.viaTags ? `, ${shown.viaTags.toLocaleString("en-US")} of them only via an inferred tag (hollow dots)` : ""}. Labels come only from restaurant data: DOHMH's category, plus tags inferred from OpenStreetMap, Overture and name keywords ({CONF_LABEL[v.conf]}).
         </p>
       )}
     </section>
@@ -101,12 +104,15 @@ interface ClusterProps {
   selected: string | null;
   onSelect: (id: string) => void;
   onContext?: (node: string, cluster: string) => void;
+  lqMin: number;
 }
 
-export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext }: ClusterProps) {
+export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin }: ClusterProps) {
   if (!file) return null;
   const items = file.stats[preset] ?? [];
   const name = ix.node(file.node)?.name ?? file.node;
+  const anyCluster = Object.values(file.stats).flat()[0];
+  const refShare = anyCluster?.ref_share ?? null;
   return (
     <section class="clusters" role="region" aria-label="Restaurant clusters">
       <h3>{name} restaurant clusters{ix.node(file.node)?.kind === "bucket" && <span class="badge" title="This cuisine covers several groups">bucket-level</span>}</h3>
@@ -117,6 +123,12 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
           : "Built from DOHMH labels plus inferred tags under this cuisine."}{" "}
         Cuisine LQ compares the cuisine's share of all restaurants in the cluster's catchment with its citywide share.
       </p>
+      {refShare !== null && refShare > 0.1 && (
+        <p class="notice small" role="note">
+          {name} restaurants are {Math.round(refShare * 100)}% of all restaurants citywide, so the highest possible cuisine LQ is {(1 / refShare).toFixed(1)}. Clusters must
+          reach LQ {lqMin} (this preset), i.e. {Math.round(Math.min(1, lqMin * refShare) * 100)}% of every restaurant in their catchment — common cuisines rarely do. The loose preset lowers the bar.
+        </p>
+      )}
       {items.length > 0 && (
         <table class="tbl">
           <thead>

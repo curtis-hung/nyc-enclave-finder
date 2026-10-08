@@ -185,8 +185,9 @@ def write_figures(cfg: Config, groups: list[str]) -> None:
     tracts = gpd.read_file(WEB_DATA_DIR / "geo" / "tracts.json")
     ntas = gpd.read_file(WEB_DATA_DIR / "geo" / "ntas.json")
     gj = json.loads((WEB_DATA_DIR / "groups.json").read_text(encoding="utf-8"))
-    bounds = [0, 0.5, 1, 1.5, 2, 3, 5, 10, 1e9]
-    cmap = ListedColormap(["#f1eef6", "#e5d8eb", "#d4b9da", "#c994c7", "#df65b0", "#dd1c77", "#980043", "#5a0029"])
+    # same scale as the web map (web/src/scales.ts): two greys below 1, 8 blues above
+    bounds = [0, 0.5, 1, 1.5, 2, 3, 4, 6, 10, 20, 1e9]
+    cmap = ListedColormap(["#f1f0ee", "#e0e0dd", "#87b4f0", "#689de5", "#4987d9", "#2970c9", "#065bb5", "#004799", "#003479", "#002455"])
     norm = BoundaryNorm(bounds, cmap.N)
     n = len(groups)
     cols = 3

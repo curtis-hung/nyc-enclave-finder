@@ -174,7 +174,7 @@ select { padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; ba
 .panel-right.collapsed .panel-head { border-bottom: 0; gap: 10px; }
 .collapsed-title { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 767px) {
-  .has-area .panel:not(.panel-right) { display: none; }
+  .any-area .panel:not(.panel-right) { display: none; }
   .panel-right.collapsed { top: auto; bottom: 0; }
 }
 
@@ -236,3 +236,10 @@ a.btn { text-decoration: none; color: var(--ink); align-self: flex-start; }
   .gaps-drawer { left: 0; right: 0; bottom: 0; top: 30vh; height: auto; border-radius: 12px 12px 0 0; z-index: 6; }
   .has-area .gaps-drawer { right: 0; }
 }
+
+/* --- panels hidden: clear restore button, zoom control back in the corner ----------------------- */
+.panel-toggle.show-panels { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+.panel-collapsed:not(.has-area) .maplibregl-ctrl-top-right { right: 0; }
+.area-collapsed .maplibregl-ctrl-top-right { top: 64px; }
+@media (max-width: 767px) { .area-collapsed .maplibregl-ctrl-top-right { top: 0; } }
+.notice.small { font-size: 12px; }

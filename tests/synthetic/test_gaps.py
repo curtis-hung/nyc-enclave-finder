@@ -46,6 +46,23 @@ def test_group_with_two_enclaves_selects_the_nearer():
     assert g.distances_mi[2] is None  # only two enclaves
 
 
+def test_signed_edge_distance_is_negative_inside_and_positive_outside():
+    enclave = box(0, 0, 4 * MI, 4 * MI)
+    deep = box(1.9 * MI, 1.9 * MI, 2.1 * MI, 2.1 * MI)  # center 2 mi from every edge
+    g = enclave_distances(deep, [enclave])
+    assert g.distances_mi[0] == 0
+    assert g.edge_mi == pytest.approx(-2.0, abs=1e-6)
+    outside = box(5 * MI, 0, 5 * MI + 100, 100)
+    assert enclave_distances(outside, [enclave]).edge_mi == pytest.approx(1.0 + 50 / MI, abs=1e-3)
+
+
+def test_signed_edge_distance_picks_the_enclave_the_cluster_is_deepest_in():
+    shallow = box(0, 0, 1 * MI, 1 * MI)
+    deep = box(-3 * MI, -3 * MI, 4 * MI, 4 * MI)
+    g = enclave_distances(box(0.4 * MI, 0.4 * MI, 0.6 * MI, 0.6 * MI), [shallow, deep])
+    assert g.edge_enclave == 1 and g.edge_mi < -3
+
+
 def test_group_with_no_enclave_has_null_distance():
     g = enclave_distances(box(0, 0, 10, 10), [])
     assert g.distances_mi == [None, None, None]

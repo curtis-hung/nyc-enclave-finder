@@ -14,7 +14,7 @@ multi_location:
   # A normalized business name at this many or more active locations is flagged as a
   # multi-location business: hidden by default and excluded from the analysis population.
   # This is a heuristic, not proof of a corporate chain. Overrides: multilocation_overrides.yaml.
-  min_locations: 5
+  min_locations: 7   # raised from 5 at the M7 checkpoint (user decision)
 
 matching:
   max_distance_m: 75

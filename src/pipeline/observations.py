@@ -45,8 +45,11 @@ def write_observations() -> None:
     # 1. gaps by group (exact pairings, default preset, default dimension)
     w(f"## 1. Nearest-enclave distance by group ({default} preset, exact cuisine pairings)")
     w("")
-    w("| Group | Clusters | Min (mi) | Median (mi) | Max (mi) | Clusters with no enclave |")
-    w("|---|---|---|---|---|---|")
+    w("Polygon distance (0 = touching/overlapping) and signed edge distance from the cluster center "
+      "(negative = inside the nearest enclave by that much).")
+    w("")
+    w("| Group | Clusters | Min (mi) | Median (mi) | Max (mi) | Median edge (mi) | Clusters with no enclave |")
+    w("|---|---|---|---|---|---|---|")
     gap_rows = []
     for gid, g in groups.items():
         gp = WEB_DATA_DIR / "gaps" / f"{gid}.json"
@@ -57,10 +60,11 @@ def write_observations() -> None:
         if not rows:
             continue
         d = [r["d"][0] for r in rows if r["d"][0] is not None]
+        e = [r["edge"] for r in rows if r.get("edge") is not None]
         gap_rows.append((g["name"], len(rows), min(d) if d else None, statistics.median(d) if d else None,
-                         max(d) if d else None, sum(1 for r in rows if r["d"][0] is None)))
-    for name, n, mn, md, mx, nul in sorted(gap_rows, key=lambda r: (-(r[4] or -1), r[0])):
-        w(f"| {name} | {n} | {_fmt(mn)} | {_fmt(md)} | {_fmt(mx)} | {nul} |")
+                         max(d) if d else None, statistics.median(e) if e else None, sum(1 for r in rows if r["d"][0] is None)))
+    for name, n, mn, md, mx, me, nul in sorted(gap_rows, key=lambda r: (-(r[4] or -1), r[0])):
+        w(f"| {name} | {n} | {_fmt(mn)} | {_fmt(md)} | {_fmt(mx)} | {_fmt(me)} | {nul} |")
     w("")
 
     # 2. groups with multiple enclaves
@@ -148,6 +152,7 @@ def write_observations() -> None:
         for p in presets:
             cl_n[p] += v.get(p, 0)
     dists: dict[str, list[float]] = defaultdict(list)
+    edges: dict[str, list[float]] = defaultdict(list)
     zero: Counter = Counter()
     nul: Counter = Counter()
     tot_rows: Counter = Counter()
@@ -165,6 +170,8 @@ def write_observations() -> None:
                     nul[p] += 1
                 else:
                     dists[p].append(r["d"][0])
+                    if r.get("edge") is not None:
+                        edges[p].append(r["edge"])
                     zero[p] += r["d"][0] == 0
     w("| Measure | " + " | ".join(presets) + " |")
     w("|---|" + "---|" * len(presets))
@@ -172,6 +179,7 @@ def write_observations() -> None:
     w("| Restaurant clusters (all paired cuisines) | " + " | ".join(f"{cl_n[p]:,}" for p in presets) + " |")
     w("| Exact-pairing cluster rows | " + " | ".join(f"{tot_rows[p]:,}" for p in presets) + " |")
     w("| Median nearest-enclave distance (mi) | " + " | ".join(_fmt(statistics.median(dists[p]) if dists[p] else None) for p in presets) + " |")
+    w("| Median signed edge distance (mi; negative = inside) | " + " | ".join(_fmt(statistics.median(edges[p]) if edges[p] else None) for p in presets) + " |")
     w("| Rows with distance 0 | " + " | ".join(f"{zero[p] / tot_rows[p]:.1%}" if tot_rows[p] else "—" for p in presets) + " |")
     w("| Rows with no enclave (null) | " + " | ".join(f"{nul[p]:,}" for p in presets) + " |")
     w("")

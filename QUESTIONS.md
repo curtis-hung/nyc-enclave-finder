@@ -33,3 +33,13 @@ Decided in a planning session while the build was paused at the M5 checkpoint. `
 3. **Hide when too thin.** Any number below the reliable state is hidden silently, with no placeholder. A strip with nothing reliable doesn't render. Hidden never means zero.
 4. **Detailed-language fill.** In "Who's here", PUMS detailed languages fill in under tract language buckets for the surrounding district, where reliable; hidden otherwise.
 5. Replaces Q1/D13's display-only "PUMA (detailed)" level. PUMS still never feeds enclaves, clusters, gaps or the choropleth.
+
+## Q3. Broad-bucket clusters and the LQ ceiling (raised at the M7 checkpoint, 2026-10-08)
+
+**Context:** common buckets (Asian = 23% of restaurants; Latin American; American) can never exceed
+LQ = 1 / citywide share (Asian: 4.3), so a fixed `lq_min` is much harder for them. Manhattan
+Chinatown's Asian cluster has catchment LQ 1.86 under the default preset (it shows under loose).
+**Default taken:** thresholds unchanged (§2.4); the UI states the ceiling for any cuisine above 10%
+of restaurants. **Options:** (a) keep as is; (b) qualify bucket clusters with a share-gap rule
+(catchment share - citywide share >= x); (c) a normalized LQ ((LQ - 1) / (max LQ - 1)). Either
+(b) or (c) would be one citywide rule.

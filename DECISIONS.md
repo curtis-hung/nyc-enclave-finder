@@ -127,7 +127,7 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   direction; the proxy is transparent in the UI and About page.
 - **Thresholds** (D7, presets.yaml) confirmed as-is.
 
-## D13. PUMS layer approved (STRETCH #1, M8)
+## D13. PUMS layer approved (STRETCH #1, M8) — SUPERSEDED by D30 / QUESTIONS Q2
 
 - Display-only "PUMA (detailed)" level with detailed language/ancestry/birthplace from 2020-2024
   5-year PUMS, MOEs from 80 replicate weights; not used for enclaves, clusters or gaps. The Jewish
@@ -253,3 +253,52 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   the band of the footprint) — simple and fast for 5-mile bands; documented as approximate.
 - Bucket pairings use the cuisine's exact-owner broad group; when a bucket cuisine has no owner
   (e.g. Mediterranean) the pairing group itself is used and flagged `owner_found: false`.
+
+## D26. Seeded clustering (M7 checkpoint)
+
+- **Problem found:** the user noticed no "Asian" cluster in Manhattan's Chinatown. Diagnosis: plain
+  DBSCAN chained Asian restaurants across dense lower Manhattan into one 1,186-restaurant,
+  5.35 sq mi component whose catchment LQ was 1.03, so it was rejected. This is a method defect
+  (density chaining), not a threshold question.
+- **Decision:** a cuisine restaurant can seed/join a cluster only if, within `eps` of it, the
+  cuisine's share of all restaurants is >= `lq_min` x its citywide share (a local LQ). Same
+  preset parameters, no new ones; applied to every cuisine. Synthetic test: two concentrations
+  linked by an ordinary-mix corridor stay separate.
+- **Result (not tuned to it):** Chinatown now has a Chinese cluster under all presets (LQ 3.09 /
+  2.64 / 2.12) and an East Asian cluster under default; the broad "Asian" bucket appears only
+  under loose (catchment LQ 1.86 under default). Broad buckets have an LQ ceiling (Asian = 23% of
+  restaurants -> max LQ 4.3); the cluster table now states it. Thresholds unchanged (QUESTIONS Q3).
+
+## D27. Signed edge distance (M7 checkpoint: "make sure distance isn't 0")
+
+- The §8.1 polygon-to-polygon distance (0 when overlapping) is kept, but most clusters touch an
+  enclave, so it saturates at 0. Added a continuous **signed edge distance** from the cluster's
+  center (its own footprint centroid/representative point, never a group centroid, §2.8) to the
+  nearest enclave edge: negative = inside by that many miles, positive = outside. The gaps table
+  sorts by it by default and the scatter's x-axis uses it; row focus highlights that enclave.
+  Default preset median -0.11 mi (range -0.95 to +8.7); rows at 0 are centers within a few feet
+  of an edge.
+
+## D28. 8-class LQ scale (QUESTIONS Q2, applied late)
+
+- The other session's spec update (commit c4cabd5) asked for this before M6; this session missed
+  it and applied it at the M7 checkpoint. Greys #f1f0ee (< 0.5) and #e0e0dd (0.5-1); 8 blues
+  evenly spaced in OKLCH (L 0.76 -> 0.27, hue 256): #87b4f0 #689de5 #4987d9 #2970c9 #065bb5
+  #004799 #003479 #002455 at breaks 1/1.5/2/3/4/6/10/20. The reference palette's 13-step ramp could
+  not give 8 ordinal classes with visible gaps (adjacent dL 0.047), so the ramp was generated and
+  validated: ordinal checks pass (adjacent dL >= 0.06, light end 2.08:1) and the lightest blue vs
+  the 0.5-1 grey passes all-pairs (normal dE 17.8, protan 15.6). Share/count use the same blues on
+  quantile breaks; the report figure uses the same scale.
+
+## D29. M7 checkpoint UI/heuristic changes (user decisions)
+
+- Multi-location threshold raised from 5 to 7 locations (4,299 flagged; analysis population
+  22,534).
+- Restaurant overlay toggle (URL `rm=0`); clicking the selected tract/NTA again deselects it;
+  "Hide panels" hides both panels and leaves one "Show panels" button; the zoom control returns to
+  the top-right corner (and sits below a collapsed area bar).
+
+## D30. Diaspora detail replaces the PUMA map level (QUESTIONS Q2)
+
+- Per the user's decision in the other session: no PUMA map level; PUMS birthplace/language
+  cross-tabs appear inline only where reliable (SPEC §4.6), SHOULD #3, built in M8.

@@ -26,6 +26,8 @@ class GapMeasures:
     intersection_sqmi: float  # cluster footprint ∩ all enclaves
     pct_cluster_in_enclaves: float | None  # share of the footprint inside any enclave
     pct_nearest_enclave_in_cluster: float | None  # share of the nearest enclave inside the footprint
+    edge_mi: float | None = None  # signed distance from the cluster center to the nearest enclave edge
+    edge_enclave: int | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
 
@@ -39,13 +41,29 @@ def enclave_distances(footprint: Any, enclaves: list[Any], k: int = 3, union: An
     union = union if union is not None else unary_union(enclaves)
     inter = footprint.intersection(union).area
     nearest = enclaves[order[0]]
+    signed = [signed_edge_distance(footprint, e) for e in enclaves]
+    k_edge = min(range(len(enclaves)), key=lambda i: (signed[i], i))
     return GapMeasures(
+        edge_mi=signed[k_edge] / FT_PER_MI,
+        edge_enclave=k_edge,
         distances_mi=dist,
         nearest=order,
         intersection_sqmi=inter / SQFT_PER_SQMI,
         pct_cluster_in_enclaves=inter / footprint.area if footprint.area else None,
         pct_nearest_enclave_in_cluster=footprint.intersection(nearest).area / nearest.area if nearest.area else None,
     )
+
+
+def signed_edge_distance(footprint: Any, enclave: Any) -> float:
+    """Signed distance (projected units) from the cluster's center to the enclave's edge:
+    positive outside the enclave, negative inside (how deep inside), 0 on the edge.
+
+    The center is the footprint's representative point — the cluster's own location, not a group
+    centroid (§2.8). Unlike the polygon-to-polygon distance, this does not collapse to 0 for every
+    cluster that touches an enclave, so it can rank clusters that sit inside enclaves."""
+    c = footprint.representative_point() if not footprint.centroid.within(footprint) else footprint.centroid
+    d = c.distance(enclave.boundary)
+    return -d if enclave.contains(c) else c.distance(enclave)
 
 
 def area_weights(poly: Any, tract_geoms: Any, tree: shapely.STRtree, tract_areas: np.ndarray) -> dict[int, float]:

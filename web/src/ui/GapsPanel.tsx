@@ -15,6 +15,8 @@ export interface GapRow {
   restaurants: number;
   cuisine_lq: number | null;
   d: (number | null)[];
+  edge: number | null; // signed: negative = cluster center inside the enclave by that many miles
+  edge_enclave: string | null;
   nearest: string[];
   inter_sqmi: number;
   pct_cluster_in_enclaves: number | null;
@@ -34,9 +36,10 @@ export interface GapsFile {
 
 export const loadGaps = (gid: string) => loadJSON<GapsFile>(`gaps/${gid}.json`);
 
-type SortKey = "d0" | "d1" | "d2" | "cuisine_lq" | "restaurants" | "catch_lq" | "overlap" | "within1";
+type SortKey = "edge" | "d0" | "d1" | "d2" | "cuisine_lq" | "restaurants" | "catch_lq" | "overlap" | "within1";
 
 const VAL: Record<SortKey, (r: GapRow) => number | null> = {
+  edge: (r) => r.edge,
   d0: (r) => r.d[0],
   d1: (r) => r.d[1],
   d2: (r) => r.d[2],
@@ -53,6 +56,13 @@ function clusterNo(id: string): string {
 
 function fmtMi(x: number | null): string {
   return x === null ? "—" : x === 0 ? "0" : x < 0.1 ? x.toFixed(2) : x.toFixed(1);
+}
+
+function fmtEdge(x: number | null): string {
+  if (x === null) return "—";
+  const a = Math.abs(x);
+  const v = a < 0.1 ? a.toFixed(2) : a.toFixed(1);
+  return x < 0 ? `${v} in` : x > 0 ? `${v} out` : "on edge";
 }
 
 function Spark({ within, bands }: { within: (number | null)[]; bands: number[] }) {
@@ -85,7 +95,7 @@ interface Props {
 
 export function GapsPanel({ meta, groups, group, ix, preset, dim, onFocusRow, onHoverRow, onContext, onClose }: Props) {
   const [file, setFile] = useState<GapsFile | null>(null);
-  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: "d0", asc: true });
+  const [sort, setSort] = useState<{ key: SortKey; asc: boolean }>({ key: "edge", asc: true });
   const [focused, setFocused] = useState<string | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   useEffect(() => {
@@ -140,7 +150,7 @@ export function GapsPanel({ meta, groups, group, ix, preset, dim, onFocusRow, on
           <h2>Experiment view: {group.name} — restaurants vs. residences</h2>
           <p class="muted small">
             Each row is a restaurant cluster of a cuisine paired with {group.name}, measured against residential enclaves under the {meta.presets.presets[preset].label.toLowerCase()} preset.
-            Distances are polygon-to-polygon (0 = overlap). Bucket rows are measured against the broad group named in the row. Proximity does not show a causal or cultural relationship.
+            "Edge" is the signed distance from the cluster's center to the nearest enclave edge (in = inside the enclave by that much, out = outside). The 1st/2nd/3rd columns are polygon-to-polygon distances (0 = touching or overlapping). Bucket rows are measured against the broad group named in the row. Proximity does not show a causal or cultural relationship.
           </p>
         </div>
         <button class="close" aria-label="Close gaps panel" onClick={onClose}>×</button>
@@ -156,6 +166,7 @@ export function GapsPanel({ meta, groups, group, ix, preset, dim, onFocusRow, on
                   <th>Cuisine · cluster</th>
                   {head("restaurants", "Rest.", "Restaurants in the cluster")}
                   {head("cuisine_lq", "Cuisine LQ")}
+                  {head("edge", "Edge (mi)", "Signed distance from the cluster center to the nearest enclave edge: inside (in) or outside (out)")}
                   {head("d0", "Nearest enclave (mi)")}
                   {head("d1", "2nd")}
                   {head("d2", "3rd")}
@@ -178,7 +189,8 @@ export function GapsPanel({ meta, groups, group, ix, preset, dim, onFocusRow, on
                     </td>
                     <td>{r.restaurants}</td>
                     <td>{fmtLQ(r.cuisine_lq)}</td>
-                    <td>{r.d[0] === null ? <span class="muted" title="The group has no qualifying enclave under this preset">no enclave</span> : fmtMi(r.d[0])}</td>
+                    <td>{r.edge === null ? <span class="muted" title="The group has no qualifying enclave under this preset">no enclave</span> : fmtEdge(r.edge)}</td>
+                    <td>{r.d[0] === null ? "—" : fmtMi(r.d[0])}</td>
                     <td>{fmtMi(r.d[1])}</td>
                     <td>{fmtMi(r.d[2])}</td>
                     <td>{fmtShare(r.pct_cluster_in_enclaves)}</td>
@@ -201,17 +213,18 @@ export function GapsPanel({ meta, groups, group, ix, preset, dim, onFocusRow, on
 function Scatter({ rows, ix, focused, hovered, onFocus, onHover }: { rows: GapRow[]; ix: CuisineIndex; focused: string | null; hovered: string | null; onFocus: (r: GapRow) => void; onHover: (r: GapRow | null) => void }) {
   const W = 360, H = 230, L = 40, B = 30, T = 10, STRIP = 46;
   const plotW = W - L - STRIP - 12;
-  const withD = rows.filter((r) => r.d[0] !== null && r.catch_lq !== null);
-  const noEnclave = rows.filter((r) => r.d[0] === null);
-  const maxD = Math.max(0.5, ...withD.map((r) => r.d[0]!));
+  const withD = rows.filter((r) => r.edge !== null && r.catch_lq !== null);
+  const noEnclave = rows.filter((r) => r.edge === null);
+  const minD = Math.min(-0.25, ...withD.map((r) => r.edge!));
+  const maxD = Math.max(0.25, ...withD.map((r) => r.edge!));
   const maxLq = Math.max(2, ...rows.map((r) => r.catch_lq ?? 0));
   const ly = (v: number) => Math.log10(Math.max(v, 0.05));
   const y = (v: number) => T + (H - T - B) * (1 - (ly(v) - ly(0.05)) / (ly(maxLq) - ly(0.05)));
-  const x = (v: number) => L + (v / maxD) * plotW;
+  const x = (v: number) => L + ((v - minD) / (maxD - minD)) * plotW;
   const maxN = Math.max(...rows.map((r) => r.restaurants), 1);
   const rad = (n: number) => 2.5 + 7 * Math.sqrt(n / maxN);
   const ticksY = [0.1, 0.5, 1, 2, 5, 10, 20, 50].filter((t) => t <= maxLq * 1.05);
-  const ticksX = [0, maxD / 4, maxD / 2, (3 * maxD) / 4, maxD];
+  const ticksX = [minD, minD / 2, 0, maxD / 2, maxD];
   const dot = (r: GapRow, cx: number, cy: number) => {
     const on = focused === r.cluster || hovered === r.cluster;
     return (
@@ -219,7 +232,7 @@ function Scatter({ rows, ix, focused, hovered, onFocus, onHover }: { rows: GapRo
         tabIndex={0} role="button" aria-label={`${ix.node(r.node)?.name} cluster ${clusterNo(r.cluster)}`}
         onClick={() => onFocus(r)} onMouseEnter={() => onHover(r)} onMouseLeave={() => onHover(null)}
         onKeyDown={(e) => e.key === "Enter" && onFocus(r)}>
-        <title>{`${ix.node(r.node)?.name} ${clusterNo(r.cluster)} · ${r.restaurants} restaurants · nearest enclave ${fmtMi(r.d[0])} mi · residential LQ ${fmtLQ(r.catch_lq)}`}</title>
+        <title>{`${ix.node(r.node)?.name} ${clusterNo(r.cluster)} · ${r.restaurants} restaurants · ${fmtEdge(r.edge)} (edge) · residential LQ ${fmtLQ(r.catch_lq)}`}</title>
       </circle>
     );
   };
@@ -232,12 +245,13 @@ function Scatter({ rows, ix, focused, hovered, onFocus, onHover }: { rows: GapRo
             <text x={L - 4} y={y(t) + 3} text-anchor="end" class="ax">{t}</text>
           </g>
         ))}
-        {ticksX.map((t) => <text key={t} x={x(t)} y={H - B + 14} text-anchor="middle" class="ax">{fmtMi(t)}</text>)}
-        <text x={L + plotW / 2} y={H - 3} text-anchor="middle" class="ax-title">distance to nearest enclave (mi)</text>
+        {ticksX.map((t) => <text key={t} x={x(t)} y={H - B + 14} text-anchor="middle" class="ax">{t === 0 ? "edge" : fmtMi(Math.abs(t))}</text>)}
+        <line x1={x(0)} x2={x(0)} y1={T} y2={H - B} stroke="#a9a8a2" stroke-dasharray="3 3" />
+        <text x={L + plotW / 2} y={H - 3} text-anchor="middle" class="ax-title">← inside enclave · distance to edge (mi) · outside →</text>
         <text x={10} y={T + (H - T - B) / 2} transform={`rotate(-90 10 ${T + (H - T - B) / 2})`} text-anchor="middle" class="ax-title">residential LQ in catchment</text>
         <rect x={L + plotW + 10} y={T} width={STRIP} height={H - T - B} fill="#f4f3ef" />
         <text x={L + plotW + 10 + STRIP / 2} y={H - B + 14} text-anchor="middle" class="ax">no enclave</text>
-        {withD.map((r) => dot(r, x(r.d[0]!), y(r.catch_lq!)))}
+        {withD.map((r) => dot(r, x(r.edge!), y(r.catch_lq!)))}
         {noEnclave.map((r, k) => dot(r, L + plotW + 10 + STRIP / 2, r.catch_lq !== null ? y(r.catch_lq) : T + 10 + (k * 14) % (H - T - B - 20)))}
       </svg>
       <figcaption class="muted small">Dot size = restaurants. Rows without a usable residential LQ in the catchment are listed in the table only.</figcaption>

@@ -271,6 +271,7 @@ export class MapView {
 
   setRestaurants(fc: GeoJSON.FeatureCollection | null, selected: number | null) {
     (this.map.getSource("restaurants") as GeoJSONSource).setData(fc ?? EMPTY_FC);
+    this.shown.restaurants = fc?.features.length ?? 0;
     this.map.setFilter("rest-sel", selected === null ? NONE : ["==", ["get", "i"], selected]);
   }
 
@@ -354,7 +355,7 @@ export class MapView {
   }
 
   /** What the map currently shows, for tests and debugging (behaviour, not pixels). */
-  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[] };
+  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[], restaurants: 0 };
 
   setEnclaves(fc: GeoJSON.FeatureCollection | null, visible: boolean) {
     this.shown.enclaves = visible ? (fc?.features ?? []).map((f) => String(f.properties?.id)) : [];

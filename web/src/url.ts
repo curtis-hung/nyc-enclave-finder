@@ -26,6 +26,7 @@ export interface ViewState {
   multi: boolean; // show multi-location businesses
   restaurant: number | null; // open restaurant card
   gaps: boolean; // experiment view (gaps panel) open
+  restOverlay: boolean; // restaurant points/heatmap shown on the map
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -42,6 +43,7 @@ export const DEFAULT_VIEW: ViewState = {
   multi: false,
   restaurant: null,
   gaps: false,
+  restOverlay: true,
 };
 
 const METRICS: Metric[] = ["lq", "share", "count"];
@@ -82,6 +84,7 @@ export function serialize(v: ViewState): string {
   if (v.multi) p.set("mc", "1");
   if (v.restaurant !== null) p.set("rs", String(v.restaurant));
   if (v.gaps) p.set("x", "1");
+  if (!v.restOverlay) p.set("rm", "0");
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -105,5 +108,6 @@ export function parse(hash: string): ViewState {
     multi: p.get("mc") === "1",
     restaurant: /^\d+$/.test(p.get("rs") ?? "") ? Number(p.get("rs")) : null,
     gaps: p.get("x") === "1",
+    restOverlay: p.get("rm") !== "0",
   };
 }

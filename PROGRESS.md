@@ -11,14 +11,16 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 - [x] M4 "Who's here?"
 - [x] M5 Area focus **[CHECKPOINT]** (reviewed; changes in D20–D21)
 - [x] M6 Restaurants + labels + clusters
-- [x] M7 Gaps + presets **[CHECKPOINT]** (awaiting user review)
+- [x] M7 Gaps + presets **[CHECKPOINT]** (reviewed; changes in D26-D30)
 - [ ] M8 Remaining SHOULD / STRETCH
 - [ ] M9 Finish
 
 ## Current status
 
-**M7 complete — paused at the M7 checkpoint** for feedback on the experiment view and defaults
-(`docs/OBSERVATIONS.md`, `docs/CUISINES.md`, `docs/screenshots/m7-*.png`). Next: M8.
+**M7 checkpoint feedback applied** (D26-D30): seeded clustering fixes DBSCAN chaining, signed edge
+distance, 8-class LQ scale (from the other session's spec update, applied late), multi-location
+threshold 7, overlay toggle, click-to-deselect, hide/show panels. Q3 (bucket LQ ceiling) open.
+Next: M8 - SHOULD items in order, starting with diaspora detail from PUMS (§4.6, J5).
 
 ## Completed work
 
