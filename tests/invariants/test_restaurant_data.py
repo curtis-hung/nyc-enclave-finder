@@ -59,9 +59,10 @@ def test_cluster_stats_are_internally_consistent(cfg, pts):
     for f in (WEB_DATA_DIR / "clusters").glob("*.json"):
         data = json.loads(f.read_text(encoding="utf-8"))
         for preset, items in data["stats"].items():
-            lq_min = cfg.presets["presets"][preset]["cluster"]["lq_min"]
+            pc = cfg.presets["presets"][preset]["cluster"]
             for c in items:
-                assert c["lq"] >= lq_min - 1e-6
+                assert c["lq"] >= pc["lq_min"] - 1e-6 or c["share_gap"] >= pc["gap_min"] - 1e-3
+                assert c["qualified_by"] == ("lq" if c["lq"] >= pc["lq_min"] - 1e-6 else "share_gap")
                 assert c["share"] == pytest.approx(c["cuisine_in_catchment"] / c["catchment_restaurants"], abs=1e-3)
                 assert c["restaurants"] == len(c["members"]) <= c["cuisine_in_catchment"]
                 assert c["independent"] <= c["restaurants"]

@@ -16,8 +16,8 @@ Polygon distance (0 = touching/overlapping) and signed edge distance from the cl
 | East Asian | 31 | 0.00 | 0.00 | 2.56 | -0.34 | 0 |
 | European | 22 | 0.00 | 0.05 | 2.42 | 0.14 | 0 |
 | Chinese | 20 | 0.00 | 0.00 | 2.24 | -0.27 | 0 |
+| Asian | 47 | 0.00 | 0.00 | 1.91 | -0.21 | 0 |
 | Caribbean (West Indian, non-Hispanic) | 26 | 0.00 | 0.00 | 1.69 | -0.19 | 0 |
-| Asian | 40 | 0.00 | 0.00 | 1.40 | -0.28 | 0 |
 | Italian | 19 | 0.00 | 0.00 | 0.48 | 0.04 | 0 |
 | Mexican | 25 | 0.00 | 0.00 | 0.33 | -0.05 | 0 |
 | Irish | 4 | 0.00 | 0.08 | 0.25 | 0.13 | 0 |
@@ -208,15 +208,15 @@ Diversity = normalized Shannon entropy of the eight race/Hispanic-origin categor
 | Measure | strict | default | loose |
 |---|---|---|---|
 | Enclaves (default dimensions, all groups) | 455 | 1,646 | 2,733 |
-| Restaurant clusters (all paired cuisines) | 124 | 428 | 651 |
-| Exact-pairing cluster rows | 97 | 351 | 552 |
+| Restaurant clusters (all paired cuisines) | 136 | 435 | 661 |
+| Exact-pairing cluster rows | 109 | 358 | 562 |
 | Median nearest-enclave distance (mi) | 0.00 | 0.00 | 0.00 |
-| Median signed edge distance (mi; negative = inside) | -0.01 | -0.11 | -0.08 |
-| Rows with distance 0 | 58.8% | 78.1% | 77.2% |
+| Median signed edge distance (mi; negative = inside) | -0.01 | -0.10 | -0.08 |
+| Rows with distance 0 | 59.6% | 77.7% | 77.2% |
 | Rows with no enclave (null) | 0 | 0 | 0 |
 
 Preset parameters:
 
-- **Strict** — enclave: {'lq_min': 3.0, 'count_min': 150, 'states': ['reliable'], 'cv_max': 0.3, 'min_enclave_pop': 1000}; cluster: {'eps_ft': 400, 'min_samples': 6, 'min_cluster_size': 8, 'catchment_ft': 750, 'lq_min': 3.0}
-- **Default** — enclave: {'lq_min': 2.0, 'count_min': 75, 'states': ['reliable', 'caution'], 'cv_max': 0.6, 'min_enclave_pop': 400}; cluster: {'eps_ft': 600, 'min_samples': 4, 'min_cluster_size': 5, 'catchment_ft': 1000, 'lq_min': 2.0}
-- **Loose** — enclave: {'lq_min': 1.5, 'count_min': 40, 'states': ['reliable', 'caution'], 'cv_max': 0.6, 'min_enclave_pop': 150}; cluster: {'eps_ft': 900, 'min_samples': 3, 'min_cluster_size': 4, 'catchment_ft': 1300, 'lq_min': 1.5}
+- **Strict** — enclave: {'lq_min': 3.0, 'count_min': 150, 'states': ['reliable'], 'cv_max': 0.3, 'min_enclave_pop': 1000}; cluster: {'eps_ft': 400, 'min_samples': 6, 'min_cluster_size': 8, 'catchment_ft': 750, 'lq_min': 3.0, 'gap_min': 0.3}
+- **Default** — enclave: {'lq_min': 2.0, 'count_min': 75, 'states': ['reliable', 'caution'], 'cv_max': 0.6, 'min_enclave_pop': 400}; cluster: {'eps_ft': 600, 'min_samples': 4, 'min_cluster_size': 5, 'catchment_ft': 1000, 'lq_min': 2.0, 'gap_min': 0.2}
+- **Loose** — enclave: {'lq_min': 1.5, 'count_min': 40, 'states': ['reliable', 'caution'], 'cv_max': 0.6, 'min_enclave_pop': 150}; cluster: {'eps_ft': 900, 'min_samples': 3, 'min_cluster_size': 4, 'catchment_ft': 1300, 'lq_min': 1.5, 'gap_min': 0.1}

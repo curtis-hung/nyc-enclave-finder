@@ -17,6 +17,9 @@ export const ZERO_COLOR = "#fbfaf7";
 export const SUPPRESSED_BASE = "#ffffff";
 export const ENCLAVE_COLOR = "#eb6834";
 export const CLUSTER_COLOR = "#4a3aa7";
+// Restaurants: red for contrast against the blue choropleth (validated vs the enclave orange and
+// the blue ramp: all-pairs CVD dE >= 14 and normal-vision >= 15 for every pair with the red).
+export const RESTAURANT_COLOR = "#c8102e";
 
 export interface Bin {
   color: string;

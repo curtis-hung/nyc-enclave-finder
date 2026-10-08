@@ -243,3 +243,5 @@ a.btn { text-decoration: none; color: var(--ink); align-self: flex-start; }
 .area-collapsed .maplibregl-ctrl-top-right { top: 64px; }
 @media (max-width: 767px) { .area-collapsed .maplibregl-ctrl-top-right { top: 0; } }
 .notice.small { font-size: 12px; }
+
+details.ceiling summary { cursor: pointer; font-weight: 600; }

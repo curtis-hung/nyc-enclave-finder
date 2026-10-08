@@ -104,6 +104,8 @@ def build_clusters(cfg: Config, r: Restaurants) -> tuple[dict[str, list[ClusterR
                     "share": clean(c.share, 4),
                     "ref_share": clean(c.ref_share, 5),
                     "lq": clean(c.lq, 2),
+                    "share_gap": clean(c.share_gap, 3),
+                    "qualified_by": c.qualified_by,
                     "via_primary": int(nm.via_primary[mem].sum()),
                     "via_tags": int((~nm.via_primary[mem]).sum()),
                     "tag_confidence": {k2: v for k2, v in conf_mix.items() if k2},

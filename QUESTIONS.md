@@ -43,3 +43,5 @@ Chinatown's Asian cluster has catchment LQ 1.86 under the default preset (it sho
 of restaurants. **Options:** (a) keep as is; (b) qualify bucket clusters with a share-gap rule
 (catchment share - citywide share >= x); (c) a normalized LQ ((LQ - 1) / (max LQ - 1)). Either
 (b) or (c) would be one citywide rule.
+
+**Resolution (2026-10-08):** user asked for Chinatown to appear in the Asian clusters; share-gap rule adopted (DECISIONS D31).

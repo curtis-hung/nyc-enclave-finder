@@ -21,7 +21,8 @@ presets:
       min_samples: 6         # DBSCAN density: points within eps for a core point
       min_cluster_size: 8    # smallest cluster kept
       catchment_ft: 750      # catchment = cluster footprint buffered by this distance
-      lq_min: 3.0            # cuisine LQ in the catchment needed to qualify
+      lq_min: 3.0            # cuisine LQ in the catchment needed to qualify...
+      gap_min: 0.3           # ...or the cuisine closes this share of the gap to 100% (whichever is easier)
   default:
     label: Default
     enclave:
@@ -36,6 +37,7 @@ presets:
       min_cluster_size: 5
       catchment_ft: 1000
       lq_min: 2.0
+      gap_min: 0.2
   loose:
     label: Loose
     enclave:
@@ -50,3 +52,4 @@ presets:
       min_cluster_size: 4
       catchment_ft: 1300
       lq_min: 1.5
+      gap_min: 0.1

@@ -105,9 +105,10 @@ interface ClusterProps {
   onSelect: (id: string) => void;
   onContext?: (node: string, cluster: string) => void;
   lqMin: number;
+  gapMin: number;
 }
 
-export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin }: ClusterProps) {
+export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin, gapMin }: ClusterProps) {
   if (!file) return null;
   const items = file.stats[preset] ?? [];
   const name = ix.node(file.node)?.name ?? file.node;
@@ -124,10 +125,12 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
         Cuisine LQ compares the cuisine's share of all restaurants in the cluster's catchment with its citywide share.
       </p>
       {refShare !== null && refShare > 0.1 && (
-        <p class="notice small" role="note">
-          {name} restaurants are {Math.round(refShare * 100)}% of all restaurants citywide, so the highest possible cuisine LQ is {(1 / refShare).toFixed(1)}. Clusters must
-          reach LQ {lqMin} (this preset), i.e. {Math.round(Math.min(1, lqMin * refShare) * 100)}% of every restaurant in their catchment — common cuisines rarely do. The loose preset lowers the bar.
-        </p>
+        <details class="notice small ceiling">
+          <summary>Common cuisine: LQ ceiling {(1 / refShare).toFixed(1)}</summary>
+          {name} restaurants are {Math.round(refShare * 100)}% of all restaurants citywide, so the highest possible cuisine LQ is {(1 / refShare).toFixed(1)}.
+          A cluster qualifies at LQ {lqMin}, or when the cuisine closes {Math.round(gapMin * 100)}% of the gap between its citywide share and 100% of the catchment
+          (whichever is easier; marked "share gap"). For rare cuisines the LQ test is always the easier one.
+        </details>
       )}
       {items.length > 0 && (
         <table class="tbl">
@@ -140,7 +143,7 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
                 <td>{k + 1}</td>
                 <td>{c.restaurants}</td>
                 <td>{c.independent}</td>
-                <td>{fmtLQ(c.lq)}</td>
+                <td>{fmtLQ(c.lq)}{c.qualified_by === "share_gap" && <span class="badge" title={`Qualified by share gap: ${Math.round((c.share_gap ?? 0) * 100)}% of the gap to 100%`}>share gap</span>}</td>
                 {file.basis === "tag" ? <td>{c.tag_coverage === null || c.tag_coverage === undefined ? "—" : fmtShare(c.tag_coverage)}</td> : <td>{c.via_tags}</td>}
               </tr>
             ))}

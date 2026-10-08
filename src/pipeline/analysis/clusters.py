@@ -14,7 +14,14 @@ non-circular cuisine LQ.
 4. cuisine LQ = (cuisine restaurants / ALL restaurants in the catchment)
               / (cuisine restaurants / ALL restaurants citywide).
    Every restaurant counts exactly once in every denominator, however many tags it has.
-5. A cluster qualifies only if its cuisine LQ >= `lq_min`; restaurant density alone never does.
+5. A cluster qualifies only if the cuisine's catchment share reaches
+       required_share = min(lq_min × citywide share,  citywide share + gap_min × (1 − citywide share))
+   i.e. LQ >= lq_min, OR the cuisine closes at least `gap_min` of the gap between its citywide
+   share and 100%. For rare cuisines the LQ term is always the smaller one, so they are unaffected;
+   the share-gap term only matters for very common cuisines whose LQ has a low ceiling
+   (max LQ = 1 / citywide share; e.g. "Asian" restaurants are 23% of NYC -> max LQ 4.3).
+   User-directed at the M7 checkpoint (DECISIONS D31). Restaurant density alone never qualifies.
+   Seeds use the same required share in their eps-neighbourhood.
 """
 
 from __future__ import annotations
@@ -36,13 +43,17 @@ class ClusterRule:
     min_cluster_size: int
     catchment_ft: float
     lq_min: float
+    gap_min: float = 1.0  # share-gap path; 1.0 disables it
+
+    def required_share(self, ref_share: float) -> float:
+        return min(self.lq_min * ref_share, ref_share + self.gap_min * (1.0 - ref_share))
 
     @classmethod
     def from_preset(cls, preset: dict[str, Any]) -> "ClusterRule":
         c = preset["cluster"]
         return cls(eps_ft=float(c["eps_ft"]), min_samples=int(c["min_samples"]),
                    min_cluster_size=int(c["min_cluster_size"]), catchment_ft=float(c["catchment_ft"]),
-                   lq_min=float(c["lq_min"]))
+                   lq_min=float(c["lq_min"]), gap_min=float(c.get("gap_min", 1.0)))
 
 
 @dataclass
@@ -55,6 +66,8 @@ class Cluster:
     share: float
     ref_share: float
     lq: float
+    share_gap: float = 0.0  # (share - ref) / (1 - ref)
+    qualified_by: str = "lq"  # "lq" | "share_gap"
 
 
 FOOTPRINT_PAD_FT = 60.0
@@ -85,7 +98,8 @@ def find_clusters(xy: np.ndarray, member: np.ndarray, rule: ClusterRule) -> list
     if n_all == 0 or len(idx) < max(rule.min_samples, rule.min_cluster_size):
         return []
     ref_share = len(idx) / n_all
-    seeds = local_lq_seeds(xy, member, idx, rule.eps_ft, rule.lq_min * ref_share)
+    need = rule.required_share(ref_share)
+    seeds = local_lq_seeds(xy, member, idx, rule.eps_ft, need)
     if len(seeds) < max(rule.min_samples, rule.min_cluster_size):
         return []
     labels = DBSCAN(eps=rule.eps_ft, min_samples=rule.min_samples).fit(xy[seeds]).labels_
@@ -99,9 +113,11 @@ def find_clusters(xy: np.ndarray, member: np.ndarray, rule: ClusterRule) -> list
         cuisine_n = int(member[inside].sum())
         share = cuisine_n / len(inside) if len(inside) else 0.0
         lq = share / ref_share if ref_share else float("nan")
-        if lq < rule.lq_min:
+        if share < need - 1e-12:
             continue
+        gap = (share - ref_share) / (1.0 - ref_share) if ref_share < 1 else 0.0
         out.append(Cluster(members=mem, footprint=foot, catchment=catch, catchment_idx=inside,
-                           cuisine_in_catchment=cuisine_n, share=share, ref_share=ref_share, lq=lq))
+                           cuisine_in_catchment=cuisine_n, share=share, ref_share=ref_share, lq=lq,
+                           share_gap=gap, qualified_by="lq" if lq >= rule.lq_min else "share_gap"))
     out.sort(key=lambda c: (-len(c.members), int(c.members[0])))
     return out

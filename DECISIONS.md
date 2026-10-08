@@ -302,3 +302,32 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 
 - Per the user's decision in the other session: no PUMA map level; PUMS birthplace/language
   cross-tabs appear inline only where reliable (SPEC §4.6), SHOULD #3, built in M8.
+
+## D31. Share-gap qualification for clusters (user request: Chinatown in the Asian clusters)
+
+- **Rule (one citywide formula, all cuisines):** a cluster qualifies when its catchment share reaches
+  `min(lq_min x citywide share, citywide share + gap_min x (1 - citywide share))`, i.e. LQ >=
+  lq_min OR the cuisine closes `gap_min` of the gap between its citywide share and 100%, whichever is
+  easier. Seeds use the same required share. Presets: gap_min 0.3 / 0.2 / 0.1 (strict / default /
+  loose), stepping like lq_min 3 / 2 / 1.5.
+- **Why this form:** LQ has a ceiling of 1 / citywide share, so a fixed lq_min is far harder for
+  common cuisines (Asian = 23% of restaurants -> max LQ 4.3). For any cuisine under ~10% of
+  restaurants the LQ term is always the smaller requirement, so rare cuisines are untouched.
+- **Measured impact (vs. the previous build):** only "Asian" changed under default (40 -> 47
+  clusters) and loose (42 -> 52); under strict, Asian 14 -> 24 and East Asian 12 -> 14. Every other
+  cuisine's clusters are identical. Manhattan Chinatown now has an Asian cluster under default
+  (185 restaurants, LQ 1.80, share gap 0.239); not under strict. Clusters that pass only via the gap
+  are marked "share gap" in the UI.
+- **Spec note:** §2.4 forbids tuning thresholds so known places tell a desired story. This rule was
+  added at the user's explicit direction after they flagged Chinatown; it is citywide, its effect is
+  reported above, and the gap_min values follow the same strict/default/loose spacing as lq_min.
+  Resolves QUESTIONS Q3.
+
+## D32. M7 feedback round 2 (UI)
+
+- Restaurants drawn in red (#c8102e, white outline; hollow red ring = inferred-tag-only match) and a
+  red heatmap, validated against the blue ramp and the enclave orange.
+- Hovering a restaurant dot shows name, DOHMH category, inferred tags, address and inspection date.
+- Clicking a tract/NTA closes an open restaurant card and context pane.
+- The residential-context pane follows the cluster selected in the cluster table.
+- The common-cuisine LQ-ceiling note is a one-line collapsible.

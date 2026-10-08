@@ -1,7 +1,7 @@
 // Map legend: value bins plus visually distinct data states (§2.7) and overlay swatches.
 
 import type { Scale } from "../scales";
-import { ENCLAVE_COLOR, CLUSTER_COLOR, ZERO_COLOR } from "../scales";
+import { ENCLAVE_COLOR, CLUSTER_COLOR, RESTAURANT_COLOR, ZERO_COLOR } from "../scales";
 import type { Metric } from "../types";
 
 interface Props {
@@ -41,8 +41,8 @@ export function Legend({ level, metric, scale, shareOf, enclaves, clusters, rest
         <li><span class="sw sw-unavail" /> No data / no residents</li></>}
         {enclaves && <li><span class="sw sw-outline" style={{ borderColor: ENCLAVE_COLOR, background: `${ENCLAVE_COLOR}29` }} /> Residential enclave</li>}
         {clusters && <li><span class="sw sw-outline dashed" style={{ borderColor: CLUSTER_COLOR }} /> Restaurant cluster</li>}
-        {restaurants && <li><span class="dot-sw" style={{ background: CLUSTER_COLOR }} /> Restaurant (DOHMH label)</li>}
-        {restaurants && <li><span class="dot-sw hollow" style={{ borderColor: CLUSTER_COLOR }} /> Restaurant (inferred tag only)</li>}
+        {restaurants && <li><span class="dot-sw" style={{ background: RESTAURANT_COLOR }} /> Restaurant (DOHMH label)</li>}
+        {restaurants && <li><span class="dot-sw hollow" style={{ borderColor: RESTAURANT_COLOR }} /> Restaurant (inferred tag only)</li>}
       </ul>
     </div>
   );

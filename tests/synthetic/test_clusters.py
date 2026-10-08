@@ -95,6 +95,26 @@ def test_concentrations_do_not_chain_through_an_ordinary_dense_corridor():
     assert all(c.footprint.bounds[2] - c.footprint.bounds[0] < 3_000 for c in cl)  # no corridor-long cluster
 
 
+def test_share_gap_rule_only_helps_very_common_cuisines():
+    common = ClusterRule(eps_ft=300, min_samples=4, min_cluster_size=5, catchment_ft=500, lq_min=2.0, gap_min=0.2)
+    assert common.required_share(0.01) == pytest.approx(0.02)  # rare cuisine: LQ term binds
+    assert common.required_share(0.25) == pytest.approx(0.25 + 0.2 * 0.75)  # common: gap term binds (0.40 < 0.50)
+    # a common cuisine at ~50% of a dense area where it is ~27% citywide: LQ < 2, but it closes
+    # 20% of the gap to 100%, so it qualifies via the share-gap path
+    bg = background(3000)
+    member_bg = np.zeros(len(bg), bool)
+    member_bg[::4] = True  # 25% citywide
+    core = blob(300, 20_000, 20_000, r=900)
+    member_core = np.zeros(len(core), bool)
+    member_core[: int(0.50 * len(core))] = True
+    xy = np.vstack([bg, core])
+    member = np.r_[member_bg, member_core]
+    plain = ClusterRule(eps_ft=300, min_samples=4, min_cluster_size=5, catchment_ft=500, lq_min=2.0)
+    with_gap = find_clusters(xy, member, common)
+    assert any(c.qualified_by == "share_gap" for c in with_gap)
+    assert all(c.lq >= 2.0 for c in find_clusters(xy, member, plain))
+
+
 def test_too_few_points_yield_no_cluster():
     bg = background(1000)
     xy = np.vstack([bg, blob(3, 1000, 1000)])

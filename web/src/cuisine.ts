@@ -60,6 +60,8 @@ export interface ClusterStats {
   share: number | null;
   ref_share: number | null;
   lq: number | null;
+  share_gap?: number | null;
+  qualified_by?: "lq" | "share_gap";
   via_primary: number;
   via_tags: number;
   tag_confidence: Record<string, number>;

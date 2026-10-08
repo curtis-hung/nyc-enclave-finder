@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 
 maplibregl.setWorkerUrl(workerUrl);
-import { CLUSTER_COLOR, ENCLAVE_COLOR } from "../scales";
+import { CLUSTER_COLOR, ENCLAVE_COLOR, RESTAURANT_COLOR } from "../scales";
 import { geoURL } from "../data";
 import { inverseMask } from "../geo";
 
@@ -188,16 +188,16 @@ export class MapView {
         "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 9, 6, 13, 18],
         "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 9, 0.6, 13, 1.2],
         "heatmap-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0.75, 14, 0],
-        "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"], 0, "rgba(74,58,167,0)", 0.2, "rgba(74,58,167,0.25)", 0.5, "rgba(74,58,167,0.55)", 1, "rgba(48,36,120,0.9)"],
+        "heatmap-color": ["interpolate", ["linear"], ["heatmap-density"], 0, "rgba(200,16,46,0)", 0.2, "rgba(200,16,46,0.25)", 0.5, "rgba(200,16,46,0.55)", 1, "rgba(140,8,30,0.9)"],
       },
     });
     this.add({
       id: "rest-pt", type: "circle", source: "restaurants", minzoom: 12.5,
       paint: {
         "circle-radius": ["interpolate", ["linear"], ["zoom"], 12.5, 2.5, 16, 6],
-        "circle-color": ["case", ["==", ["get", "k"], 2], "#ffffff", ["==", ["get", "m"], 1], "#9a93cf", CLUSTER_COLOR],
-        "circle-stroke-color": CLUSTER_COLOR,
-        "circle-stroke-width": ["case", ["==", ["get", "k"], 2], 1.8, 0.8],
+        "circle-color": ["case", ["==", ["get", "k"], 2], "#ffffff", ["==", ["get", "m"], 1], "#e8909e", RESTAURANT_COLOR],
+        "circle-stroke-color": ["case", ["==", ["get", "k"], 2], RESTAURANT_COLOR, "#ffffff"],
+        "circle-stroke-width": ["case", ["==", ["get", "k"], 2], 2, 1],
         "circle-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.2, 1],
         "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 12.5, 0, 13.2, 1],
       },
@@ -213,8 +213,15 @@ export class MapView {
       });
     }
 
-    m.on("mouseenter", "rest-pt", () => { m.getCanvas().style.cursor = "pointer"; });
-    m.on("mouseleave", "rest-pt", () => { m.getCanvas().style.cursor = ""; });
+    m.on("mousemove", "rest-pt", (e) => {
+      if (m.getZoom() < 13 || !e.features?.length) return;
+      m.getCanvas().style.cursor = "pointer";
+      this.restHoverCb?.({ index: Number(e.features[0].properties?.i), point: e.point });
+    });
+    m.on("mouseleave", "rest-pt", () => {
+      m.getCanvas().style.cursor = "";
+      this.restHoverCb?.(null);
+    });
     m.on("click", (e) => {
       const r = m.getLayer("rest-pt") && m.getZoom() >= 13 ? m.queryRenderedFeatures([[e.point.x - 4, e.point.y - 4], [e.point.x + 4, e.point.y + 4]], { layers: ["rest-pt"] })[0] : null;
       if (r && this.restaurantCb && !this.pickingOn) {
@@ -267,6 +274,11 @@ export class MapView {
 
   onRestaurant(cb: (i: number) => void) {
     this.restaurantCb = cb;
+  }
+
+  private restHoverCb: ((h: { index: number; point: { x: number; y: number } } | null) => void) | null = null;
+  onRestaurantHover(cb: (h: { index: number; point: { x: number; y: number } } | null) => void) {
+    this.restHoverCb = cb;
   }
 
   setRestaurants(fc: GeoJSON.FeatureCollection | null, selected: number | null) {

@@ -22,7 +22,7 @@ export interface DimensionMeta {
 export interface PresetDef {
   label: string;
   enclave: { lq_min: number; count_min: number; states: StateName[]; min_enclave_pop: number };
-  cluster: { eps_ft: number; min_samples: number; min_cluster_size: number; catchment_ft: number; lq_min: number };
+  cluster: { eps_ft: number; min_samples: number; min_cluster_size: number; catchment_ft: number; lq_min: number; gap_min: number };
   [k: string]: unknown;
 }
 

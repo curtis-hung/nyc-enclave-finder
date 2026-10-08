@@ -19,7 +19,8 @@ Status of the build against `SPEC.md` §16. Updated at every milestone boundary.
 
 **M7 checkpoint feedback applied** (D26-D30): seeded clustering fixes DBSCAN chaining, signed edge
 distance, 8-class LQ scale (from the other session's spec update, applied late), multi-location
-threshold 7, overlay toggle, click-to-deselect, hide/show panels. Q3 (bucket LQ ceiling) open.
+threshold 7, overlay toggle, click-to-deselect, hide/show panels; round 2 (D31-D32): share-gap
+cluster rule (Chinatown in Asian clusters), red restaurants, hover info, context follows cluster.
 Next: M8 - SHOULD items in order, starting with diaspora detail from PUMS (§4.6, J5).
 
 ## Completed work

@@ -10,7 +10,7 @@ import { fmtCount, fmtMetric, indicesWithState, scaleFor, STATE_LABEL, unitColor
 import { useView, view } from "../store";
 import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric, type Place } from "../types";
 import type { Area } from "../url";
-import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadPoints, type ClusterFile, type Points } from "../cuisine";
+import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadDetails, loadPoints, type ClusterFile, type Points, type RestaurantDetail } from "../cuisine";
 import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
 import { GapsPanel, type GapRow } from "./GapsPanel";
@@ -54,6 +54,8 @@ export function App() {
   const [clusterFile, setClusterFile] = useState<ClusterFile | null>(null);
   const [selCluster, setSelCluster] = useState<string | null>(null);
   const [ctx, setCtx] = useState<{ node: string; cluster: string } | null>(null);
+  const setCtxRef = useRef(setCtx);
+  const [restHover, setRestHover] = useState<{ index: number; point: { x: number; y: number } } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -65,6 +67,7 @@ export function App() {
     mv.whenReady().then(() => setMapReady(true));
     mv.onHover(setHover);
     mv.onRestaurant((i) => view.set({ restaurant: i }));
+    mv.onRestaurantHover(setRestHover);
     mv.onClick((at, unit) => {
       if (pickingRef.current) {
         const cur = view.get().area;
@@ -75,8 +78,10 @@ export function App() {
       if (!unit || unit.level === "boro") return;
       const next: Area = unit.level === "tract" ? { kind: "tract", id: String(unit.props.geoid) } : { kind: "nta", id: String(unit.props.nta) };
       const cur = view.get().area;
-      // clicking the selected tract/neighborhood again deselects it
-      view.set({ area: cur && cur.kind === next.kind && "id" in cur && cur.id === next.id ? null : next });
+      // clicking the selected tract/neighborhood again deselects it; any click on a unit closes an
+      // open restaurant card and context pane
+      setCtxRef.current?.(null);
+      view.set({ area: cur && cur.kind === next.kind && "id" in cur && cur.id === next.id ? null : next, restaurant: null });
     });
     (window as unknown as { __map: MapView }).__map = mv; // for debugging and E2E
   }, []);
@@ -245,6 +250,8 @@ export function App() {
 
   const focusCluster = (id: string) => {
     setSelCluster(id);
+    // an open residential-context pane follows the selected cluster (bucket cuisines only)
+    if (clusterFile && ix?.node(clusterFile.node)?.kind === "bucket") setCtx((c) => (c ? { node: clusterFile.node, cluster: id } : c));
     const f = clusterFile?.geojson.features.find((x) => x.properties?.id === id && x.properties?.part === "catchment");
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
   };
@@ -286,7 +293,7 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} />}
           {group && (
             <button class={`btn${v.gaps ? " active" : ""}`} aria-pressed={v.gaps} onClick={() => view.set({ gaps: !v.gaps })}>
               {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}
@@ -360,7 +367,30 @@ export function App() {
         </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
-      {hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}
+      {restHover && meta && ix && pts && <RestaurantTooltip hover={restHover} meta={meta} ix={ix} pts={pts} />}
+      {!restHover && hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}
+    </div>
+  );
+}
+
+function RestaurantTooltip({ hover, meta, ix, pts }: { hover: { index: number; point: { x: number; y: number } }; meta: Meta; ix: CuisineIndex; pts: Points }) {
+  const i = hover.index;
+  const nta = meta.ntas[meta.tract_nta[pts.tract[i]]];
+  const [d, setD] = useState<RestaurantDetail | null>(null);
+  useEffect(() => {
+    let live = true;
+    loadDetails(nta.code).then((x) => live && setD(x[String(i)] ?? null));
+    return () => { live = false; };
+  }, [i]);
+  const tags = pts.tags[String(i)] ?? [];
+  const conf = ["", "low", "medium", "high"];
+  return (
+    <div class="tooltip" style={{ left: `${hover.point.x + 14}px`, top: `${hover.point.y + 14}px` }} role="status">
+      <div class="tt-name">{d?.name ?? "…"}</div>
+      <div>{d?.cuisine_dohmh ?? ix.file.nodes[pts.primary[i]].name}{pts.flags[i] & FLAG.multi ? " · multi-location" : ""}</div>
+      {tags.length > 0 && <div class="tt-state">inferred: {tags.map(([t, c]) => `${ix.file.nodes[t].name} (${conf[c]})`).join(", ")}</div>}
+      {d && <div class="tt-state">{d.address}{d.last_inspection ? ` · inspected ${d.last_inspection}` : ""}</div>}
+      <div class="tt-state">{nta.name} · click for details</div>
     </div>
   );
 }
