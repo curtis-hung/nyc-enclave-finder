@@ -388,6 +388,93 @@
           "sha256": "e55c830aa3c0647ddf66d92c991f921f506ee489ab01ac64fdc81413d37cfb49"
         }
       ]
+    },
+    "pums": {
+      "source_id": "pums",
+      "name": "ACS 5-year Public Use Microdata Sample, person records (NYC PUMAs)",
+      "publisher": "U.S. Census Bureau",
+      "source_url": "https://www2.census.gov/programs-surveys/acs/data/pums/2024/5-Year/csv_pny.zip",
+      "vintage": "2020-2024",
+      "fetched_at": "2026-10-08T16:42:23+00:00",
+      "puma_vintage": "2020 PUMAs (codes checked against the 2020 tract-to-PUMA relationship file)",
+      "nyc_pumas": [
+        "04103",
+        "04104",
+        "04107",
+        "04108",
+        "04109",
+        "04110",
+        "04111",
+        "04112",
+        "04121",
+        "04165",
+        "04204",
+        "04205",
+        "04207",
+        "04208",
+        "04209",
+        "04210",
+        "04211",
+        "04212",
+        "04221",
+        "04263",
+        "04301",
+        "04302",
+        "04303",
+        "04304",
+        "04305",
+        "04306",
+        "04307",
+        "04308",
+        "04309",
+        "04310",
+        "04311",
+        "04312",
+        "04313",
+        "04314",
+        "04315",
+        "04316",
+        "04317",
+        "04318",
+        "04401",
+        "04402",
+        "04403",
+        "04404",
+        "04405",
+        "04406",
+        "04407",
+        "04408",
+        "04409",
+        "04410",
+        "04411",
+        "04412",
+        "04413",
+        "04414",
+        "04501",
+        "04502",
+        "04503"
+      ],
+      "ny_person_records": 984474,
+      "files": [
+        {
+          "path": "data/raw/pums/2020-2024/pums_persons_nyc.parquet",
+          "rows": 326729,
+          "bytes": 33636064,
+          "sha256": "d5ab9a73aa38aed25a26f32680be001d9fbe3f55f80255652af28b9d0f57624a"
+        },
+        {
+          "path": "data/raw/pums/2020-2024/pums_data_dictionary.csv",
+          "rows": null,
+          "bytes": 330431,
+          "sha256": "8816ab616c9025bf6a217588d18c402ebb84ddf889d5d1bd7161a9f0c2e099ae"
+        },
+        {
+          "path": "data/raw/pums/2020-2024/tract_to_puma_2020.txt",
+          "rows": 85452,
+          "bytes": 1709076,
+          "sha256": "5262f460b2c8dbe86b00549e916317b1791fdc595c9af72ab18f6f6a67040531"
+        }
+      ]
     }
   }
 }

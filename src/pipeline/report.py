@@ -221,12 +221,13 @@ def write_figures(cfg: Config, groups: list[str]) -> None:
 
 
 def run_report() -> int:
-    from pipeline.observations import write_cuisines_report, write_observations
+    from pipeline.observations import write_cuisines_report, write_observations, write_pums_report
 
     cfg = load_config()
     write_taxonomy(cfg)
     write_observations()
     write_cuisines_report()
+    write_pums_report()
     write_figures(cfg, ["thai", "dominican", "chinese", "korean", "jamaican", "bangladeshi",
                         "ecuadorian", "russian", "nepali"])
     return 0

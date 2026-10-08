@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from pipeline.fetch import acs, osm_overture, socrata
+from pipeline.fetch import acs, osm_overture, pums, socrata
 from pipeline.fetch.common import existing_snapshot, load_manifest, save_manifest
 
 # Order matters only for log readability. MUST sources first, SHOULD enrichment last.
@@ -14,9 +14,11 @@ SOURCES: dict[str, Callable[[dict[str, Any], bool], dict[str, Any]]] = {
     "dohmh": lambda m, r: socrata.fetch_dohmh(),
     "osm": lambda m, r: osm_overture.fetch_osm(),
     "overture": lambda m, r: osm_overture.fetch_overture(),
+    # same vintage as the pinned ACS tract tables (§3.2)
+    "pums": lambda m, r: pums.fetch(int(m["sources"]["acs5"]["vintage_end_year"])),
 }
 
-OPTIONAL = {"osm", "overture"}  # enrichment (SHOULD): failure is logged, not fatal
+OPTIONAL = {"osm", "overture", "pums"}  # enrichment (SHOULD): failure is logged, not fatal
 
 
 def run_fetch(refresh: bool = False, only: list[str] | None = None) -> int:

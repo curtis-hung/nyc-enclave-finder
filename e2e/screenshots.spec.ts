@@ -107,3 +107,15 @@ test("desktop panels hidden", async ({ page }) => {
   await page.waitForTimeout(800);
   await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-panels-hidden.png` });
 });
+
+test("desktop diaspora strips", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#g=korean&a=n:QN0701&c=korean");
+  await settle(page);
+  await page.waitForTimeout(1500);
+  await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-diaspora.png` });
+  const panel = page.getByRole("complementary", { name: "Area details" });
+  await panel.getByRole("region", { name: /Who's here: Language/ }).scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  await panel.screenshot({ path: `docs/screenshots/${milestone}-desktop-diaspora-language.png` });
+});

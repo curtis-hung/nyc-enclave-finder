@@ -13,9 +13,10 @@ from pipeline.analysis.stats import STATE_NAMES
 from pipeline.build import checks
 from pipeline.build.demographics import AcsSnapshot, GroupDim, build_denominators, build_group_dims
 from pipeline.build.enclaves_build import EnclaveGeometry, build_enclaves, write_enclaves
-from pipeline.build.geography import Geography, load_geography
+from pipeline.build.geography import Geography, InvariantError, load_geography
 from pipeline.build.clusters_build import build_clusters, write_restaurant_assets
 from pipeline.build.restaurants import build_restaurants
+from pipeline.build.pums_build import build_pums
 from pipeline.build.gaps_build import build_gaps, write_context, write_gaps
 from pipeline.build.matrix import tract_land_areas, write_gazetteer, write_matrices
 from pipeline.build.whoshere import build_candidates, write_whoshere
@@ -182,7 +183,7 @@ def run_build() -> int:
     _log(f"  gap measures: {gstats.get('rows', 0):,} cluster x pairing rows; {gstats.get('null_distance', 0):,} with no qualifying enclave (null distance); bucket context for {len(context)} cuisines ({gstats.get('context_rows', 0):,} rows)")
 
     _log("[build] writing assets")
-    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix", "restaurants", "clusters", "gaps", "context"):
+    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix", "restaurants", "clusters", "gaps", "context", "diaspora"):
         shutil.rmtree(WEB_DATA_DIR / sub, ignore_errors=True)
     write_geography(geo)
     write_meta(cfg, acs, geo, den)
@@ -194,6 +195,13 @@ def run_build() -> int:
     write_restaurant_assets(cfg, geo, rest, clusters, cdiag["analysis_index"])
     write_gaps(gaps)
     write_context(context)
+    try:
+        pums_log = build_pums(cfg, acs, geo, gds)
+        _log(f"  diaspora detail (PUMS): {pums_log['groups_with_detail']} groups with a definition, "
+             f"{pums_log['groups_with_city_profile']} with a reliable citywide profile")
+    except InvariantError as e:  # PUMS is a SHOULD: the build continues without it
+        pums_log = {"error": str(e)}
+        _log(f"  diaspora detail skipped: {e}")
     places = write_gazetteer(set(cfg.groups))
     _log(f"  gazetteer: {len(places)} navigation presets")
     _log(f"  who's here: candidates per dimension {({d: len(c) for d, c in cands.items()})}; ranked rows {wh}")
@@ -207,6 +215,7 @@ def run_build() -> int:
         "restaurants": {k: v for k, v in rd.items()},
         "clusters": cdiag["per_node"],
         "gaps": gstats,
+        "pums": pums_log,
         "group_dims": {
             gid: {dim: {"city_est": round(gd.city_est), "level": gd.recommended_level,
                         "usable_share_tract": round(gd.usable_share_tract, 3),

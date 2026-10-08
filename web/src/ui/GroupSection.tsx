@@ -4,6 +4,8 @@ import { fmtCount, fmtLQ, fmtShare } from "../scales";
 import { view } from "../store";
 import type { EnclaveBundle, EnclaveItem, Group, GroupsFile, Meta, Metric } from "../types";
 import type { ViewState } from "../url";
+import type { DiasporaIndex } from "../diaspora";
+import { DiasporaStrip } from "./Diaspora";
 
 const METRICS: { id: Metric; label: string }[] = [
   { id: "lq", label: "LQ" },
@@ -21,9 +23,11 @@ interface Props {
   v: ViewState;
   enc: EnclaveBundle | null;
   onEnclave: (item: EnclaveItem) => void;
+  dia: DiasporaIndex | null;
 }
 
-export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, onEnclave }: Props) {
+export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, onEnclave, dia }: Props) {
+  const profile = dia?.city[group.id];
   const dimMeta = group.dims[dim];
   const dimDef = meta.dimensions[dim];
   const enclaveSet = enc?.stats[dim]?.[preset] ?? null;
@@ -82,6 +86,13 @@ export function GroupSection({ meta, groups, group, dim, level, preset, v, enc, 
           <dd>{meta.dimensions[group.default_dimension].name}. {group.rationale}</dd>
         </dl>
       </section>
+      {dia && profile && Object.keys(profile).length > 0 && (
+        <section class="profile" role="region" aria-label="Diaspora profile">
+          <h3>Diaspora profile <span class="muted small">· citywide</span></h3>
+          <DiasporaStrip m={profile} heritage={dia.groups[group.id]?.heritage ?? []} />
+          <p class="muted small">ACS microdata (PUMS) {dia.vintage}. Only reliable values are shown; "Born in the US" includes second, third and later generations.</p>
+        </section>
+      )}
       <section class="enclaves" aria-label="Residential enclaves" role="region">
         <div class="sec-head">
           <h3>Residential enclaves</h3>

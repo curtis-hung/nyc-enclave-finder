@@ -1,7 +1,7 @@
 // Area panel: "Who's here?" for a clicked tract/NTA/borough (§9.2) and the stats of a focused
 // area — NTA, borough or radius (§9.3).
 
-import type { ComponentChildren } from "preact";
+import { Fragment, type ComponentChildren } from "preact";
 import { useEffect, useState } from "preact/hooks";
 import { levelLabel, resolveUnit, unitName, type UnitArea } from "../areas";
 import { computeAreaStats, type AreaStats } from "../focus";
@@ -9,6 +9,9 @@ import { fmtCount, fmtLQ, fmtShare, STATE_LABEL } from "../scales";
 import type { EnclaveBundle, GroupsFile, Meta, Place, WhoCandidate, WhoRow } from "../types";
 import type { Area } from "../url";
 import { DrillDown } from "./DrillDown";
+import { districtMeasures, districtOf, languageFill, type DiasporaIndex, type Measures, type PumaFile } from "../diaspora";
+import { loadDenominators } from "../focus";
+import { DiasporaStrip } from "./Diaspora";
 
 interface Props {
   meta: Meta;
@@ -23,6 +26,7 @@ interface Props {
   onHide: () => void;
   children?: ComponentChildren;
   extra?: (stats: AreaStats) => ComponentChildren;
+  dia: DiasporaIndex | null;
 }
 
 export function areaTitle(meta: Meta, area: Area, places: Place[]): string {
@@ -36,7 +40,7 @@ export function radiusName(a: Extract<Area, { kind: "radius" }>, places: Place[]
   return p ? `${p.name} · ${r}` : `${r} around ${a.lat.toFixed(4)}, ${a.lon.toFixed(4)}`;
 }
 
-export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children, extra }: Props) {
+export function AreaPanel({ meta, groups, area, places, selected, onArea, onGroup, onEnclave, onClose, onHide, children, extra, dia }: Props) {
   const [stats, setStats] = useState<AreaStats | null>(null);
   const [err, setErr] = useState<string | null>(null);
   const key = JSON.stringify(area);
@@ -48,6 +52,33 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
     computeAreaStats(meta, area).then((s) => live && setStats(s)).catch((e) => live && setErr(String(e)));
     return () => { live = false; };
   }, [key]);
+
+  // diaspora strips for the surrounding district (§4.6)
+  const [district, setDistrict] = useState<{ label: string; byGroup: Record<string, Measures>; files: PumaFile[] } | null>(null);
+  useEffect(() => {
+    setDistrict(null);
+    if (!dia || !stats) return;
+    let live = true;
+    const candidateIds = new Set<string>();
+    for (const [dimId, l] of Object.entries(stats.lists)) {
+      for (const r of [...l.lq, ...l.share]) {
+        const c = stats.candidates[dimId][r[0]];
+        if (c.kind === "group") candidateIds.add(c.id);
+      }
+    }
+    if (area.kind === "boro") {
+      const b = meta.boroughs.find((x) => x.code === area.id);
+      setDistrict({ label: `${b?.name ?? area.id} (whole borough)`, byGroup: dia.boro[area.id] ?? {}, files: [] });
+      return;
+    }
+    loadDenominators().then(async (den) => {
+      const d = districtOf(dia, stats.tracts, den.race.tract);
+      if (!d) return;
+      const r = await districtMeasures(dia, d, [...candidateIds]);
+      if (live) setDistrict({ label: d.label, byGroup: r.byGroup, files: r.files });
+    });
+    return () => { live = false; };
+  }, [stats, dia]);
 
   const unit = area.kind !== "radius" ? resolveUnit(meta, area as UnitArea) : null;
   const focused = area.kind !== "tract";
@@ -99,6 +130,12 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
             Several groups can be over-represented at once. "Lives here" means census-measured residence.
             {area.kind === "tract" && " Tract estimates are noisy — the neighborhood view is steadier."}
           </p>
+          {district && Object.keys(district.byGroup).length > 0 && (
+            <p class="muted small dia-note">
+              Strips under a group describe its residents in the surrounding district — <strong>{district.label}</strong> — from ACS microdata (PUMS), reliable values only.
+              {area.kind !== "boro" && " The district is larger than this area."}
+            </p>
+          )}
           {Object.entries(meta.dimensions).map(([dim, d]) => {
             const cands = stats.candidates[dim];
             const rows = stats.lists?.[dim]?.lq ?? [];
@@ -108,7 +145,8 @@ export function AreaPanel({ meta, groups, area, places, selected, onArea, onGrou
               <div class="whos-dim" key={dim} role="region" aria-label={`Who's here: ${d.name}`}>
                 <h4>{d.name} <span class="muted small">· share of {d.share_of}</span></h4>
                 {rows.length ? (
-                  <RowsTable rows={rows} cands={cands} groups={groups} onGroup={onGroup} head={head} />
+                  <RowsTable rows={rows} cands={cands} groups={groups} onGroup={onGroup} head={head}
+                    strips={district?.byGroup} dia={dia} fill={dim === "language" && dia && district?.files.length ? (line) => languageFill(dia, district.files, line) : undefined} />
                 ) : (
                   <p class="muted small">No category is measurably over-represented here{area.kind === "tract" ? " at tract level" : ""}.</p>
                 )}
@@ -157,7 +195,10 @@ function EnclavesInArea({ meta, stats, selected, onEnclave }: { meta: Meta; stat
   );
 }
 
-function RowsTable({ rows, cands, groups, onGroup, head }: { rows: WhoRow[]; cands: WhoCandidate[]; groups: GroupsFile; onGroup: (id: string) => void; head: string }) {
+function RowsTable({ rows, cands, groups, onGroup, head, strips, dia, fill }: {
+  rows: WhoRow[]; cands: WhoCandidate[]; groups: GroupsFile; onGroup: (id: string) => void; head: string;
+  strips?: Record<string, Measures>; dia?: DiasporaIndex | null; fill?: (line: string) => { code: string; name: string; share: number; lq: number }[];
+}) {
   return (
     <table class="tbl whos-tbl">
       <thead>
@@ -167,8 +208,11 @@ function RowsTable({ rows, cands, groups, onGroup, head }: { rows: WhoRow[]; can
         {rows.map(([k, lq, share, count, moe, st]) => {
           const c = cands[k];
           const isGroup = c.kind === "group" && groups.groups[c.id];
+          const strip = isGroup && strips?.[c.id];
+          const sub = c.kind === "language" && fill ? fill(String(Number(c.id.split("_")[1]))) : [];
           return (
-            <tr key={c.id}>
+            <Fragment key={c.id}>
+            <tr>
               <td>
                 {isGroup ? <button class="link" onClick={() => onGroup(c.id)}>{c.label}</button> : c.label}
                 {st === 1 && <span class="badge caution" title={STATE_LABEL[1]}>caution</span>}
@@ -177,6 +221,15 @@ function RowsTable({ rows, cands, groups, onGroup, head }: { rows: WhoRow[]; can
               <td>{fmtShare(share)}</td>
               <td title={moe !== null ? `± ${fmtCount(moe)} (90% margin of error)` : ""}>{fmtCount(count)}{moe !== null && <span class="muted"> ±{fmtCount(moe)}</span>}</td>
             </tr>
+            {strip && Object.keys(strip).length > 0 && (
+              <tr key={`${c.id}-dia`} class="strip-row"><td colSpan={4}><DiasporaStrip m={strip} heritage={dia?.groups[c.id]?.heritage ?? []} compact /></td></tr>
+            )}
+            {sub.map((l) => (
+              <tr key={`${c.id}-${l.code}`} class="fill-row" title="Detailed language from ACS microdata for the surrounding district (reliable values only)">
+                <td>↳ {l.name} <span class="badge">district</span></td><td>{fmtLQ(l.lq)}</td><td>{fmtShare(l.share)}</td><td></td>
+              </tr>
+            ))}
+            </Fragment>
           );
         })}
       </tbody>

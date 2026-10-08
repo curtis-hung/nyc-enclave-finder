@@ -15,6 +15,9 @@ import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
 import { GapsPanel, type GapRow } from "./GapsPanel";
 import { BucketContext } from "./BucketContext";
+import { districtMeasures, loadDiaspora, type DiasporaIndex, type Measures } from "../diaspora";
+import { loadTractIndex } from "../focus";
+import { pointInGeom } from "../geo";
 import { ClusterTable, defaultCuisine, RestaurantCard, RestaurantControls } from "./Restaurants";
 import { FocusControls } from "./FocusControls";
 import { GroupPicker } from "./GroupPicker";
@@ -55,12 +58,15 @@ export function App() {
   const [selCluster, setSelCluster] = useState<string | null>(null);
   const [ctx, setCtx] = useState<{ node: string; cluster: string } | null>(null);
   const setCtxRef = useRef(setCtx);
+  const [dia, setDia] = useState<DiasporaIndex | null>(null);
+  const [clusterResidents, setClusterResidents] = useState<{ group: string; label: string; m: Measures; heritage: string[] } | null>(null);
   const [restHover, setRestHover] = useState<{ index: number; point: { x: number; y: number } } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([loadMeta(), loadGroups()]).then(([m, g]) => { setMeta(m); setGroups(g); }).catch((e) => setError(String(e)));
     loadGazetteer().then(setPlaces).catch(() => setPlaces([]));
+    loadDiaspora().then(setDia).catch(() => setDia(null)); // optional (SHOULD): the app works without it
     Promise.all([loadCuisines(), loadPoints()]).then(([c, p]) => { setIx(new CuisineIndex(c)); setPts(p); }).catch((e) => setError(String(e)));
     const mv = new MapView(mapEl.current!);
     mapRef.current = mv;
@@ -248,6 +254,27 @@ export function App() {
     }
   }, [v.gaps, group?.id, mapReady]);
 
+  // residents of the paired group around the selected cluster (PUMA containing the cluster)
+  useEffect(() => {
+    setClusterResidents(null);
+    if (!selCluster || !clusterFile || !group || !dia || !dia.groups[group.id]) return;
+    let live = true;
+    const f = clusterFile.geojson.features.find((x) => x.properties?.id === selCluster && x.properties?.part === "footprint");
+    if (!f) return;
+    const [[x0, y0], [x1, y1]] = bounds(f.geometry);
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    loadTractIndex().then(async (tracts) => {
+      const t = tracts.find((tr) => cx >= tr.bbox[0][0] && cx <= tr.bbox[1][0] && cy >= tr.bbox[0][1] && cy <= tr.bbox[1][1] && pointInGeom(cx, cy, tr.geom));
+      if (!t) return;
+      const p = dia.tract_puma[t.index];
+      const r = await districtMeasures(dia, { pumas: [p], label: dia.pumas[p].label }, [group.id]);
+      if (live && r.byGroup[group.id]) {
+        setClusterResidents({ group: group.name, label: dia.pumas[p].label, m: r.byGroup[group.id], heritage: dia.groups[group.id].heritage });
+      }
+    });
+    return () => { live = false; };
+  }, [selCluster, clusterFile, group?.id, dia]);
+
   const focusCluster = (id: string) => {
     setSelCluster(id);
     // an open residential-context pane follows the selected cluster (bucket cuisines only)
@@ -290,10 +317,10 @@ export function App() {
           )}
           {group && meta && groups && dim && (
             <GroupSection meta={meta} groups={groups} group={group} dim={dim} level={level} preset={preset} v={v} enc={enc}
-              onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
+              onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} dia={dia} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} residents={clusterResidents} />}
           {group && (
             <button class={`btn${v.gaps ? " active" : ""}`} aria-pressed={v.gaps} onClick={() => view.set({ gaps: !v.gaps })}>
               {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}
@@ -340,7 +367,7 @@ export function App() {
               <AreaPanel meta={meta} groups={groups} area={v.area} places={places}
                 selected={group && dim ? { id: group.id, name: group.name, dim, preset, enc } : null}
                 onArea={(a) => view.set({ area: a })} onGroup={selectGroup} onEnclave={zoomToEnclave}
-                onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)}
+                onClose={() => view.set({ area: null })} onHide={() => setAreaOpen(false)} dia={dia}
                 extra={(stats) => ix && pts && v.area ? (
                   <AreaRestaurants meta={meta} ix={ix} pts={pts} tracts={stats.tracts} v={v} clusters={clusterFile} preset={preset} onCluster={focusCluster}
                     level={v.area.kind === "radius" ? "radius" : v.area.kind}

@@ -1,0 +1,150 @@
+# Diaspora detail from PUMS (SPEC §4.6). PUMS never feeds enclaves, clusters, gaps or the map.
+#
+# Group definitions: each group is defined in PUMS by the variable matching its default dimension
+# (race -> RAC1P/HISP, hispanic -> HISP, asian -> RAC2P19/RAC2P24, ancestry -> ANC1P or ANC2P,
+# birthplace -> POBP, language -> LANP). Codes are resolved at build time by matching the ACS
+# variable labels of groups.yaml to the PUMS data dictionary labels; the resolved mapping is written
+# to docs/PUMS.md and checked against the ACS citywide totals. `match_overrides` fixes labels that
+# differ between the two products. Groups with no valid definition get no diaspora detail.
+
+match_overrides:
+  # ACS label (normalized, lowercase) -> PUMS dictionary label (normalized, lowercase)
+  # values may be one label or a list of labels (their codes are unioned)
+  birthplace:
+    china, excluding hong kong and taiwan: china
+    burma (myanmar): myanmar
+    czechoslovakia (includes czech republic and slovakia): [czechoslovakia, czech republic, slovakia]
+    north macedonia (macedonia): macedonia
+    democratic republic of congo (zaire): democratic republic of the congo
+  ancestry:
+    trinidadian and tobagonian: trinidadian tobagonian
+    assyrian chaldean syriac: [assyrian, chaldean]
+
+# Heritage language(s) at home per group (LANP codes from the 2020-2024 dictionary). A group not
+# listed gets no "speak the heritage language" measures (e.g. groups whose heritage language is
+# English, or that are defined by language). Children inherit nothing automatically.
+heritage_languages:
+  hispanic: [1200]
+  mexican: [1200, 7060, 7300]
+  puerto_rican: [1200]
+  cuban: [1200]
+  dominican: [1200]
+  central_american: [1200, 7300]
+  costa_rican: [1200]
+  guatemalan: [1200, 7300]
+  honduran: [1200, 7300]
+  nicaraguan: [1200]
+  panamanian: [1200]
+  salvadoran: [1200]
+  south_american: [1200, 1210]
+  argentinean: [1200]
+  bolivian: [1200]
+  chilean: [1200]
+  colombian: [1200]
+  ecuadorian: [1200, 7300]
+  paraguayan: [1200]
+  peruvian: [1200, 7300]
+  uruguayan: [1200]
+  venezuelan: [1200]
+  brazilian: [1210]
+  chinese: [1970, 2000, 2030, 2050]
+  taiwanese: [1970, 2000, 2030]
+  japanese: [2560]
+  korean: [2575]
+  mongolian: [1690]
+  burmese: [2160, 2270, 2350]
+  cambodian: [1900]
+  filipino: [2910, 2920, 2950, 3150, 3190]
+  indonesian: [2770, 2715]
+  laotian: [2475]
+  malaysian: [2715, 1970, 2000, 2050, 1765]
+  thai: [2430]
+  vietnamese: [1960]
+  indian: [1350, 1360, 1380, 1420, 1435, 1440, 1450, 1730, 1737, 1750, 1765, 1340]
+  bangladeshi: [1380]
+  bhutanese: [1500]
+  nepali: [1500, 2100]
+  pakistani: [1360, 1420, 1327]
+  sri_lankan: [1530, 1765]
+  afghan: [1327, 1292, 1290]
+  uzbek: [2850, 1250]
+  kazakh: [2850, 1250]
+  haitian: [1055, 1170]
+  jamaican: [1000]
+  trinidadian: [1025]
+  nigerian: [6290, 6370, 6300, 6500]
+  ghanaian: [6120, 6205, 6230]
+  senegalese: [5950, 5940, 1170]
+  ivorian: [1170, 5845, 5900]
+  liberian: [5845, 5900, 1025]
+  sierra_leonean: [5845, 5900, 1025]
+  togolese: [6230, 1170]
+  cape_verdean: [1069, 1210]
+  ethiopian: [4590, 4830, 4640]
+  eritrean: [4640]
+  somali: [4840]
+  sudanese: [4500, 4900]
+  cameroonian: [1170, 6500]
+  congolese: [1170, 5645]
+  arab: [4500]
+  egyptian: [4500]
+  iraqi: [4500, 4560, 4565, 1315]
+  jordanian: [4500]
+  lebanese: [4500]
+  moroccan: [4500, 4880]
+  palestinian: [4500]
+  syrian: [4500]
+  yemeni: [4500]
+  algerian: [4500, 4880]
+  iranian: [1290]
+  turkish: [1675]
+  israeli: [4545]
+  armenian: [1288]
+  assyrian: [4560, 4565]
+  italian: [1155]
+  greek: [1235]
+  portuguese: [1210]
+  polish: [1270]
+  russian: [1250]
+  ukrainian: [1260]
+  belarusian: [1250]
+  albanian: [1242]
+  bosnian: [1276, 1275]
+  croatian: [1277, 1275]
+  serbian: [1278, 1275]
+  macedonian: [1274]
+  romanian: [1220]
+  moldovan: [1220, 1250]
+  hungarian: [1582]
+  czech_slovak: [1262, 1263]
+  bulgarian: [1273]
+  lithuanian: [1281]
+  latvian: [1283]
+  german: [1110, 1120, 1125]
+  french: [1170]
+  dutch: [1132]
+  swedish: [1140]
+  norwegian: [1142]
+  irish: [1231]
+  jewish: [1130, 4545]
+
+# PUMS detailed language -> tract-level C16001 category (the bucket it fills in under, §4.6).
+# Lines: 3 Spanish, 6 French/Haitian/Cajun, 9 German/West Germanic, 12 Russian/Polish/Slavic,
+# 15 Other Indo-European, 18 Korean, 21 Chinese, 24 Vietnamese, 27 Tagalog, 30 Other Asian and
+# Pacific Island, 33 Arabic, 36 Other and unspecified. Built from the dictionary's language list.
+language_buckets:
+  3: [1200]
+  6: [1055, 1069, 1170, 1175]
+  9: [1110, 1120, 1125, 1130, 1132, 1134, 1140, 1141, 1142]
+  12: [1250, 1260, 1262, 1263, 1270, 1273, 1274, 1275, 1276, 1277, 1278]
+  15: [1155, 1210, 1220, 1231, 1235, 1242, 1281, 1283, 1288, 1290, 1292, 1315, 1327, 1340, 1350, 1360, 1380, 1420,
+       1435, 1440, 1450, 1500, 1530, 1540, 1564]
+  18: [2575]
+  21: [1970, 2000, 2030, 2050]
+  24: [1960]
+  27: [2910, 2920]
+  30: [1675, 1690, 1730, 1737, 1750, 1765, 1900, 2100, 2160, 2270, 2350, 2430, 2475, 2525, 2535, 2560,
+       2715, 2770, 2850, 2950, 3150, 3190, 3220, 3270, 3350, 3420, 3500, 3570, 3600]
+  33: [4500]
+  36: [1000, 1025, 1565, 1582, 4545, 4560, 4565, 4590, 4640, 4830, 4840, 4880, 4900, 5150, 5345, 5525, 5645, 5845, 5900, 5940,
+       5950, 6120, 6205, 6230, 6290, 6300, 6370, 6500, 6795, 6800, 6839, 6930, 6933, 7019, 7060, 7124, 7300, 9999]

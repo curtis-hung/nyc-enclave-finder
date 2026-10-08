@@ -6,6 +6,8 @@ import { fmtLQ, fmtShare } from "../scales";
 import { view } from "../store";
 import type { Group, Meta } from "../types";
 import type { ViewState } from "../url";
+import type { Measures } from "../diaspora";
+import { DiasporaStrip } from "./Diaspora";
 
 export const CONF_LABEL = { low: "all tags (incl. name keywords)", medium: "medium+ confidence", high: "high confidence only" } as const;
 
@@ -106,9 +108,10 @@ interface ClusterProps {
   onContext?: (node: string, cluster: string) => void;
   lqMin: number;
   gapMin: number;
+  residents?: { group: string; label: string; m: Measures; heritage: string[] } | null;
 }
 
-export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin, gapMin }: ClusterProps) {
+export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin, gapMin, residents }: ClusterProps) {
   if (!file) return null;
   const items = file.stats[preset] ?? [];
   const name = ix.node(file.node)?.name ?? file.node;
@@ -149,6 +152,12 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
             ))}
           </tbody>
         </table>
+      )}
+      {selected && residents && Object.keys(residents.m).length > 0 && items.some((c) => c.id === selected) && (
+        <div class="cluster-residents" role="region" aria-label="Cluster residential context">
+          <div class="ctl-label">Residential context — who lives nearby. This is not evidence of what these restaurants serve.</div>
+          <DiasporaStrip m={residents.m} heritage={residents.heritage} label={`${residents.group} residents of the surrounding district: ${residents.label}`} compact />
+        </div>
       )}
       {selected && onContext && ix.node(file.node)?.kind === "bucket" && items.some((c) => c.id === selected) && (
         <button class="btn" onClick={() => onContext(file.node, selected)}>Residential context for this cluster</button>

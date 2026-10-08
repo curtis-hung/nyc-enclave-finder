@@ -31,6 +31,19 @@ sparse_level:
   # and analysed at NTA level by default, and the UI says so (§2.7).
   min_share_in_usable_tracts: 0.5
 
+pums:
+  # Diaspora detail (§4.6): a number is shown only if it is "reliable": numerator and denominator
+  # each have at least `min_unweighted` sampled people AND the ratio's CV (replicate-weight SE /
+  # value) is at most `cv_max`. Anything else is hidden silently; hidden is never zero.
+  cv_max: 0.30
+  min_unweighted: 30
+  # The "surrounding district" of a focus area: PUMAs holding at least this share of the area's
+  # residents (the largest PUMA is always included).
+  district_min_pop_share: 0.10
+  # A group's PUMS definition is used only if its weighted citywide total is within this factor of
+  # the ACS citywide estimate in the same dimension (guards against a broken code mapping).
+  max_total_ratio: 1.6
+
 plausibility:
   # Warn-only smoke tests (§13.4). "Concentrated around" = the NTA containing the reference
   # point ranks within the top N NTAs citywide by LQ (among NTAs with a usable value).

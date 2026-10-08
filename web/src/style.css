@@ -245,3 +245,22 @@ a.btn { text-decoration: none; color: var(--ink); align-self: flex-start; }
 .notice.small { font-size: 12px; }
 
 details.ceiling summary { cursor: pointer; font-weight: 600; }
+
+/* --- diaspora detail (§4.6) -------------------------------------------------------------------- */
+.diaspora { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--ink-2); }
+.diaspora.compact { font-size: 11.5px; }
+.dia-label { font-size: 11px; color: var(--ink-3); }
+.dia-bar { display: flex; height: 6px; border-radius: 3px; overflow: hidden; background: #f0efea; max-width: 260px; }
+.dia-bar .seg { display: block; height: 100%; }
+.seg.us, .key.us { background: #52514e; }
+.seg.pr, .key.pr { background: #a9a8a2; }
+.seg.ab, .key.ab { background: #d6d5cf; }
+.key { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: 0; }
+.dia-line { display: flex; flex-wrap: wrap; gap: 2px 10px; }
+.dia-line strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+.strip-row td { padding: 0 4px 6px 12px !important; text-align: left !important; border-bottom: 1px solid #f0efea; }
+.fill-row td { font-size: 11.5px; color: var(--ink-2); }
+.fill-row td:first-child { padding-left: 14px; }
+.profile h3 { font-size: 13px; margin: 0 0 4px; }
+.cluster-residents { margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--line); border-radius: 6px; display: flex; flex-direction: column; gap: 4px; }
+.dia-note { margin: 0; }

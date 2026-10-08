@@ -331,3 +331,35 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - Clicking a tract/NTA closes an open restaurant card and context pane.
 - The residential-context pane follows the cluster selected in the cluster table.
 - The common-cuisine LQ-ceiling note is a one-line collapsible.
+
+## D33. Diaspora detail from PUMS (§4.6, SHOULD #3)
+
+- **Source:** ACS 2020-2024 5-year PUMS person file for New York (`csv_pny.zip`, no key needed),
+  filtered to the 55 NYC 2020 PUMAs (all records carry 2020 PUMA codes; verified against the 2020
+  tract-to-PUMA relationship file). Weighted total 8,480,225 (matches ACS).
+- **Race coding:** 2020-22 records use RAC2P19, 2023-24 use RAC2P24; groups map to both. A group
+  coded in only one system (Uzbek, Kazakh, Singaporean) gets no detail rather than a partial-year
+  undercount. Sikh is not a PUMS race code, so Indian = Asian Indian only in PUMS.
+- **Definitions:** resolved at build time by matching the ACS labels of each group's default
+  dimension to PUMS dictionary labels (with `config/pums.yaml` overrides), validated by requiring
+  the weighted citywide total to be within 1.6x of the ACS total (8 small groups rejected, ratio
+  range of accepted 0.70-1.34). The resolved mapping is written to `docs/PUMS.md`. **Deviation:**
+  the spec says to record the mapping in `groups.yaml`; it lives in `config/pums.yaml` (overrides,
+  heritage languages, language buckets) plus the generated `docs/PUMS.md`, to keep groups.yaml
+  readable. Jewish = Yiddish spoken at home (LANP 1130), per the user's proxy decision.
+- **Measures:** born in the 50 states/DC / in PR or a territory / abroad; arrived < 10 years ago
+  among the foreign-born (survey year from SERIALNO); heritage language / English only / another
+  language at home (age 5+); heritage language among the US-born (50 states/DC); English "very
+  well" among speakers of another language. Birthplace measures are skipped for birthplace-defined
+  groups (tautological); heritage measures need declared heritage languages.
+- **Estimation and gating:** PWGTP sums; SE by successive difference replication over the 80
+  replicate weights, computed for the ratio itself. Shown only with >= 30 sampled people on both
+  sides and CV <= 0.30; otherwise hidden with no placeholder. Hidden is never zero.
+- **Geography:** cells [n, est, 80 replicate deltas] per group per PUMA are shipped (~120 KB gzip
+  per PUMA); the client sums the PUMAs of a focus area's district (PUMAs holding >= 10% of the
+  area's residents; borough focus uses precomputed borough values). Labels name the PUMAs by
+  borough + their two most populous NTAs (Census publishes no PUMA name file at that path).
+- **Where it appears:** group profile (citywide), strips under groups in "Who's here", detailed-
+  language rows under multi-language tract buckets (district-level, reliable only), and the paired
+  group's split for the PUMA containing a selected cluster (labelled residential context). PUMS
+  never feeds enclaves, clusters, gaps or the choropleth.
