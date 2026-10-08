@@ -19,8 +19,8 @@ export default defineConfig({
     timeout: 180_000,
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /(screenshots|mobile)\.spec/ },
-    { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /mobile\.spec/ },
+    { name: "desktop", use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } }, testIgnore: /(screenshots|mobile|j4)\.spec/ },
+    { name: "mobile", use: { ...devices["Pixel 7"] }, testMatch: /(mobile|j4)\.spec/ },
     { name: "screenshots", testMatch: /screenshots\.spec/ },
   ],
 });

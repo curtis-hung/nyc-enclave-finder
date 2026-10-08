@@ -16,6 +16,7 @@ from pipeline.build.enclaves_build import EnclaveGeometry, build_enclaves, write
 from pipeline.build.geography import Geography, load_geography
 from pipeline.build.clusters_build import build_clusters, write_restaurant_assets
 from pipeline.build.restaurants import build_restaurants
+from pipeline.build.gaps_build import build_gaps, write_context, write_gaps
 from pipeline.build.matrix import tract_land_areas, write_gazetteer, write_matrices
 from pipeline.build.whoshere import build_candidates, write_whoshere
 from pipeline.build.writer import arr, fmt_kb, sig_arr, simplify_for_display, size_report, write_geojson, write_json
@@ -177,8 +178,11 @@ def run_build() -> int:
     _log(f"  plausibility {'PASS' if kor['passed'] else 'WARN'}: {kor['description']}: {kor['nta_name']} rank {kor['nta_rank']}/{kor['ntas_ranked']} "
          f"(LQ {kor['nta_lq']}); nearest default Korean cluster {kor['nearest_default_cluster_mi']} mi")
 
+    gaps, gstats, context = build_gaps(cfg, eg, gds, enclaves, clusters)
+    _log(f"  gap measures: {gstats.get('rows', 0):,} cluster x pairing rows; {gstats.get('null_distance', 0):,} with no qualifying enclave (null distance); bucket context for {len(context)} cuisines ({gstats.get('context_rows', 0):,} rows)")
+
     _log("[build] writing assets")
-    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix", "restaurants", "clusters"):
+    for sub in ("demo", "geo", "enclaves", "whoshere", "matrix", "restaurants", "clusters", "gaps", "context"):
         shutil.rmtree(WEB_DATA_DIR / sub, ignore_errors=True)
     write_geography(geo)
     write_meta(cfg, acs, geo, den)
@@ -188,6 +192,8 @@ def run_build() -> int:
     wh = write_whoshere(cfg, geo, cands)
     write_matrices(cands)
     write_restaurant_assets(cfg, geo, rest, clusters, cdiag["analysis_index"])
+    write_gaps(gaps)
+    write_context(context)
     places = write_gazetteer(set(cfg.groups))
     _log(f"  gazetteer: {len(places)} navigation presets")
     _log(f"  who's here: candidates per dimension {({d: len(c) for d, c in cands.items()})}; ranked rows {wh}")
@@ -200,6 +206,7 @@ def run_build() -> int:
         "plausibility": plaus,
         "restaurants": {k: v for k, v in rd.items()},
         "clusters": cdiag["per_node"],
+        "gaps": gstats,
         "group_dims": {
             gid: {dim: {"city_est": round(gd.city_est), "level": gd.recommended_level,
                         "usable_share_tract": round(gd.usable_share_tract, 3),

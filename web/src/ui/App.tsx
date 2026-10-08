@@ -13,6 +13,8 @@ import type { Area } from "../url";
 import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadPoints, type ClusterFile, type Points } from "../cuisine";
 import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
+import { GapsPanel, type GapRow } from "./GapsPanel";
+import { BucketContext } from "./BucketContext";
 import { ClusterTable, defaultCuisine, RestaurantCard, RestaurantControls } from "./Restaurants";
 import { FocusControls } from "./FocusControls";
 import { GroupPicker } from "./GroupPicker";
@@ -51,6 +53,7 @@ export function App() {
   const [pts, setPts] = useState<Points | null>(null);
   const [clusterFile, setClusterFile] = useState<ClusterFile | null>(null);
   const [selCluster, setSelCluster] = useState<string | null>(null);
+  const [ctx, setCtx] = useState<{ node: string; cluster: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -200,6 +203,42 @@ export function App() {
   useEffect(() => {
     if (mapRef.current && mapReady) mapRef.current.setClusters(clusterFC, selCluster);
   }, [clusterFC, selCluster, mapReady]);
+  // experiment view: focus a cluster together with its nearest enclave (§9.4)
+  const gapFeatures = useRef<{ focus: GeoJSON.Feature[]; hover: GeoJSON.Feature[] }>({ focus: [], hover: [] });
+  const pushGap = () => mapRef.current?.setGapFocus([...gapFeatures.current.focus, ...gapFeatures.current.hover]);
+  const focusGapRow = async (r: GapRow) => {
+    const [cf, ef] = await Promise.all([loadClusters(r.node), loadEnclaves(r.enclave_group)]);
+    const parts = cf.geojson.features.filter((f) => f.properties?.id === r.cluster)
+      .map((f) => ({ ...f, properties: { ...f.properties, part: f.properties?.part } }));
+    const enc = r.nearest[0] ? ef.geojson.features.find((f) => f.properties?.id === r.nearest[0]) : undefined;
+    const feats: GeoJSON.Feature[] = [...parts];
+    if (enc) feats.push({ ...enc, properties: { ...enc.properties, part: "enclave" } });
+    gapFeatures.current.focus = feats;
+    pushGap();
+    const b = feats.map((f) => bounds(f.geometry));
+    if (b.length) {
+      mapRef.current?.fitTo([[Math.min(...b.map((x) => x[0][0])), Math.min(...b.map((x) => x[0][1]))], [Math.max(...b.map((x) => x[1][0])), Math.max(...b.map((x) => x[1][1]))]], 40);
+    }
+  };
+  const hoverGapRow = (r: GapRow | null) => {
+    if (!r) {
+      gapFeatures.current.hover = [];
+      pushGap();
+      return;
+    }
+    loadClusters(r.node).then((cf) => {
+      const f = cf.geojson.features.find((x) => x.properties?.id === r.cluster && x.properties?.part === "footprint");
+      gapFeatures.current.hover = f ? [{ ...f, properties: { ...f.properties, part: "hover" } }] : [];
+      pushGap();
+    });
+  };
+  useEffect(() => {
+    if (!v.gaps || !group) {
+      gapFeatures.current = { focus: [], hover: [] };
+      if (mapReady) pushGap();
+    }
+  }, [v.gaps, group?.id, mapReady]);
+
   const focusCluster = (id: string) => {
     setSelCluster(id);
     const f = clusterFile?.geojson.features.find((x) => x.properties?.id === id && x.properties?.part === "catchment");
@@ -212,7 +251,7 @@ export function App() {
 
   const hasArea = !!v.area;
   return (
-    <div class={`app${panelOpen ? "" : " panel-collapsed"}${hasArea ? " has-area" : ""}`}>
+    <div class={`app${panelOpen ? "" : " panel-collapsed"}${hasArea ? " has-area" : ""}${v.gaps && group ? " has-gaps" : ""}`}>
       <div ref={mapEl} id="map" role="region" aria-label="Map of New York City" />
       <aside class="panel" aria-label="Controls">
         <header class="panel-head">
@@ -239,7 +278,12 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} />}
+          {group && (
+            <button class={`btn${v.gaps ? " active" : ""}`} aria-pressed={v.gaps} onClick={() => view.set({ gaps: !v.gaps })}>
+              {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}
+            </button>
+          )}
           {meta && (
             <details class="advanced">
               <summary>Advanced</summary>
@@ -260,6 +304,13 @@ export function App() {
           </footer>
         </div>
       </aside>
+      {meta && groups && ix && ctx && (
+        <aside class={`panel panel-right card-panel${v.area ? " stacked" : ""}`} aria-label="Residential context">
+          <div class="panel-body">
+            <BucketContext meta={meta} groups={groups} ix={ix} node={ctx.node} cluster={ctx.cluster} onClose={() => setCtx(null)} />
+          </div>
+        </aside>
+      )}
       {meta && ix && pts && v.restaurant !== null && v.restaurant < pts.n && (
         <aside class={`panel panel-right card-panel${v.area ? " stacked" : ""}`} aria-label="Restaurant details">
           <div class="panel-body">
@@ -293,6 +344,12 @@ export function App() {
             </div>
           </aside>
         )
+      )}
+      {v.gaps && group && meta && groups && ix && dim && (
+        <div class="gaps-drawer">
+          <GapsPanel meta={meta} groups={groups} group={group} ix={ix} preset={preset} dim={dim}
+            onFocusRow={focusGapRow} onHoverRow={hoverGapRow} onContext={(node, cluster) => setCtx({ node, cluster })} onClose={() => view.set({ gaps: false })} />
+        </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
       {hover && demo && meta && group && <Tooltip hover={hover} demo={demo} meta={meta} metric={v.metric} level={level} />}

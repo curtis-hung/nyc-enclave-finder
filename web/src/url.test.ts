@@ -16,6 +16,7 @@ describe("URL state", () => {
       conf: "high",
       multi: true,
       restaurant: 1234,
+      gaps: true,
     };
     expect(parse("#" + serialize(v))).toEqual(v);
   });

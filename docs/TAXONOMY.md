@@ -587,7 +587,7 @@ Groups with no paired cuisine: White (non-Hispanic), American Indian and Alaska 
 | Southwestern | 7 | southwestern | cuisine |
 | Cajun | 7 | cajun | cuisine |
 | Iranian | 5 | persian | cuisine |
-| Creole/Cajun | 4 | cajun | cuisine |
+| Creole/Cajun | 4 | creole | bucket |
 | Czech | 4 | czech | cuisine |
 | Polynesian | 2 | hawaiian | cuisine |
 | Chilean | 2 | chilean | cuisine |
@@ -606,6 +606,7 @@ Unmapped values: none.
 | Dominican origin around Washington Heights | Washington Heights (South) | 3 of 187 | 5.34 | Inwood (6.17); University Heights (North)-Fordham (5.87); Washington Heights (South) (5.34) | pass |
 | Chinese population around Flushing | Flushing-Willets Point | 1 of 171 | 8.52 | Flushing-Willets Point (8.52); Chinatown-Two Bridges (8.09); Queensboro Hill (8.06) | pass |
 | Yiddish (language category: German or other West Germanic) around Borough Park | Borough Park | 2 of 96 | 36.25 | South Williamsburg (36.74); Borough Park (36.25); Mapleton-Midwood (West) (9.5) | pass |
+| Korean-cuisine restaurants around W 32nd St (restaurant data) | Midtown South-Flatiron-Union Square | 3 of 185 | 7.49 | Murray Hill-Broadway Flushing (26.19); Auburndale (10.19); Midtown South-Flatiron-Union Square (7.49) | pass |
 
 Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 
@@ -613,146 +614,146 @@ Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 
 | Group | Dimension | reliable | caution | suppressed | unavailable | zero | usable share |
 |---|---|---|---|---|---|---|---|
-| Hispanic & Latin American | hispanic | 1190 | 893 | 147 | 84 | 13 | 99% |
-| Mexican | hispanic | 36 | 506 | 1151 | 84 | 550 | 65% |
-| Puerto Rican | hispanic | 249 | 1008 | 822 | 84 | 164 | 88% |
-| Cuban | hispanic | 3 | 54 | 869 | 84 | 1317 | 13% |
-| Dominican | hispanic | 228 | 638 | 945 | 84 | 432 | 88% |
-| Central American | hispanic | 8 | 316 | 1349 | 84 | 570 | 41% |
-| Costa Rican | hispanic | 0 | 3 | 218 | 84 | 2022 | 4% |
-| Guatemalan | hispanic | 0 | 28 | 571 | 84 | 1644 | 19% |
-| Honduran | hispanic | 1 | 56 | 658 | 84 | 1528 | 20% |
-| Nicaraguan | hispanic | 0 | 3 | 225 | 84 | 2015 | 3% |
-| Panamanian | hispanic | 1 | 26 | 492 | 84 | 1724 | 13% |
-| Salvadoran | hispanic | 1 | 40 | 617 | 84 | 1585 | 16% |
-| South American | hispanic | 110 | 784 | 1028 | 84 | 321 | 78% |
-| Argentinean | hispanic | 0 | 8 | 429 | 84 | 1806 | 4% |
-| Bolivian | hispanic | 0 | 1 | 114 | 84 | 2128 | 1% |
-| Chilean | hispanic | 0 | 4 | 247 | 84 | 1992 | 6% |
-| Colombian | hispanic | 10 | 254 | 967 | 84 | 1012 | 49% |
-| Ecuadorian | hispanic | 27 | 294 | 963 | 84 | 959 | 61% |
-| Paraguayan | hispanic | 0 | 1 | 75 | 84 | 2167 | 1% |
-| Peruvian | hispanic | 2 | 47 | 674 | 84 | 1520 | 16% |
-| Uruguayan | hispanic | 0 | 3 | 101 | 84 | 2139 | 10% |
-| Venezuelan | hispanic | 0 | 16 | 514 | 84 | 1713 | 5% |
-| Brazilian | ancestry | 0 | 14 | 375 | 84 | 1854 | 7% |
-| Asian | asian | 827 | 810 | 443 | 84 | 163 | 97% |
-| East Asian | asian | 443 | 697 | 653 | 84 | 450 | 94% |
-| Chinese | asian | 359 | 639 | 705 | 84 | 540 | 92% |
-| Taiwanese | asian | 0 | 27 | 371 | 84 | 1845 | 15% |
-| Japanese | asian | 0 | 49 | 540 | 84 | 1654 | 23% |
-| Korean | asian | 24 | 219 | 700 | 84 | 1300 | 63% |
+| Hispanic & Latin American | hispanic | 1190 | 992 | 48 | 84 | 13 | 99% |
+| Mexican | hispanic | 36 | 977 | 680 | 84 | 550 | 65% |
+| Puerto Rican | hispanic | 249 | 1484 | 346 | 84 | 164 | 88% |
+| Cuban | hispanic | 3 | 254 | 669 | 84 | 1317 | 13% |
+| Dominican | hispanic | 228 | 998 | 585 | 84 | 432 | 88% |
+| Central American | hispanic | 8 | 817 | 848 | 84 | 570 | 41% |
+| Costa Rican | hispanic | 0 | 22 | 199 | 84 | 2022 | 4% |
+| Guatemalan | hispanic | 0 | 106 | 493 | 84 | 1644 | 19% |
+| Honduran | hispanic | 1 | 173 | 541 | 84 | 1528 | 20% |
+| Nicaraguan | hispanic | 0 | 19 | 209 | 84 | 2015 | 3% |
+| Panamanian | hispanic | 1 | 103 | 415 | 84 | 1724 | 13% |
+| Salvadoran | hispanic | 1 | 163 | 494 | 84 | 1585 | 16% |
+| South American | hispanic | 110 | 1296 | 516 | 84 | 321 | 78% |
+| Argentinean | hispanic | 0 | 73 | 364 | 84 | 1806 | 4% |
+| Bolivian | hispanic | 0 | 11 | 104 | 84 | 2128 | 1% |
+| Chilean | hispanic | 0 | 30 | 221 | 84 | 1992 | 6% |
+| Colombian | hispanic | 10 | 587 | 634 | 84 | 1012 | 49% |
+| Ecuadorian | hispanic | 27 | 583 | 674 | 84 | 959 | 61% |
+| Paraguayan | hispanic | 0 | 5 | 71 | 84 | 2167 | 1% |
+| Peruvian | hispanic | 2 | 207 | 514 | 84 | 1520 | 16% |
+| Uruguayan | hispanic | 0 | 11 | 93 | 84 | 2139 | 10% |
+| Venezuelan | hispanic | 0 | 89 | 441 | 84 | 1713 | 5% |
+| Brazilian | ancestry | 0 | 82 | 307 | 84 | 1854 | 7% |
+| Asian | asian | 827 | 1025 | 228 | 84 | 163 | 97% |
+| East Asian | asian | 443 | 973 | 377 | 84 | 450 | 94% |
+| Chinese | asian | 359 | 960 | 384 | 84 | 540 | 92% |
+| Taiwanese | asian | 0 | 94 | 304 | 84 | 1845 | 15% |
+| Japanese | asian | 0 | 185 | 404 | 84 | 1654 | 23% |
+| Korean | asian | 24 | 462 | 457 | 84 | 1300 | 63% |
 | Mongolian | asian | 0 | 1 | 28 | 84 | 2214 | 6% |
-| Southeast Asian | asian | 13 | 296 | 1082 | 84 | 852 | 54% |
-| Burmese | asian | 0 | 7 | 120 | 84 | 2116 | 22% |
-| Cambodian | asian | 0 | 1 | 69 | 84 | 2173 | 1% |
-| Filipino | asian | 7 | 181 | 939 | 84 | 1116 | 45% |
-| Indonesian | asian | 1 | 4 | 105 | 84 | 2133 | 20% |
-| Laotian | asian | 0 | 0 | 18 | 84 | 2225 | 0% |
-| Malaysian | asian | 1 | 1 | 93 | 84 | 2148 | 2% |
-| Singaporean | asian | 0 | 1 | 34 | 84 | 2208 | 2% |
-| Thai | asian | 0 | 10 | 181 | 84 | 2052 | 27% |
-| Vietnamese | asian | 1 | 22 | 460 | 84 | 1760 | 13% |
-| South Asian | asian | 120 | 586 | 1005 | 84 | 532 | 80% |
-| Indian | asian | 66 | 379 | 1041 | 84 | 757 | 70% |
-| Bangladeshi | asian | 24 | 116 | 440 | 84 | 1663 | 63% |
-| Bhutanese | asian | 0 | 0 | 12 | 84 | 2231 | 0% |
-| Nepali | asian | 1 | 20 | 141 | 84 | 2081 | 39% |
-| Pakistani | asian | 5 | 58 | 527 | 84 | 1653 | 32% |
-| Sri Lankan | asian | 0 | 4 | 101 | 84 | 2138 | 18% |
-| Central Asian | asian | 0 | 13 | 192 | 84 | 2038 | 20% |
-| Afghan | ancestry | 0 | 2 | 74 | 84 | 2167 | 2% |
-| Kazakh | asian | 0 | 1 | 35 | 84 | 2207 | 7% |
-| Uzbek | asian | 0 | 10 | 113 | 84 | 2120 | 22% |
-| Black (non-Hispanic) | race | 895 | 671 | 518 | 84 | 159 | 98% |
-| White (non-Hispanic) | race | 1318 | 515 | 350 | 84 | 60 | 99% |
-| American Indian and Alaska Native (non-Hispanic) | race | 0 | 12 | 347 | 84 | 1884 | 12% |
-| Native Hawaiian and Pacific Islander (non-Hispanic) | race | 1 | 2 | 81 | 84 | 2159 | 24% |
-| Some other race (non-Hispanic) | race | 7 | 193 | 1105 | 84 | 938 | 41% |
-| Two or more races (non-Hispanic) | race | 54 | 1105 | 880 | 84 | 204 | 74% |
-| Caribbean (West Indian, non-Hispanic) | ancestry | 280 | 620 | 902 | 84 | 441 | 88% |
-| Jamaican | ancestry | 66 | 388 | 839 | 84 | 950 | 75% |
-| Haitian | ancestry | 17 | 222 | 712 | 84 | 1292 | 64% |
-| Trinidadian and Tobagonian | ancestry | 2 | 181 | 694 | 84 | 1366 | 46% |
-| Guyanese | ancestry | 20 | 207 | 716 | 84 | 1300 | 59% |
-| Barbadian | ancestry | 0 | 46 | 406 | 84 | 1791 | 24% |
+| Southeast Asian | asian | 13 | 649 | 729 | 84 | 852 | 54% |
+| Burmese | asian | 0 | 15 | 112 | 84 | 2116 | 22% |
+| Cambodian | asian | 0 | 7 | 63 | 84 | 2173 | 1% |
+| Filipino | asian | 7 | 466 | 654 | 84 | 1116 | 45% |
+| Indonesian | asian | 1 | 17 | 92 | 84 | 2133 | 20% |
+| Laotian | asian | 0 | 1 | 17 | 84 | 2225 | 0% |
+| Malaysian | asian | 1 | 9 | 85 | 84 | 2148 | 2% |
+| Singaporean | asian | 0 | 5 | 30 | 84 | 2208 | 2% |
+| Thai | asian | 0 | 35 | 156 | 84 | 2052 | 27% |
+| Vietnamese | asian | 1 | 97 | 385 | 84 | 1760 | 13% |
+| South Asian | asian | 120 | 992 | 599 | 84 | 532 | 80% |
+| Indian | asian | 66 | 753 | 667 | 84 | 757 | 70% |
+| Bangladeshi | asian | 24 | 237 | 319 | 84 | 1663 | 63% |
+| Bhutanese | asian | 0 | 5 | 7 | 84 | 2231 | 0% |
+| Nepali | asian | 1 | 51 | 110 | 84 | 2081 | 39% |
+| Pakistani | asian | 5 | 146 | 439 | 84 | 1653 | 32% |
+| Sri Lankan | asian | 0 | 15 | 90 | 84 | 2138 | 18% |
+| Central Asian | asian | 0 | 47 | 158 | 84 | 2038 | 20% |
+| Afghan | ancestry | 0 | 10 | 66 | 84 | 2167 | 2% |
+| Kazakh | asian | 0 | 8 | 28 | 84 | 2207 | 7% |
+| Uzbek | asian | 0 | 33 | 90 | 84 | 2120 | 22% |
+| Black (non-Hispanic) | race | 895 | 919 | 270 | 84 | 159 | 98% |
+| White (non-Hispanic) | race | 1318 | 690 | 175 | 84 | 60 | 99% |
+| American Indian and Alaska Native (non-Hispanic) | race | 0 | 69 | 290 | 84 | 1884 | 12% |
+| Native Hawaiian and Pacific Islander (non-Hispanic) | race | 1 | 11 | 72 | 84 | 2159 | 24% |
+| Some other race (non-Hispanic) | race | 7 | 536 | 762 | 84 | 938 | 41% |
+| Two or more races (non-Hispanic) | race | 54 | 1606 | 379 | 84 | 204 | 74% |
+| Caribbean (West Indian, non-Hispanic) | ancestry | 280 | 1010 | 512 | 84 | 441 | 88% |
+| Jamaican | ancestry | 66 | 674 | 553 | 84 | 950 | 75% |
+| Haitian | ancestry | 17 | 387 | 547 | 84 | 1292 | 64% |
+| Trinidadian and Tobagonian | ancestry | 2 | 376 | 499 | 84 | 1366 | 46% |
+| Guyanese | ancestry | 20 | 434 | 489 | 84 | 1300 | 59% |
+| Barbadian | ancestry | 0 | 146 | 306 | 84 | 1791 | 24% |
 | Bahamian | ancestry | 0 | 0 | 47 | 84 | 2196 | 0% |
-| Belizean | ancestry | 0 | 2 | 164 | 84 | 2077 | 2% |
-| Grenadian | birthplace | 1 | 59 | 234 | 84 | 1949 | 38% |
-| Vincentian | birthplace | 0 | 35 | 235 | 84 | 1973 | 31% |
-| St. Lucian | birthplace | 0 | 10 | 196 | 84 | 2037 | 14% |
-| Dominica-born (the island of Dominica) | birthplace | 0 | 7 | 154 | 84 | 2082 | 7% |
-| Sub-Saharan African | ancestry | 12 | 413 | 997 | 84 | 821 | 63% |
-| West African | birthplace | 9 | 158 | 689 | 84 | 1387 | 51% |
-| Nigerian | ancestry | 2 | 39 | 518 | 84 | 1684 | 24% |
-| Ghanaian | ancestry | 1 | 20 | 294 | 84 | 1928 | 26% |
-| Senegalese | ancestry | 1 | 4 | 67 | 84 | 2171 | 23% |
-| Ivorian | birthplace | 0 | 5 | 126 | 84 | 2112 | 16% |
-| Liberian | ancestry | 0 | 3 | 64 | 84 | 2176 | 11% |
-| Sierra Leonean | ancestry | 0 | 0 | 32 | 84 | 2211 | 0% |
-| Togolese | birthplace | 0 | 3 | 66 | 84 | 2174 | 5% |
-| Cape Verdean | ancestry | 0 | 0 | 33 | 84 | 2210 | 0% |
-| East African | birthplace | 0 | 2 | 188 | 84 | 2053 | 3% |
-| Ethiopian | ancestry | 0 | 0 | 121 | 84 | 2122 | 0% |
+| Belizean | ancestry | 0 | 10 | 156 | 84 | 2077 | 2% |
+| Grenadian | birthplace | 1 | 125 | 168 | 84 | 1949 | 38% |
+| Vincentian | birthplace | 0 | 85 | 185 | 84 | 1973 | 31% |
+| St. Lucian | birthplace | 0 | 45 | 161 | 84 | 2037 | 14% |
+| Dominica-born (the island of Dominica) | birthplace | 0 | 33 | 128 | 84 | 2082 | 7% |
+| Sub-Saharan African | ancestry | 12 | 817 | 593 | 84 | 821 | 63% |
+| West African | birthplace | 9 | 345 | 502 | 84 | 1387 | 51% |
+| Nigerian | ancestry | 2 | 145 | 412 | 84 | 1684 | 24% |
+| Ghanaian | ancestry | 1 | 70 | 244 | 84 | 1928 | 26% |
+| Senegalese | ancestry | 1 | 15 | 56 | 84 | 2171 | 23% |
+| Ivorian | birthplace | 0 | 17 | 114 | 84 | 2112 | 16% |
+| Liberian | ancestry | 0 | 12 | 55 | 84 | 2176 | 11% |
+| Sierra Leonean | ancestry | 0 | 1 | 31 | 84 | 2211 | 0% |
+| Togolese | birthplace | 0 | 11 | 58 | 84 | 2174 | 5% |
+| Cape Verdean | ancestry | 0 | 2 | 31 | 84 | 2210 | 0% |
+| East African | birthplace | 0 | 18 | 172 | 84 | 2053 | 3% |
+| Ethiopian | ancestry | 0 | 8 | 113 | 84 | 2122 | 0% |
 | Eritrean | birthplace | 0 | 0 | 12 | 84 | 2231 | 0% |
 | Somali | ancestry | 0 | 0 | 18 | 84 | 2225 | 0% |
-| Kenyan | ancestry | 0 | 1 | 42 | 84 | 2200 | 9% |
-| Ugandan | ancestry | 0 | 0 | 18 | 84 | 2225 | 0% |
+| Kenyan | ancestry | 0 | 4 | 39 | 84 | 2200 | 9% |
+| Ugandan | ancestry | 0 | 1 | 17 | 84 | 2225 | 0% |
 | Tanzanian | birthplace | 0 | 0 | 26 | 84 | 2217 | 0% |
-| Sudanese | ancestry | 0 | 2 | 39 | 84 | 2202 | 13% |
-| Cameroonian | birthplace | 0 | 2 | 32 | 84 | 2209 | 10% |
-| Congolese (both Congos) | birthplace | 0 | 1 | 43 | 84 | 2199 | 6% |
-| South African | ancestry | 0 | 6 | 96 | 84 | 2141 | 16% |
+| Sudanese | ancestry | 0 | 6 | 35 | 84 | 2202 | 13% |
+| Cameroonian | birthplace | 0 | 3 | 31 | 84 | 2209 | 10% |
+| Congolese (both Congos) | birthplace | 0 | 4 | 40 | 84 | 2199 | 6% |
+| South African | ancestry | 0 | 11 | 91 | 84 | 2141 | 16% |
 | Zimbabwean | ancestry | 0 | 0 | 11 | 84 | 2232 | 0% |
-| Middle Eastern & North African | birthplace | 11 | 284 | 966 | 84 | 982 | 50% |
-| Arab | ancestry | 4 | 235 | 1013 | 84 | 991 | 40% |
-| Egyptian | ancestry | 0 | 29 | 445 | 84 | 1769 | 21% |
-| Iraqi | ancestry | 0 | 1 | 69 | 84 | 2173 | 1% |
-| Jordanian | ancestry | 0 | 0 | 49 | 84 | 2194 | 0% |
-| Lebanese | ancestry | 0 | 21 | 393 | 84 | 1829 | 14% |
-| Moroccan | ancestry | 0 | 7 | 253 | 84 | 1983 | 6% |
-| Palestinian | ancestry | 0 | 1 | 115 | 84 | 2127 | 1% |
-| Syrian | ancestry | 0 | 22 | 217 | 84 | 2004 | 30% |
-| Yemeni | birthplace | 0 | 11 | 192 | 84 | 2040 | 16% |
-| Algerian | birthplace | 0 | 1 | 76 | 84 | 2166 | 3% |
-| Iranian | ancestry | 0 | 11 | 319 | 84 | 1913 | 10% |
-| Turkish | ancestry | 1 | 19 | 383 | 84 | 1840 | 9% |
-| Israeli | ancestry | 0 | 24 | 345 | 84 | 1874 | 18% |
-| Armenian | ancestry | 0 | 9 | 324 | 84 | 1910 | 6% |
+| Middle Eastern & North African | birthplace | 11 | 611 | 639 | 84 | 982 | 50% |
+| Arab | ancestry | 4 | 588 | 660 | 84 | 991 | 40% |
+| Egyptian | ancestry | 0 | 113 | 361 | 84 | 1769 | 21% |
+| Iraqi | ancestry | 0 | 7 | 63 | 84 | 2173 | 1% |
+| Jordanian | ancestry | 0 | 3 | 46 | 84 | 2194 | 0% |
+| Lebanese | ancestry | 0 | 98 | 316 | 84 | 1829 | 14% |
+| Moroccan | ancestry | 0 | 39 | 221 | 84 | 1983 | 6% |
+| Palestinian | ancestry | 0 | 16 | 100 | 84 | 2127 | 1% |
+| Syrian | ancestry | 0 | 49 | 190 | 84 | 2004 | 30% |
+| Yemeni | birthplace | 0 | 34 | 169 | 84 | 2040 | 16% |
+| Algerian | birthplace | 0 | 12 | 65 | 84 | 2166 | 3% |
+| Iranian | ancestry | 0 | 61 | 269 | 84 | 1913 | 10% |
+| Turkish | ancestry | 1 | 81 | 321 | 84 | 1840 | 9% |
+| Israeli | ancestry | 0 | 82 | 287 | 84 | 1874 | 18% |
+| Armenian | ancestry | 0 | 55 | 278 | 84 | 1910 | 6% |
 | Assyrian/Chaldean/Syriac | ancestry | 0 | 0 | 13 | 84 | 2230 | 0% |
-| Jewish (Yiddish-language proxy) | language | 34 | 109 | 663 | 84 | 1437 | 79% |
-| European | birthplace | 251 | 899 | 660 | 84 | 433 | 92% |
-| Southern European | birthplace | 7 | 232 | 769 | 84 | 1235 | 53% |
-| Italian | ancestry | 404 | 848 | 649 | 84 | 342 | 93% |
-| Greek | ancestry | 8 | 163 | 744 | 84 | 1328 | 48% |
-| Portuguese | ancestry | 0 | 20 | 487 | 84 | 1736 | 12% |
-| Maltese | ancestry | 0 | 0 | 79 | 84 | 2164 | 0% |
-| Eastern European | birthplace | 128 | 587 | 808 | 84 | 720 | 83% |
-| Polish | ancestry | 54 | 682 | 755 | 84 | 752 | 76% |
-| Russian | ancestry | 51 | 537 | 793 | 84 | 862 | 74% |
-| Ukrainian | ancestry | 20 | 201 | 759 | 84 | 1263 | 57% |
-| Belarusian | birthplace | 0 | 46 | 229 | 84 | 1968 | 39% |
-| Albanian | ancestry | 0 | 47 | 408 | 84 | 1788 | 27% |
-| Bosnian | birthplace | 0 | 1 | 58 | 84 | 2184 | 5% |
-| Croatian | ancestry | 0 | 19 | 279 | 84 | 1945 | 16% |
-| Serbian | ancestry | 0 | 4 | 120 | 84 | 2119 | 7% |
-| Macedonian | ancestry | 0 | 3 | 133 | 84 | 2107 | 7% |
-| Romanian | ancestry | 0 | 32 | 559 | 84 | 1652 | 12% |
-| Moldovan | birthplace | 0 | 12 | 136 | 84 | 2095 | 19% |
-| Hungarian | ancestry | 2 | 118 | 669 | 84 | 1454 | 46% |
-| Czech and Slovak | birthplace | 0 | 1 | 160 | 84 | 2082 | 1% |
-| Bulgarian | ancestry | 0 | 1 | 125 | 84 | 2117 | 1% |
-| Lithuanian | ancestry | 0 | 18 | 430 | 84 | 1795 | 8% |
-| Latvian | ancestry | 0 | 1 | 128 | 84 | 2114 | 4% |
-| Georgian | birthplace | 0 | 21 | 185 | 84 | 2037 | 30% |
-| Northern & Western European | birthplace | 3 | 311 | 890 | 84 | 1039 | 55% |
-| Irish | ancestry | 354 | 738 | 703 | 84 | 448 | 91% |
-| German | ancestry | 193 | 770 | 720 | 84 | 560 | 87% |
-| French | ancestry | 2 | 264 | 814 | 84 | 1163 | 47% |
-| English | ancestry | 114 | 552 | 744 | 84 | 833 | 83% |
-| Scottish | ancestry | 2 | 199 | 655 | 84 | 1387 | 48% |
-| Dutch | ancestry | 0 | 54 | 538 | 84 | 1651 | 22% |
-| Swedish | ancestry | 0 | 72 | 520 | 84 | 1651 | 25% |
-| Norwegian | ancestry | 0 | 54 | 537 | 84 | 1652 | 20% |
-| Austrian | ancestry | 0 | 44 | 543 | 84 | 1656 | 18% |
-| Swiss | ancestry | 0 | 7 | 278 | 84 | 1958 | 6% |
+| Jewish (Yiddish-language proxy) | language | 34 | 281 | 491 | 84 | 1437 | 79% |
+| European | birthplace | 251 | 1159 | 400 | 84 | 433 | 92% |
+| Southern European | birthplace | 7 | 450 | 551 | 84 | 1235 | 53% |
+| Italian | ancestry | 404 | 1129 | 368 | 84 | 342 | 93% |
+| Greek | ancestry | 8 | 398 | 509 | 84 | 1328 | 48% |
+| Portuguese | ancestry | 0 | 113 | 394 | 84 | 1736 | 12% |
+| Maltese | ancestry | 0 | 9 | 70 | 84 | 2164 | 0% |
+| Eastern European | birthplace | 128 | 871 | 524 | 84 | 720 | 83% |
+| Polish | ancestry | 54 | 1037 | 400 | 84 | 752 | 76% |
+| Russian | ancestry | 51 | 870 | 460 | 84 | 862 | 74% |
+| Ukrainian | ancestry | 20 | 463 | 497 | 84 | 1263 | 57% |
+| Belarusian | birthplace | 0 | 92 | 183 | 84 | 1968 | 39% |
+| Albanian | ancestry | 0 | 145 | 310 | 84 | 1788 | 27% |
+| Bosnian | birthplace | 0 | 9 | 50 | 84 | 2184 | 5% |
+| Croatian | ancestry | 0 | 73 | 225 | 84 | 1945 | 16% |
+| Serbian | ancestry | 0 | 20 | 104 | 84 | 2119 | 7% |
+| Macedonian | ancestry | 0 | 17 | 119 | 84 | 2107 | 7% |
+| Romanian | ancestry | 0 | 145 | 446 | 84 | 1652 | 12% |
+| Moldovan | birthplace | 0 | 37 | 111 | 84 | 2095 | 19% |
+| Hungarian | ancestry | 2 | 304 | 483 | 84 | 1454 | 46% |
+| Czech and Slovak | birthplace | 0 | 28 | 133 | 84 | 2082 | 1% |
+| Bulgarian | ancestry | 0 | 12 | 114 | 84 | 2117 | 1% |
+| Lithuanian | ancestry | 0 | 100 | 348 | 84 | 1795 | 8% |
+| Latvian | ancestry | 0 | 10 | 119 | 84 | 2114 | 4% |
+| Georgian | birthplace | 0 | 60 | 146 | 84 | 2037 | 30% |
+| Northern & Western European | birthplace | 3 | 608 | 593 | 84 | 1039 | 55% |
+| Irish | ancestry | 354 | 1018 | 423 | 84 | 448 | 91% |
+| German | ancestry | 193 | 1064 | 426 | 84 | 560 | 87% |
+| French | ancestry | 2 | 575 | 503 | 84 | 1163 | 47% |
+| English | ancestry | 114 | 824 | 472 | 84 | 833 | 83% |
+| Scottish | ancestry | 2 | 413 | 441 | 84 | 1387 | 48% |
+| Dutch | ancestry | 0 | 184 | 408 | 84 | 1651 | 22% |
+| Swedish | ancestry | 0 | 205 | 387 | 84 | 1651 | 25% |
+| Norwegian | ancestry | 0 | 196 | 395 | 84 | 1652 | 20% |
+| Austrian | ancestry | 0 | 186 | 401 | 84 | 1656 | 18% |
+| Swiss | ancestry | 0 | 57 | 228 | 84 | 1958 | 6% |

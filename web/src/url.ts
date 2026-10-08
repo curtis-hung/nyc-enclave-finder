@@ -25,6 +25,7 @@ export interface ViewState {
   conf: "low" | "medium" | "high"; // tag-confidence floor (low = all)
   multi: boolean; // show multi-location businesses
   restaurant: number | null; // open restaurant card
+  gaps: boolean; // experiment view (gaps panel) open
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -40,6 +41,7 @@ export const DEFAULT_VIEW: ViewState = {
   conf: "medium",
   multi: false,
   restaurant: null,
+  gaps: false,
 };
 
 const METRICS: Metric[] = ["lq", "share", "count"];
@@ -79,6 +81,7 @@ export function serialize(v: ViewState): string {
   if (v.conf !== DEFAULT_VIEW.conf) p.set("cf", v.conf);
   if (v.multi) p.set("mc", "1");
   if (v.restaurant !== null) p.set("rs", String(v.restaurant));
+  if (v.gaps) p.set("x", "1");
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -101,5 +104,6 @@ export function parse(hash: string): ViewState {
     conf: p.get("cf") === "low" || p.get("cf") === "high" ? (p.get("cf") as "low" | "high") : "medium",
     multi: p.get("mc") === "1",
     restaurant: /^\d+$/.test(p.get("rs") ?? "") ? Number(p.get("rs")) : null,
+    gaps: p.get("x") === "1",
   };
 }

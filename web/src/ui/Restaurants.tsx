@@ -100,15 +100,16 @@ interface ClusterProps {
   presetLabel: string;
   selected: string | null;
   onSelect: (id: string) => void;
+  onContext?: (node: string, cluster: string) => void;
 }
 
-export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect }: ClusterProps) {
+export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext }: ClusterProps) {
   if (!file) return null;
   const items = file.stats[preset] ?? [];
   const name = ix.node(file.node)?.name ?? file.node;
   return (
     <section class="clusters" role="region" aria-label="Restaurant clusters">
-      <h3>{name} restaurant clusters</h3>
+      <h3>{name} restaurant clusters{ix.node(file.node)?.kind === "bucket" && <span class="badge" title="This cuisine covers several groups">bucket-level</span>}</h3>
       <p class="muted small">
         {items.length} cluster{items.length === 1 ? "" : "s"} under the {presetLabel.toLowerCase()} preset.{" "}
         {file.basis === "tag"
@@ -133,6 +134,9 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
             ))}
           </tbody>
         </table>
+      )}
+      {selected && onContext && ix.node(file.node)?.kind === "bucket" && items.some((c) => c.id === selected) && (
+        <button class="btn" onClick={() => onContext(file.node, selected)}>Residential context for this cluster</button>
       )}
     </section>
   );

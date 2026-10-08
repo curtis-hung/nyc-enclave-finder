@@ -65,9 +65,11 @@ function pattern(kind: "hatch" | "dots" | "cross", ink: string): ImageData {
 export function panelPadding(): { left: number; right: number; bottom: number } {
   const panel = document.querySelector(".panel:not(.panel-right)") as HTMLElement | null;
   const right = document.querySelector(".panel-right") as HTMLElement | null;
+  const drawer = document.querySelector(".gaps-drawer") as HTMLElement | null;
   if (window.innerWidth >= 768) {
-    return { left: (panel?.offsetWidth ?? 380) + 24, right: right ? right.offsetWidth + 24 : 0, bottom: 20 };
+    return { left: (panel?.offsetWidth ?? 380) + 24, right: right ? right.offsetWidth + 24 : 0, bottom: drawer ? drawer.offsetHeight + 24 : 20 };
   }
+  if (drawer) return { left: 10, right: 0, bottom: drawer.offsetHeight + 10 };
   const sheet = right ?? panel;
   return { left: 10, right: 0, bottom: Math.min((sheet?.offsetHeight ?? 0) + 10, window.innerHeight * 0.6) };
 }
@@ -173,6 +175,12 @@ export class MapView {
     m.addSource("focus", { type: "geojson", data: EMPTY_FC });
     this.add({ id: "mask-fill", type: "fill", source: "mask", paint: { "fill-color": "#e9e8e3", "fill-opacity": 0.82 } });
     this.add({ id: "focus-line", type: "line", source: "focus", paint: { "line-color": "#0b0b0b", "line-width": 2.2 } });
+    m.addSource("gapfocus", { type: "geojson", data: EMPTY_FC });
+    this.add({ id: "gap-enclave-fill", type: "fill", source: "gapfocus", filter: ["==", ["get", "part"], "enclave"], paint: { "fill-color": ENCLAVE_COLOR, "fill-opacity": 0.28 } });
+    this.add({ id: "gap-enclave-line", type: "line", source: "gapfocus", filter: ["==", ["get", "part"], "enclave"], paint: { "line-color": ENCLAVE_COLOR, "line-width": 3.5 } });
+    this.add({ id: "gap-catch", type: "line", source: "gapfocus", filter: ["==", ["get", "part"], "catchment"], paint: { "line-color": CLUSTER_COLOR, "line-width": 1.4, "line-dasharray": [1, 2] } });
+    this.add({ id: "gap-cluster", type: "line", source: "gapfocus", filter: ["==", ["get", "part"], "footprint"], paint: { "line-color": CLUSTER_COLOR, "line-width": 3.5 } });
+    this.add({ id: "gap-hover", type: "line", source: "gapfocus", filter: ["==", ["get", "part"], "hover"], paint: { "line-color": "#0b0b0b", "line-width": 2.5 } });
     m.addSource("restaurants", { type: "geojson", data: EMPTY_FC });
     this.add({
       id: "rest-heat", type: "heatmap", source: "restaurants", maxzoom: 14,
@@ -267,11 +275,18 @@ export class MapView {
   }
 
   setClusters(fc: GeoJSON.FeatureCollection | null, selected: string | null) {
+    this.shown.clusters = [...new Set((fc?.features ?? []).map((f) => String(f.properties?.id)))];
     (this.map.getSource("clusters") as GeoJSONSource).setData(fc ?? EMPTY_FC);
     const part = (p: string): FilterSpecification =>
       selected ? ["all", ["==", ["get", "id"], selected], ["==", ["get", "part"], p]] : NONE_ID;
     this.map.setFilter("cluster-catch", part("catchment"));
     this.map.setFilter("cluster-sel", part("footprint"));
+  }
+
+  /** Experiment view: highlight a cluster (footprint + catchment) and its nearest enclave. */
+  setGapFocus(features: GeoJSON.Feature[]) {
+    this.shown.gap = features.map((f) => String(f.properties?.part));
+    (this.map.getSource("gapfocus") as GeoJSONSource).setData({ type: "FeatureCollection", features });
   }
 
   setPicking(on: boolean) {
@@ -338,7 +353,11 @@ export class MapView {
     }
   }
 
+  /** What the map currently shows, for tests and debugging (behaviour, not pixels). */
+  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[] };
+
   setEnclaves(fc: GeoJSON.FeatureCollection | null, visible: boolean) {
+    this.shown.enclaves = visible ? (fc?.features ?? []).map((f) => String(f.properties?.id)) : [];
     (this.map.getSource("enclaves") as GeoJSONSource).setData(fc ?? EMPTY_FC);
     for (const id of ["enclave-fill", "enclave-line"]) this.map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
   }

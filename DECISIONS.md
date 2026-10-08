@@ -239,3 +239,17 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   NYC-scale defaults, set once and never tuned to make places appear.
 - Only cuisine nodes paired with some group are clustered (102 nodes); cuisine over-representation
   in "who's here" covers every non-generic, non-dish node.
+
+## D25. Gap measure definitions
+
+- Distances: polygon-to-polygon between the cluster footprint and enclave polygons (clipped land
+  geometry), EPSG:2263; 0 when they intersect; null when the group has no enclave.
+- "% of the enclave overlapping the cluster" uses the nearest enclave; "% of the cluster" uses the
+  union of all the group's enclaves (same dimension and preset).
+- Residential LQ/count in the catchment: area-weighted over clipped tract land (same catchment as
+  the cuisine LQ), the enclave group's default (or row) dimension, classified with the standard
+  data-state rules.
+- Within-distance shares use tract representative points (a tract counts when its point is within
+  the band of the footprint) — simple and fast for 5-mile bands; documented as approximate.
+- Bucket pairings use the cuisine's exact-owner broad group; when a bucket cuisine has no owner
+  (e.g. Mediterranean) the pairing group itself is used and flagged `owner_found: false`.

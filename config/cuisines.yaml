@@ -35,7 +35,7 @@ nodes:
   - {id: southwestern, name: Southwestern, parents: [american], dohmh: ["Southwestern"]}
   - {id: tex_mex, name: Tex-Mex, parents: [american], dohmh: ["Tex-Mex"]}
   - {id: soul_food, name: Soul Food, parents: [american], dohmh: ["Soul Food"]}
-  - {id: cajun, name: Cajun / Louisiana Creole, parents: [american, creole], dohmh: ["Cajun", "Creole/Cajun"]}
+  - {id: cajun, name: Cajun / Louisiana Creole, parents: [american, creole], dohmh: ["Cajun"]}
   - {id: hamburgers, name: Hamburgers, kind: food_type, parents: [american], dohmh: ["Hamburgers"]}
   - {id: hotdogs, name: Hot dogs, kind: food_type, parents: [american], dohmh: ["Hotdogs", "Hotdogs/Pretzels"]}
   - {id: steakhouse, name: Steakhouse, kind: food_type, parents: [american], dohmh: ["Steakhouse"]}
@@ -46,7 +46,9 @@ nodes:
   - {id: hawaiian, name: Hawaiian / Polynesian, dohmh: ["Hawaiian", "Polynesian"]}
   - {id: australian, name: Australian, dohmh: ["Australian"]}
   - {id: jewish_kosher, name: Jewish / Kosher, dohmh: ["Jewish/Kosher"]}
-  - {id: creole, name: Creole (Haitian or Louisiana), kind: bucket, dohmh: ["Creole"]}
+  # "Creole" and "Creole/Cajun" are used by Haitian as well as Louisiana-style restaurants in NYC
+  # (seen in the M7 spot-check), so both map to the ambiguous Creole bucket above Haitian and Cajun.
+  - {id: creole, name: Creole (Haitian or Louisiana), kind: bucket, dohmh: ["Creole", "Creole/Cajun"]}
 
   # --- Hispanic and Latin American -------------------------------------------------------------
   - {id: spanish_hispanic, name: "Spanish (DOHMH: Spain or Latin American)", kind: bucket, dohmh: ["Spanish"]}

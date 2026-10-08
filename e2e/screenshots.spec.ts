@@ -62,3 +62,39 @@ test("mobile panel collapsed", async ({ page }) => {
   await page.waitForTimeout(800);
   await page.screenshot({ path: `docs/screenshots/${milestone}-mobile-collapsed.png` });
 });
+
+for (const [name, hash] of [["gaps-korean", "g=korean&c=korean&x=1"], ["gaps-ecuadorian", "g=ecuadorian&c=ecuadorian&x=1"], ["gaps-chinese-strict", "g=chinese&c=chinese&x=1&p=strict"]]) {
+  test(`desktop ${name} row focus`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/#${hash}`);
+    await settle(page);
+    const rows = page.getByRole("region", { name: "Gaps panel" }).locator("tbody tr");
+    await rows.first().waitFor();
+    await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-${name}.png` });
+    await rows.first().click();
+    await page.waitForTimeout(1500);
+    await settle(page);
+    await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-${name}-focus.png` });
+  });
+}
+
+test("desktop bucket context", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/#g=ecuadorian&c=latin_american");
+  await settle(page);
+  const cl = page.getByRole("region", { name: "Restaurant clusters" });
+  await cl.locator("tbody tr").first().click();
+  await cl.getByRole("button", { name: "Residential context for this cluster" }).click();
+  await page.waitForTimeout(1500);
+  await settle(page);
+  await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-bucket-context.png` });
+});
+
+for (const p of ["strict", "default", "loose"]) {
+  test(`desktop preset ${p}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/#g=dominican&c=dominican&p=${p}`);
+    await settle(page);
+    await page.screenshot({ path: `docs/screenshots/${milestone}-desktop-preset-${p}.png` });
+  });
+}

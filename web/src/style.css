@@ -207,3 +207,32 @@ a.btn { text-decoration: none; color: var(--ink); align-self: flex-start; }
   .card-panel { z-index: 5; max-height: 70vh; }
   .card-panel.stacked { top: auto; bottom: 0; }
 }
+
+/* --- experiment view (M7) ---------------------------------------------------------------------- */
+.gaps-drawer { position: absolute; left: calc(var(--panel-w) + 24px); right: 12px; bottom: 12px; height: 46vh; z-index: 3;
+  background: var(--surface); border-radius: var(--radius); box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 6px 24px rgba(0,0,0,.12); overflow: hidden; }
+.has-area .gaps-drawer { right: 404px; }
+.panel-collapsed .gaps-drawer { left: 12px; }
+.gaps { display: flex; flex-direction: column; height: 100%; padding: 10px 14px; gap: 6px; }
+.gaps-head { display: flex; justify-content: space-between; gap: 10px; }
+.gaps-head h2 { font-size: 14px; margin: 0 0 2px; }
+.gaps-head p { margin: 0; }
+.gaps-body { flex: 1; min-height: 0; display: flex; gap: 12px; }
+.gaps-table-wrap { flex: 1; overflow: auto; min-width: 0; }
+.gaps-tbl th { position: sticky; top: 0; background: var(--surface); z-index: 1; vertical-align: bottom; }
+.gaps-tbl td { white-space: nowrap; }
+.gaps-tbl td:first-child { white-space: normal; min-width: 150px; }
+.gaps-tbl tr.hov { background: #f4f3ef; }
+.sort { border: 0; background: none; font: inherit; font-weight: 600; color: var(--ink-2); cursor: pointer; padding: 0; text-align: right; }
+.scatter { margin: 0; flex: 0 0 360px; }
+.scatter .ax { font-size: 10px; fill: var(--ink-3); }
+.scatter .ax-title { font-size: 10.5px; fill: var(--ink-2); }
+.scatter .pt { fill: rgba(74,58,167,.55); stroke: #fff; stroke-width: 1; cursor: pointer; }
+.scatter .pt.bucket { fill: rgba(74,58,167,.18); stroke: #4a3aa7; }
+.scatter .pt.on { fill: #eb6834; stroke: #0b0b0b; stroke-width: 1.5; }
+.has-gaps .mini-legend { display: none; }
+@media (max-width: 1100px) { .scatter { display: none; } }
+@media (max-width: 767px) {
+  .gaps-drawer { left: 0; right: 0; bottom: 0; top: 30vh; height: auto; border-radius: 12px 12px 0 0; z-index: 6; }
+  .has-area .gaps-drawer { right: 0; }
+}
