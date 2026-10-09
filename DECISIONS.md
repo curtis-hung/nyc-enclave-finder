@@ -444,3 +444,13 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   `style.load` — so on a slow basemap the app never added its layers (a blank map). Layers are now
   added on the basemap's `style.load`; the blank fallback is used only if the style itself fails or
   never arrives, and replaces the style without diffing.
+
+## D43. Diversity contrast; restaurants follow the layer switch (user request)
+
+- Diversity ramp re-stepped for contrast: OKLCH hue 175, L 0.75 → 0.20 (adjacent ΔL ≈ 0.11, was
+  0.09), higher chroma; passes the ordinal validator (light end 2.04:1 — the 2:1 floor is what
+  stops it going lighter). Breaks moved from 0.2/0.35/0.5/0.65/0.8 (84% of tracts in three classes,
+  7 tracts in the top one) to 0.3/0.4/0.5/0.6/0.7, so all six classes are used (tracts:
+  176/325/499/621/487/124). Display only; the index is unchanged.
+- Switching to Diversity turns the restaurant overlay off; switching back restores the pre-switch
+  state (or keeps it on if it was turned on while viewing diversity). Reset clears the memory.

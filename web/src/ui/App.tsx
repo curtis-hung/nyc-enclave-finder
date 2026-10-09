@@ -398,6 +398,21 @@ export function App() {
   // floating "Reset view": back to the state of a fresh load — default view (no group, cuisine,
   // area or layers; default preset and dimension), panels shown, panel-local inputs cleared, whole city
   const [resetKey, setResetKey] = useState(0);
+  // Switching to the diversity layer turns the restaurant overlay off; switching back restores the
+  // overlay to how it was before (kept on if it was turned on while viewing diversity).
+  const restBeforeDiv = useRef<boolean | null>(null);
+  const setLayer = (layer: "group" | "diversity") => {
+    const cur = view.get();
+    if (layer === cur.layer) return;
+    if (layer === "diversity") {
+      restBeforeDiv.current = cur.restOverlay;
+      view.set({ layer, restOverlay: false });
+    } else {
+      const before = restBeforeDiv.current;
+      restBeforeDiv.current = null;
+      view.set({ layer, restOverlay: before === null ? cur.restOverlay : cur.restOverlay || before });
+    }
+  };
   const resetView = () => {
     setPickingBoth(false);
     setCtx(null);
@@ -407,6 +422,7 @@ export function App() {
     setWorshipHover(null);
     gapFeatures.current = { focus: [], hover: [] };
     pushGap();
+    restBeforeDiv.current = null;
     view.set({ ...DEFAULT_VIEW });
     setPanelOpen(true);
     setAreaOpen(true);
@@ -444,8 +460,8 @@ export function App() {
           <div class="ctl">
             <span class="ctl-label" id="layer-label">Map shows</span>
             <div class="seg" role="group" aria-labelledby="layer-label">
-              <button aria-pressed={v.layer === "group"} onClick={() => view.set({ layer: "group" })}>{group ? `${group.name} LQ` : "Selected group"}</button>
-              <button aria-pressed={v.layer === "diversity"} onClick={() => view.set({ layer: "diversity" })}>Diversity</button>
+              <button aria-pressed={v.layer === "group"} onClick={() => setLayer("group")}>{group ? `${group.name} LQ` : "Selected group"}</button>
+              <button aria-pressed={v.layer === "diversity"} onClick={() => setLayer("diversity")}>Diversity</button>
             </div>
             {v.layer === "diversity" && (
               <p class="muted small">Diversity index: how evenly residents spread across the eight race/Hispanic-origin categories (0 = all in one, 1 = all eight equal). It describes mix only; it is not a score.</p>

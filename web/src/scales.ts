@@ -21,10 +21,12 @@ export const CLUSTER_COLOR = "#4a3aa7";
 // the blue ramp: all-pairs CVD dE >= 14 and normal-vision >= 15 for every pair with the red).
 export const RESTAURANT_COLOR = "#c8102e";
 
-// Diversity (§9.6): a separate single-hue teal ramp (OKLCH hue 175, L 0.76 -> 0.31), validated as an
-// ordinal ramp, so it is never confused with the LQ blues. Not framed as good or bad.
-export const DIVERSITY_BREAKS = [0.2, 0.35, 0.5, 0.65, 0.8];
-export const DIVERSITY_COLORS = ["#78c2ae", "#45a992", "#008f77", "#00725d", "#005745", "#003b2e"];
+// Diversity (§9.6): a separate single-hue teal ramp (OKLCH hue 175, L 0.75 -> 0.20, chroma up to
+// 0.16), validated as an ordinal ramp (monotone, adjacent ΔL ≈ 0.11, light end 2.04:1 on the
+// surface), so it is never confused with the LQ blues. Not framed as good or bad. Breaks sit where
+// NYC's values are (tract 5th–95th percentile ≈ 0.26–0.70) so every class is used.
+export const DIVERSITY_BREAKS = [0.3, 0.4, 0.5, 0.6, 0.7];
+export const DIVERSITY_COLORS = ["#0dcaa9", "#05a388", "#007e68", "#035b4b", "#013a2f", "#001b15"];
 
 export function diversityScale(): Scale {
   const bins: Bin[] = DIVERSITY_COLORS.map((color, i) => {

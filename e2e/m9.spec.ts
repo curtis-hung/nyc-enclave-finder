@@ -89,3 +89,22 @@ test("floating reset button returns to the fresh-load state", async ({ page }) =
   await page.getByRole("button", { name: "Reset view" }).click();
   await expect(page.getByRole("button", { name: "Hide panels" })).toBeVisible();
 });
+
+test("diversity turns the restaurant overlay off and switching back restores it", async ({ page }) => {
+  await openApp(page, "g=thai&c=thai");
+  const box = page.getByLabel("Show restaurants on map");
+  const mapShows = page.getByRole("group", { name: "Map shows" });
+  await expect(box).toBeChecked();
+  await mapShows.getByRole("button", { name: "Diversity" }).click();
+  await expectHash(page, "ly", "div");
+  await expect(box).not.toBeChecked();
+  await expect.poll(async () => (await page.evaluate(() => (window as any).__map.shown.restaurants))).toBe(0);
+  await mapShows.getByRole("button", { name: "Thai LQ" }).click();
+  await expect(box).toBeChecked();
+  await expectHash(page, "rm", null);
+  // if it was off before, it stays off on the way back
+  await box.uncheck();
+  await mapShows.getByRole("button", { name: "Diversity" }).click();
+  await mapShows.getByRole("button", { name: "Thai LQ" }).click();
+  await expect(box).not.toBeChecked();
+});
