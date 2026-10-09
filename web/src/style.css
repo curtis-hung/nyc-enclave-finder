@@ -293,3 +293,16 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
   padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(74,58,167,.35); white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
 .cluster-name.sel { background: #4a3aa7; color: #fff; border-color: #4a3aa7; }
 .cl-name { color: #4a3aa7; font-weight: 600; font-size: 12px; }
+
+/* --- floating reset button (bottom left of the map) --------------------------------------------- */
+.reset-view { position: absolute; z-index: 2; left: calc(var(--panel-w) + 24px); bottom: 12px; padding: 7px 14px; font-size: 13px; font-weight: 600;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 18px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.18); }
+.reset-view:hover { background: var(--surface-2); }
+.panel-collapsed .reset-view { left: 12px; }
+.has-gaps .reset-view { bottom: calc(46vh + 24px); }
+@media (max-width: 767px) {
+  /* just above whichever bottom sheet is showing */
+  .reset-view { left: 8px; bottom: calc(46vh + 8px); }
+  .has-area .reset-view { bottom: calc(60vh + 8px); }
+  .panel-collapsed .reset-view, .area-collapsed .reset-view { bottom: 64px; }
+}

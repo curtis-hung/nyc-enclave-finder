@@ -73,3 +73,19 @@ test("colloquial names float over clusters and match the cluster table", async (
   expect(new Set(names).size).toBe(names.length);
   await expect(page.locator(".cluster-name")).toHaveCount(names.length);
 });
+
+test("floating reset button clears selections and zooms out, keeping the group", async ({ page }) => {
+  await openApp(page, "g=thai&c=thai&a=n:QN0401");
+  const panel = page.getByRole("complementary", { name: "Area details" });
+  await expect(panel).toBeVisible();
+  const zoomBefore = await page.evaluate(() => (window as any).__map.map.getZoom());
+  await page.getByRole("button", { name: "Reset view" }).click();
+  await expectHash(page, "a", null);
+  await expect(panel).toBeHidden();
+  await expectHash(page, "g", "thai");
+  await expectHash(page, "c", "thai");
+  await expect.poll(() => page.evaluate(() => (window as any).__map.map.getZoom())).toBeLessThan(zoomBefore);
+  // the button stays reachable when the panels are hidden
+  await page.getByRole("button", { name: "Hide panels" }).click();
+  await expect(page.getByRole("button", { name: "Reset view" })).toBeVisible();
+});

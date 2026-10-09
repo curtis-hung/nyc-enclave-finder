@@ -395,6 +395,17 @@ export function App() {
     const f = clusterFile?.geojson.features.find((x) => x.properties?.id === id && x.properties?.part === "catchment");
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
   };
+  // floating "Reset view": clear every selection and return to the whole city; group, cuisine and
+  // layer choices stay
+  const resetView = () => {
+    setPickingBoth(false);
+    setCtx(null);
+    setSelCluster(null);
+    gapFeatures.current = { focus: [], hover: [] };
+    pushGap();
+    view.set({ area: null, restaurant: null });
+    mapRef.current?.fitCity();
+  };
   const zoomToEnclave = (id: string) => {
     const f = enc?.geojson.features.find((x) => x.properties?.id === id);
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
@@ -524,6 +535,7 @@ export function App() {
         </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
+      <button class="reset-view" onClick={resetView} title="Clear the selected area, restaurant and cluster and zoom out to the whole city">Reset view</button>
       {v.about && meta && <About meta={meta} onClose={() => view.set({ about: false })} />}
       {worshipHover && (
         <div class="tooltip" style={{ left: `${worshipHover.point.x + 14}px`, top: `${worshipHover.point.y + 14}px` }} role="status">

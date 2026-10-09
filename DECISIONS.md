@@ -433,3 +433,14 @@ Consequential choices only: decision, alternatives, rationale, limitations.
   south near Broadway). This fixes a misplaced navigation pin; no clustering parameter changed.
 - Overlapping labels are hidden in priority order (selected cluster, then table order) and
   reappear on zoom.
+
+## D42. Reset button; data layers no longer wait for basemap tiles
+
+- A floating "Reset view" button (bottom left of the map, above the bottom sheet on phones) clears
+  the area, restaurant, cluster and gap selections and zooms to the city; group, cuisine and
+  layers stay.
+- Startup fix: data layers were added only after the basemap's full `load` (style + tiles), with an
+  8 s timeout that swapped in the blank style via a diffing `setStyle` that does not emit
+  `style.load` — so on a slow basemap the app never added its layers (a blank map). Layers are now
+  added on the basemap's `style.load`; the blank fallback is used only if the style itself fails or
+  never arrives, and replaces the style without diffing.

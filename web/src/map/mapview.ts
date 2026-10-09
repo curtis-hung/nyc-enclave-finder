@@ -110,25 +110,25 @@ export class MapView {
         this.setup();
         resolve();
       };
-      // If the free basemap is unreachable, fall back to a plain background (data still works).
-      const fallback = setTimeout(() => {
-        if (!this.map.isStyleLoaded()) {
-          this.basemapFailed = true;
-          this.map.setStyle(BLANK_STYLE);
-          this.map.once("style.load", finish);
-        }
-      }, 8000);
-      this.map.once("load", () => {
+      // Data layers go on as soon as the basemap *style* is parsed — not after its tiles, which can
+      // be slow. If the style itself never arrives, fall back to a plain background (data still
+      // works). The fallback replaces the style without diffing so "style.load" reliably fires.
+      const useBlank = () => {
+        if (done) return;
+        this.basemapFailed = true;
+        this.map.once("style.load", finish);
+        this.map.setStyle(BLANK_STYLE, { diff: false });
+      };
+      const fallback = setTimeout(useBlank, 8000);
+      this.map.once("style.load", () => {
         clearTimeout(fallback);
         finish();
       });
       this.map.on("error", (e) => {
         console.error("map error:", e.error?.message ?? e);
-        if (!done && !this.map.isStyleLoaded() && String(e.error?.message ?? "").includes("style")) {
+        if (!done && String(e.error?.message ?? "").includes("style")) {
           clearTimeout(fallback);
-          this.basemapFailed = true;
-          this.map.setStyle(BLANK_STYLE);
-          this.map.once("style.load", finish);
+          useBlank();
         }
       });
     });
