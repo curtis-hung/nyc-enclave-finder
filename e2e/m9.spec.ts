@@ -37,3 +37,24 @@ test.describe("M9 about page and accessibility", () => {
     expect(outline).not.toBe("none");
   });
 });
+
+test("clicking off the tracts resets the view", async ({ page }) => {
+  await openApp(page, "g=thai&a=n:QN0401");
+  const panel = page.getByRole("complementary", { name: "Area details" });
+  await expect(panel).toBeVisible();
+  // centre the map on open water (Upper New York Bay) and click it
+  const pt = await page.evaluate(async () => {
+    const m = (window as any).__map.map;
+    m.stop();
+    m.jumpTo({ center: [-74.04, 40.67], zoom: 11 });
+    await new Promise((r) => m.once("idle", r));
+    const p = m.project([-74.04, 40.67]);
+    const r = m.getCanvas().getBoundingClientRect();
+    return { x: p.x + r.left, y: p.y + r.top, onTract: m.queryRenderedFeatures(p, { layers: ["tract-fill", "nta-fill"].filter((l: string) => m.getLayer(l)) }).length };
+  });
+  expect(pt.onTract).toBe(0);
+  await page.mouse.click(pt.x, pt.y);
+  await expectHash(page, "a", null);
+  await expect(panel).toBeHidden();
+  await expectHash(page, "g", "thai");
+});

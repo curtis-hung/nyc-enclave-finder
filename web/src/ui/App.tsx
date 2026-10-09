@@ -89,7 +89,14 @@ export function App() {
         setPickingBoth(false);
         return;
       }
-      if (!unit || unit.level === "boro") return;
+      // clicking off the tracts (water, outside the city) resets the view: closes the area panel,
+      // the restaurant card and the context pane
+      if (!unit) {
+        setCtxRef.current?.(null);
+        view.set({ area: null, restaurant: null });
+        return;
+      }
+      if (unit.level === "boro") return;
       const next: Area = unit.level === "tract" ? { kind: "tract", id: String(unit.props.geoid) } : { kind: "nta", id: String(unit.props.nta) };
       const cur = view.get().area;
       // clicking the selected tract/neighborhood again deselects it; any click on a unit closes an
