@@ -74,18 +74,18 @@ test("colloquial names float over clusters and match the cluster table", async (
   await expect(page.locator(".cluster-name")).toHaveCount(names.length);
 });
 
-test("floating reset button clears selections and zooms out, keeping the group", async ({ page }) => {
-  await openApp(page, "g=thai&c=thai&a=n:QN0401");
-  const panel = page.getByRole("complementary", { name: "Area details" });
-  await expect(panel).toBeVisible();
-  const zoomBefore = await page.evaluate(() => (window as any).__map.map.getZoom());
+test("floating reset button returns to the fresh-load state", async ({ page }) => {
+  await openApp(page);
+  const fresh = await page.evaluate(() => ({ hash: location.hash, zoom: (window as any).__map.map.getZoom() }));
+  await openApp(page, "g=thai&c=thai&a=n:QN0401&p=strict&x=1&ly=div&pw=1&rs=1");
+  await expect(page.getByRole("complementary", { name: "Area details" })).toBeVisible();
   await page.getByRole("button", { name: "Reset view" }).click();
-  await expectHash(page, "a", null);
-  await expect(panel).toBeHidden();
-  await expectHash(page, "g", "thai");
-  await expectHash(page, "c", "thai");
-  await expect.poll(() => page.evaluate(() => (window as any).__map.map.getZoom())).toBeLessThan(zoomBefore);
-  // the button stays reachable when the panels are hidden
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe(fresh.hash);
+  await expect(page.getByRole("complementary", { name: "Area details" })).toBeHidden();
+  await expect(page.getByPlaceholder(/Search groups/)).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (window as any).__map.map.getZoom())).toBeCloseTo(fresh.zoom, 1);
+  // reachable with the panels hidden, and it brings them back
   await page.getByRole("button", { name: "Hide panels" }).click();
-  await expect(page.getByRole("button", { name: "Reset view" })).toBeVisible();
+  await page.getByRole("button", { name: "Reset view" }).click();
+  await expect(page.getByRole("button", { name: "Hide panels" })).toBeVisible();
 });

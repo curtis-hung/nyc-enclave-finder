@@ -9,7 +9,7 @@ import { MapView, type HoverInfo } from "../map/mapview";
 import { fmtCount, fmtMetric, indicesWithState, scaleFor, STATE_LABEL, unitColors, type Scale } from "../scales";
 import { useView, view } from "../store";
 import { STATE, type DemoBundle, type EnclaveBundle, type EnclaveItem, type GroupsFile, type Meta, type Metric, type Place } from "../types";
-import type { Area } from "../url";
+import { DEFAULT_VIEW, type Area } from "../url";
 import { CONF, CuisineIndex, FLAG, loadClusters, loadCuisines, loadDetails, loadPoints, type ClusterFile, type Points, type RestaurantDetail } from "../cuisine";
 import { AreaPanel, areaTitle } from "./AreaPanel";
 import { AreaRestaurants } from "./AreaRestaurants";
@@ -395,17 +395,27 @@ export function App() {
     const f = clusterFile?.geojson.features.find((x) => x.properties?.id === id && x.properties?.part === "catchment");
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
   };
-  // floating "Reset view": clear every selection and return to the whole city; group, cuisine and
-  // layer choices stay
+  // floating "Reset view": back to the state of a fresh load — default view (no group, cuisine,
+  // area or layers; default preset and dimension), panels shown, panel-local inputs cleared, whole city
+  const [resetKey, setResetKey] = useState(0);
   const resetView = () => {
     setPickingBoth(false);
     setCtx(null);
     setSelCluster(null);
+    setHover(null);
+    setRestHover(null);
+    setWorshipHover(null);
     gapFeatures.current = { focus: [], hover: [] };
     pushGap();
-    view.set({ area: null, restaurant: null });
-    mapRef.current?.fitCity();
+    view.set({ ...DEFAULT_VIEW });
+    setPanelOpen(true);
+    setAreaOpen(true);
+    setResetKey((k) => k + 1);
   };
+  // fit the city after the reset has re-rendered, so the padding no longer reserves the area pane
+  useEffect(() => {
+    if (resetKey) mapRef.current?.fitCity();
+  }, [resetKey]);
   const zoomToEnclave = (id: string) => {
     const f = enc?.geojson.features.find((x) => x.properties?.id === id);
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
@@ -427,7 +437,7 @@ export function App() {
             </button>
           )}
         </header>
-        <div id="panel-body" class="panel-body">
+        <div id="panel-body" class="panel-body" key={resetKey}>
           <p class="lede">Where groups live, where their restaurants cluster, and how the two relate. The map measures; you draw the conclusions. Click the map to see who's here.</p>
           {error && <p class="error">Could not load data: {error}</p>}
           {groups ? <GroupPicker groups={groups} selected={group?.id ?? null} onSelect={selectGroup} /> : <p class="muted">Loading…</p>}
@@ -535,7 +545,7 @@ export function App() {
         </div>
       )}
       <MiniLegend metric={v.metric} scale={scale} />
-      <button class="reset-view" onClick={resetView} title="Clear the selected area, restaurant and cluster and zoom out to the whole city">Reset view</button>
+      <button class="reset-view" onClick={resetView} title="Start over: clear the group, cuisine, area and every other selection and zoom out to the whole city">Reset view</button>
       {v.about && meta && <About meta={meta} onClose={() => view.set({ about: false })} />}
       {worshipHover && (
         <div class="tooltip" style={{ left: `${worshipHover.point.x + 14}px`, top: `${worshipHover.point.y + 14}px` }} role="status">
