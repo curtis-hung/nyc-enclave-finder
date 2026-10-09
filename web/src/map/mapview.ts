@@ -309,6 +309,44 @@ export class MapView {
     this.map.setFilter("rest-sel", selected === null ? NONE : ["==", ["get", "i"], selected]);
   }
 
+  private nameMarkers: maplibregl.Marker[] = [];
+
+  /** Colloquial place names floated above restaurant clusters (display only; see placenames.ts). */
+  setClusterNames(names: { id: string; label: string; place: string; at: [number, number] }[], selected: string | null) {
+    for (const mk of this.nameMarkers) mk.remove();
+    this.nameMarkers = names.map((n) => {
+      const el = document.createElement("div");
+      el.className = `cluster-name${n.id === selected ? " sel" : ""}`;
+      el.textContent = n.label;
+      el.dataset.cluster = n.id;
+      return new maplibregl.Marker({ element: el, anchor: "bottom", offset: [0, -4] }).setLngLat(n.at).addTo(this.map);
+    });
+    this.shown.names = names.map((n) => n.label);
+    if (!this.declutterBound) {
+      this.declutterBound = true;
+      let queued = false;
+      this.map.on("move", () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; this.declutterNames(); });
+      });
+    }
+    this.declutterNames();
+  }
+  private declutterBound = false;
+
+  /** Hide labels that overlap an earlier (higher-priority) one; zooming in reveals them. */
+  private declutterNames() {
+    const kept: DOMRect[] = [];
+    for (const mk of this.nameMarkers) {
+      const el = mk.getElement();
+      const r = el.getBoundingClientRect();
+      const hit = kept.some((k) => r.left < k.right + 2 && r.right > k.left - 2 && r.top < k.bottom + 2 && r.bottom > k.top - 2);
+      el.style.visibility = hit ? "hidden" : "";
+      if (!hit) kept.push(r);
+    }
+  }
+
   setClusters(fc: GeoJSON.FeatureCollection | null, selected: string | null) {
     this.shown.clusters = [...new Set((fc?.features ?? []).map((f) => String(f.properties?.id)))];
     (this.map.getSource("clusters") as GeoJSONSource).setData(fc ?? EMPTY_FC);
@@ -408,7 +446,7 @@ export class MapView {
   }
 
   /** What the map currently shows, for tests and debugging (behaviour, not pixels). */
-  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[], restaurants: 0, connectors: 0, worship: 0 };
+  readonly shown = { enclaves: [] as string[], clusters: [] as string[], gap: [] as string[], restaurants: 0, connectors: 0, worship: 0, names: [] as string[] };
 
   setEnclaves(fc: GeoJSON.FeatureCollection | null, visible: boolean) {
     this.shown.enclaves = visible ? (fc?.features ?? []).map((f) => String(f.properties?.id)) : [];

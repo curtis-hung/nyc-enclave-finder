@@ -58,3 +58,18 @@ test("clicking off the tracts resets the view", async ({ page }) => {
   await expect(panel).toBeHidden();
   await expectHash(page, "g", "thai");
 });
+
+test("colloquial names float over clusters and match the cluster table", async ({ page }) => {
+  await openApp(page, "g=chinese&c=asian");
+  await expect.poll(async () => (await page.evaluate(() => (window as any).__map.shown.clusters.length))).toBeGreaterThan(0);
+  const names: string[] = await page.evaluate(() => (window as any).__map.shown.names);
+  // every floated name is a gazetteer place label and appears on exactly one row of the cluster table
+  const labels: string[] = await page.evaluate(async () =>
+    (await (await fetch("data/gazetteer.json")).json()).map((p: any) => p.label ?? p.name.replace(/\s*\(.*\)\s*$/, "")));
+  const rows = page.getByRole("region", { name: "Restaurant clusters" }).locator(".cl-name");
+  const rowNames = (await rows.allTextContents()).map((t) => t.trim());
+  for (const n of names) expect(labels).toContain(n);
+  for (const n of rowNames) expect(names).toContain(n);
+  expect(new Set(names).size).toBe(names.length);
+  await expect(page.locator(".cluster-name")).toHaveCount(names.length);
+});

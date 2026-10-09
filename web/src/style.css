@@ -287,3 +287,9 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .tbl tr.clickable:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* --- colloquial names over restaurant clusters ------------------------------------------------- */
+.cluster-name { pointer-events: none; font-weight: 600; font-size: 12px; line-height: 1.2; color: #4a3aa7; background: rgba(255,255,255,.88);
+  padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(74,58,167,.35); white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.cluster-name.sel { background: #4a3aa7; color: #fff; border-color: #4a3aa7; }
+.cl-name { color: #4a3aa7; font-weight: 600; font-size: 12px; }

@@ -416,3 +416,20 @@ Consequential choices only: decision, alternatives, rationale, limitations.
 - Data refresh is manual (`workflow_dispatch`; cron commented) and opens a PR on a new branch via
   `peter-evans/create-pull-request`; it never pushes to `main`. `CENSUS_API_KEY` is an optional
   secret; without it the summary-file fallback is used.
+
+## D41. Colloquial names over restaurant clusters (user request)
+
+- A cluster footprint shows a floating label (and the name in the cluster table) when a gazetteer
+  place's circle reaches it (signed point-to-footprint distance ≤ the place radius) **and** the
+  place's associated group, or a parent group, declares a pairing with the cluster's cuisine.
+  One-to-one greedy assignment by depth of overlap. Display only: computed client-side after
+  clustering; it never feeds clustering, labels, tags or measures, so the gazetteer stays
+  navigation-only (§4.2).
+- Why the cuisine filter: purely spatial matching named an Irish cluster "Koreatown" and a Mexican
+  cluster "Sunset Park Chinatown". The group association already existed in `gazetteer.yaml` (M5).
+- Added an optional short `label` per place (e.g. "Manhattan Chinatown", "Flushing Chinatown");
+  the default strips the parenthetical from `name`.
+- Corrected the Little Egypt centre to Steinway St between 28th Ave and Astoria Blvd (it sat ~0.6 mi
+  south near Broadway). This fixes a misplaced navigation pin; no clustering parameter changed.
+- Overlapping labels are hidden in priority order (selected cluster, then table order) and
+  reappear on zoom.

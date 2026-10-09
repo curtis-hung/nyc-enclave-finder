@@ -130,4 +130,5 @@ export interface Place {
   lon: number;
   radius_mi: number;
   group?: string;
+  label?: string; // short display name (e.g. over restaurant clusters)
 }

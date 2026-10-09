@@ -82,6 +82,11 @@ export function About({ meta, onClose }: { meta: Meta; onClose: () => void }) {
           Restaurant density alone never qualifies a cluster. Very common cuisines have a low LQ ceiling (Asian restaurants are about a quarter of all restaurants, so their LQ can never exceed about 4), so a cluster
           also qualifies when the cuisine closes a set fraction of the gap between its citywide share and 100% of the catchment — whichever test is easier; such clusters are marked "share gap".
         </p>
+        <p>
+          Some clusters carry a colloquial name (Koreatown, Curry Hill, Manhattan Chinatown…). The name is attached afterwards, for orientation only: a cluster takes the name of a
+          hand-listed place when the place's approximate circle reaches the cluster and the group the place is commonly associated with pairs with the cuisine. Names never
+          define, find or qualify clusters, and an unnamed cluster is no less of a cluster.
+        </p>
 
         <h2>Gap measures</h2>
         <p>

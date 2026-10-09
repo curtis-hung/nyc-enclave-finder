@@ -24,6 +24,7 @@ import { loadTractIndex } from "../focus";
 import { pointInGeom } from "../geo";
 import { ClusterTable, defaultCuisine, RestaurantCard, RestaurantControls } from "./Restaurants";
 import { FocusControls } from "./FocusControls";
+import { nameClusters, placeFitsCuisine } from "../placenames";
 import { GroupPicker } from "./GroupPicker";
 import { GroupSection } from "./GroupSection";
 import { Legend, MiniLegend } from "./Legend";
@@ -297,6 +298,17 @@ export function App() {
   useEffect(() => {
     if (mapRef.current && mapReady) mapRef.current.setClusters(clusterFC, selCluster);
   }, [clusterFC, selCluster, mapReady]);
+  // colloquial place names over clusters: gazetteer places whose group pairs with the cuisine (display only)
+  const clusterNames = useMemo(() => clusterFC && groups && v.cuisine
+    ? nameClusters(clusterFC, places, (p) => placeFitsCuisine(p, v.cuisine!, groups.groups))
+    : [], [clusterFC, places, groups, v.cuisine]);
+  useEffect(() => {
+    if (!mapRef.current || !mapReady) return;
+    // label priority when they collide: the selected cluster, then the cluster table's order
+    const order = new Map((clusterFile?.stats[preset] ?? []).map((c, k) => [c.id, k]));
+    const rank = (id: string) => (id === selCluster ? -1 : order.get(id) ?? 1e9);
+    mapRef.current.setClusterNames([...clusterNames].sort((a, b) => rank(a.id) - rank(b.id)), selCluster);
+  }, [clusterNames, selCluster, mapReady, clusterFile, preset]);
   // experiment view: focus a cluster together with its nearest enclave (§9.4)
   const gapFeatures = useRef<{ focus: GeoJSON.Feature[]; hover: GeoJSON.Feature[] }>({ focus: [], hover: [] });
   const pushGap = () => mapRef.current?.setGapFocus([...gapFeatures.current.focus, ...gapFeatures.current.hover]);
@@ -432,7 +444,8 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} dia={dia} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} residents={clusterResidents} />}
+          {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} residents={clusterResidents}
+            names={Object.fromEntries(clusterNames.map((n) => [n.id, n.label]))} />}
           {group && (
             <button class={`btn${v.gaps ? " active" : ""}`} aria-pressed={v.gaps} onClick={() => view.set({ gaps: !v.gaps })}>
               {v.gaps ? "Close experiment view" : "Open experiment view: gaps between clusters and enclaves"}

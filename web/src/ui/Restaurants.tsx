@@ -109,9 +109,11 @@ interface ClusterProps {
   lqMin: number;
   gapMin: number;
   residents?: { group: string; label: string; m: Measures; heritage: string[] } | null;
+  /** colloquial place name per cluster id (display only) */
+  names?: Record<string, string>;
 }
 
-export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin, gapMin, residents }: ClusterProps) {
+export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect, onContext, lqMin, gapMin, residents, names }: ClusterProps) {
   if (!file) return null;
   const items = file.stats[preset] ?? [];
   const name = ix.node(file.node)?.name ?? file.node;
@@ -126,6 +128,7 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
           ? `Tag-based: built from inferred tags (${ix.file.tag_confidence}+), so coverage varies with how well OpenStreetMap/Overture cover the area.`
           : "Built from DOHMH labels plus inferred tags under this cuisine."}{" "}
         Cuisine LQ compares the cuisine's share of all restaurants in the cluster's catchment with its citywide share.
+        {names && Object.keys(names).length > 0 && " Names are the colloquial places a cluster overlaps — for orientation only, not part of the analysis."}
       </p>
       {refShare !== null && refShare > 0.1 && (
         <details class="notice small ceiling">
@@ -143,7 +146,7 @@ export function ClusterTable({ ix, file, preset, presetLabel, selected, onSelect
           <tbody>
             {items.slice(0, 15).map((c, k) => (
               <tr key={c.id} class={`clickable${selected === c.id ? " sel" : ""}`} tabIndex={0} onClick={() => onSelect(c.id)} onKeyDown={(e) => e.key === "Enter" && onSelect(c.id)}>
-                <td>{k + 1}</td>
+                <td>{k + 1}{names?.[c.id] && <span class="cl-name"> {names[c.id]}</span>}</td>
                 <td>{c.restaurants}</td>
                 <td>{c.independent}</td>
                 <td>{fmtLQ(c.lq)}{c.qualified_by === "share_gap" && <span class="badge" title={`Qualified by share gap: ${Math.round((c.share_gap ?? 0) * 100)}% of the gap to 100%`}>share gap</span>}</td>
