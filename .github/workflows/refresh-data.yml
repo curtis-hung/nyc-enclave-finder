@@ -1,21 +1,38 @@
-# Refresh the data snapshots, rebuild, run the full suite and open a pull request.
-# Manual only (SPEC §14). It never pushes to main: changes go to a new branch and a PR for review.
+# Monthly data refresh (SPEC §3.2, §14).
+#
+# Refetches every source at its pinned vintage (restaurants, OpenStreetMap and Overture change;
+# census and geography stay pinned), rebuilds, runs the full test suite, then:
+#   - routine update (refresh gate passes)  -> commits to main and redeploys the site
+#   - anything unusual (gate flags it)      -> opens a pull request for review instead
+#   - a newer census vintage is published   -> opens an issue; run this workflow manually with
+#                                              "upgrade_vintages" to get a reviewable PR
+# Any failure (fetch, build, tests) stops the run, so the live site is never touched.
 name: Refresh data
 
 on:
+  schedule:
+    - cron: "17 7 2 * *" # 07:17 UTC on the 2nd of each month
   workflow_dispatch:
-  # Optional monthly refresh — uncomment to enable (see DEPLOY.md).
-  # schedule:
-  #   - cron: "0 6 1 * *"
+    inputs:
+      upgrade_vintages:
+        description: "Move census data (ACS/PUMS) to the latest published vintage. Always opens a PR."
+        type: boolean
+        default: false
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
+  actions: write # starts the deploy workflow after an automatic publish
+
+concurrency:
+  group: refresh-data
+  cancel-in-progress: false
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -25,30 +42,70 @@ jobs:
           cache: npm
       - run: uv sync --frozen
       - run: npm ci
-      - name: Fetch source snapshots (re-resolves "latest")
-        run: uv run pipeline fetch --refresh
+
+      - name: Fetch source snapshots (census pinned unless upgrading)
+        run: uv run pipeline fetch --refresh --strict ${{ inputs.upgrade_vintages && '--upgrade-vintages' || '' }}
         env:
           # Optional: without it the pipeline falls back to the ACS summary files.
           CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
       - run: uv run pipeline build
       - run: uv run pipeline report
+
       - name: Full test suite
         run: |
           uv run pytest
           npm test
           npx playwright install --with-deps chromium
           npx playwright test --project=desktop --project=mobile
-      - name: Open a pull request
+
+      - name: Refresh gate
+        id: gate
+        run: uv run pipeline refresh-gate --summary "$RUNNER_TEMP/gate.md"
+
+      - name: Check for a newer census vintage
+        id: vintage
+        if: ${{ !inputs.upgrade_vintages }}
+        run: uv run pipeline check-vintages
+        env:
+          CENSUS_API_KEY: ${{ secrets.CENSUS_API_KEY }}
+
+      - name: Publish routine update
+        if: steps.gate.outputs.changed == 'true' && steps.gate.outputs.safe == 'true' && !inputs.upgrade_vintages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/public/data data/manifest.json docs
+          git commit -m "Data refresh $(date -u +%Y-%m-%d)" -m "$(cat "$RUNNER_TEMP/gate.md")"
+          git push origin HEAD:main
+          # Pushes made with the workflow token do not trigger other workflows, so start the
+          # deploy explicitly or the site would silently stay on the old data.
+          gh workflow run deploy.yml --ref main
+
+      - name: Open a pull request for review
+        if: steps.gate.outputs.changed == 'true' && (steps.gate.outputs.safe != 'true' || inputs.upgrade_vintages)
         uses: peter-evans/create-pull-request@v7
         with:
           branch: data-refresh/${{ github.run_id }}
           base: main
           commit-message: "Data refresh ${{ github.run_id }}"
-          title: "Data refresh (${{ github.run_id }})"
-          body: |
-            Automated refresh: fetch --refresh, build, report, full test suite passed.
-            Review `data/manifest.json` for new source vintages and `docs/OBSERVATIONS.md` for changes before merging.
+          title: "Data refresh needs review (${{ github.run_id }})"
+          body-path: ${{ runner.temp }}/gate.md
           add-paths: |
             web/public/data/**
             data/manifest.json
             docs/**
+
+      - name: Flag a newer census vintage
+        if: steps.vintage.outputs.newer == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="New census data available: ACS 5-year ending ${{ steps.vintage.outputs.latest }}"
+          existing=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq 'length')
+          if [ "$existing" = "0" ]; then
+            gh issue create --title "$title" --body "The site uses the ACS 5-year vintage ending ${{ steps.vintage.outputs.pinned }}. A newer one is published.
+
+          To review it: Actions → Refresh data → Run workflow, tick **upgrade_vintages**. That run opens a pull request with the new census data; check docs/TAXONOMY.md and docs/OBSERVATIONS.md in it before merging. New vintages can change which groups have reliable data."
+          fi

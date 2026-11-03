@@ -35,7 +35,8 @@ npm run preview    # http://localhost:4173
 ```
 uv sync
 uv run pipeline fetch            # download source snapshots into data/raw/ (skips existing)
-uv run pipeline fetch --refresh  # re-resolve "latest" and re-download
+uv run pipeline fetch --refresh  # re-download (census stays at its pinned vintage)
+uv run pipeline fetch --refresh --upgrade-vintages  # also move census data to the latest vintage
 uv run pipeline build            # deterministic build from local snapshots -> web/public/data/
 ```
 
@@ -70,8 +71,8 @@ uv run pytest && npm test && npm run test:e2e
 
 Sources: ACS 2020–2024 5-year detailed tables and PUMS (U.S. Census Bureau), NYC DCP 2020 tracts,
 NTAs and boroughs, DOHMH restaurant inspections, OpenStreetMap and Overture Maps Places. Exact
-snapshot dates are in `data/manifest.json` and the About page. Deployment: see `DEPLOY.md`
-(prepared, not executed).
+snapshot dates are in `data/manifest.json` and the About page. Live site: https://curtis-hung.github.io/nyc-enclave-finder/ (deploys on every push to `main`).
+Data refreshes automatically each month; see `DEPLOY.md` §4.
 
 ## Metrics
 

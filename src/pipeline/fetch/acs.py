@@ -137,8 +137,21 @@ def _write_csv(path: Path, rows: list[dict[str, str]]) -> None:
         w.writerows(rows)
 
 
-def fetch(manifest: dict[str, Any], refresh: bool) -> dict[str, Any]:
-    year = resolve_latest_year()
+def pinned_year(manifest: dict[str, Any]) -> int | None:
+    """The ACS vintage end year recorded in the committed manifest, if any (§3.2)."""
+    y = manifest.get("sources", {}).get(SOURCE_ID, {}).get("vintage_end_year")
+    return int(y) if y else None
+
+
+def choose_year(manifest: dict[str, Any], upgrade: bool) -> int:
+    """Re-fetches keep the pinned vintage; only an explicit upgrade (or a first fetch) moves to
+    the latest one, so a scheduled refresh can never silently switch census vintages (§3.2)."""
+    pinned = pinned_year(manifest)
+    return pinned if pinned and not upgrade else resolve_latest_year()
+
+
+def fetch(manifest: dict[str, Any], refresh: bool, upgrade: bool = False) -> dict[str, Any]:
+    year = choose_year(manifest, upgrade)
     out_dir = snapshot_dir(SOURCE_ID, str(year))
     key = os.environ.get("CENSUS_API_KEY")
     method = "census-data-api" if key else "table-based-summary-file"

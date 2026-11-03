@@ -8,20 +8,23 @@ from pipeline.fetch import acs, osm_overture, pums, socrata
 from pipeline.fetch.common import existing_snapshot, load_manifest, save_manifest
 
 # Order matters only for log readability. MUST sources first, SHOULD enrichment last.
-SOURCES: dict[str, Callable[[dict[str, Any], bool], dict[str, Any]]] = {
-    "acs5": lambda m, r: acs.fetch(m, r),
-    **{sid: (lambda m, r, sid=sid: socrata.fetch_geo(sid)) for sid in socrata.GEO_DATASETS},
-    "dohmh": lambda m, r: socrata.fetch_dohmh(),
-    "osm": lambda m, r: osm_overture.fetch_osm(),
-    "overture": lambda m, r: osm_overture.fetch_overture(),
+SOURCES: dict[str, Callable[[dict[str, Any], bool, bool], dict[str, Any]]] = {
+    "acs5": lambda m, r, u: acs.fetch(m, r, u),
+    **{sid: (lambda m, r, u, sid=sid: socrata.fetch_geo(sid)) for sid in socrata.GEO_DATASETS},
+    "dohmh": lambda m, r, u: socrata.fetch_dohmh(),
+    "osm": lambda m, r, u: osm_overture.fetch_osm(),
+    "overture": lambda m, r, u: osm_overture.fetch_overture(),
     # same vintage as the pinned ACS tract tables (§3.2)
-    "pums": lambda m, r: pums.fetch(int(m["sources"]["acs5"]["vintage_end_year"])),
+    "pums": lambda m, r, u: pums.fetch(int(m["sources"]["acs5"]["vintage_end_year"])),
 }
 
 OPTIONAL = {"osm", "overture", "pums"}  # enrichment (SHOULD): failure is logged, not fatal
 
 
-def run_fetch(refresh: bool = False, only: list[str] | None = None) -> int:
+def run_fetch(refresh: bool = False, only: list[str] | None = None, upgrade: bool = False,
+              strict: bool = False) -> int:
+    """`upgrade` lets ACS/PUMS move to the latest vintage; `strict` makes optional-source
+    failures fatal too (the scheduled refresh must not publish with enrichment missing)."""
     manifest = load_manifest()
     failures = []
     for sid, fn in SOURCES.items():
@@ -32,13 +35,13 @@ def run_fetch(refresh: bool = False, only: list[str] | None = None) -> int:
             continue
         print(f"[fetch] {sid}")
         try:
-            manifest["sources"][sid] = fn(manifest, refresh)
+            manifest["sources"][sid] = fn(manifest, refresh, upgrade)
             save_manifest(manifest)  # persist after every source so partial runs keep provenance
         except Exception as e:  # noqa: BLE001
             print(f"[error] {sid}: {e}")
             failures.append(sid)
     save_manifest(manifest)
-    hard = [f for f in failures if f not in OPTIONAL]
+    hard = failures if strict else [f for f in failures if f not in OPTIONAL]
     if failures:
         print(f"Fetch finished with failures: {failures}")
     return 1 if hard else 0

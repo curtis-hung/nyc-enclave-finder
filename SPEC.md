@@ -757,17 +757,17 @@ Descriptive only: no explanations, no categories.
 
 ---
 
-## 14. Deployment: prepared, NOT executed [MUST]
+## 14. Deployment [MUST]
 
-- **Never:**
-  - `git push`
-  - create a remote repository
-  - publish the site
-  - enable GitHub Pages
+**Published by the user on 2026-11-03** at `curtis-hung/nyc-enclave-finder` (GitHub Pages). This replaces the original "prepared, NOT executed" rule. Agents still never push, create remotes or change repository settings unless the user asks in that session. Local commits are expected.
 
-  Local commits are expected.
 - **`.github/workflows/deploy.yml`:** deploys to GitHub Pages and runs the build and tests on push. The Vite `base` path comes from configuration or an environment variable.
-- **`.github/workflows/refresh-data.yml`:** `workflow_dispatch` only, with the cron schedule commented out. It fetches, rebuilds, runs the full suite and opens a PR. It never pushes to main.
+- **`.github/workflows/refresh-data.yml`** (user decision, 2026-11-03): runs monthly and on demand.
+  - It refetches every source at its **pinned** census vintage (§3.2), rebuilds and runs the full suite.
+  - `pipeline refresh-gate` then decides the outcome:
+    - **Routine:** restaurant count within ±10%, tagged restaurants within ±25%, census and geography vintages unchanged. The workflow commits to `main` and starts the deploy itself, because pushes made with the workflow token don't trigger other workflows.
+    - **Anything else:** opens a PR with the gate's reasons.
+  - A newer census vintage opens an issue. Upgrading it (`--upgrade-vintages`) is always a reviewed PR, never automatic.
 - **`DEPLOY.md`:** the steps to create a repo, push, enable Pages, optionally add `CENSUS_API_KEY` and optionally enable the cron. Going live should take a few minutes.
 
 ---

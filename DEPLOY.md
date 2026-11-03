@@ -1,7 +1,8 @@
 # Deploying NYC Enclave Finder
 
-Deployment has been **prepared but not executed**. Nothing has been pushed and no remote or Pages
-site exists. These steps take a few minutes. They use GitHub Pages, but any static host works:
+**Live:** https://curtis-hung.github.io/nyc-enclave-finder/ (repository
+`curtis-hung/nyc-enclave-finder`, published 2026-11-03). Every push to `main` re-runs the tests and
+redeploys. The steps below record how it was set up, for a fork or a fresh copy; they take a few minutes. They use GitHub Pages, but any static host works:
 `npm run build` writes a self-contained site to `dist/`.
 
 ## 1. Create the repository and push
@@ -55,20 +56,30 @@ The key is never shipped to the browser.
 
 ## 4. Refreshing data
 
-`.github/workflows/refresh-data.yml` runs only by hand (**Actions → Refresh data → Run
-workflow**). It:
+`.github/workflows/refresh-data.yml` runs **automatically on the 2nd of each month**, and by hand
+from **Actions → Refresh data → Run workflow**. Each run:
 
-- re-fetches every source, re-resolving "latest"
+- re-fetches every source. Restaurants, OpenStreetMap and Overture get new snapshots; census data
+  (ACS, PUMS) stays at its **pinned vintage**, so the census data can't change silently
 - rebuilds the data and reports
-- runs the full test suite
-- opens a **pull request** on a new branch
+- runs the full test suite. Any failure stops the run, the live site is untouched, and GitHub
+  emails you
+- runs the **refresh gate** (`uv run pipeline refresh-gate`), then does one of the following:
 
-It never pushes to `main`. Before merging, review the PR:
+| Outcome | What happens |
+|---|---|
+| Routine: restaurant count within ±10%, tagged restaurants within ±25%, census and geography vintages unchanged | Commits to `main` and redeploys the site. No action needed. |
+| Anything else | Opens a **pull request** with the gate's reasons. Review it; merging redeploys. |
+| No data changed | Nothing |
 
-- `data/manifest.json` for new source vintages
-- `docs/OBSERVATIONS.md` for what changed
+**New census vintages** (the Census Bureau publishes one each December) are never applied
+automatically. When one exists, the refresh opens an **issue**. To get it, run the workflow by
+hand with **upgrade_vintages** ticked. That run always opens a PR. Check `docs/TAXONOMY.md` and
+`docs/OBSERVATIONS.md` in it before merging, because new vintages can change which groups have
+reliable data.
 
-Merging the PR redeploys the site.
+**Required setting:** **Settings → Actions → General → Workflow permissions → "Allow GitHub
+Actions to create and approve pull requests"** must be on, or the PR step fails.
 
 To refresh locally instead:
 
@@ -84,6 +95,4 @@ uv run pipeline build
 uv run pytest
 ```
 
-**Optional schedule.** Uncomment the `schedule:` block in `refresh-data.yml` to run on the 1st of
-each month. The workflow needs **Settings → Actions → General → Workflow permissions → "Allow
-GitHub Actions to create and approve pull requests"**.
+Add `--upgrade-vintages` to `fetch` to move census data to the latest published vintage.
