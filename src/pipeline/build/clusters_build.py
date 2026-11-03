@@ -169,6 +169,13 @@ def write_restaurant_assets(cfg: Config, geo: Geography, r: Restaurants, cluster
         "flag_bits": {"multi_location": 1, "uninspected": 2, "analysis": 4},
         "conf_codes": CONF_CODE,
     })
+    # approximate ZIP centres for Find food (§9.9): the median location of each ZIP's restaurants.
+    # Derived from the snapshot itself, so the site needs no geocoding service.
+    z = df.assign(_zip=df.ZIPCODE.astype("string").str.strip().str[:5])
+    z = z[z._zip.str.fullmatch(r"\d{5}", na=False)]
+    zips = {zc: [int(round(g._lat.median() * 1e5)), int(round(g._lon.median() * 1e5)), int(len(g))]
+            for zc, g in z.groupby("_zip", sort=True) if len(g) >= 3}
+    write_json(WEB_DATA_DIR / "restaurants" / "zips.json", {"zips": zips})
     # details per NTA (loaded on demand)
     nta_of = geo.tract_nta_idx[df.tract.to_numpy()]
     for k, code in enumerate(geo.ntas.nta):

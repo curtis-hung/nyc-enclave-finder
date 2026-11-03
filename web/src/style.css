@@ -318,3 +318,8 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
 .find-list .find-name { font-weight: 600; margin-right: 6px; }
 .find-list .why { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 2px; }
 .find-list .why .chip { font-size: 11px; padding: 1px 6px; }
+.find-start { margin: 6px 0; display: flex; flex-direction: column; gap: 6px; }
+.find-start-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.find-zip { display: inline-flex; gap: 4px; }
+.find-zip input { width: 6.5em; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.find-start select { max-width: 100%; }

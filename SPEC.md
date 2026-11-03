@@ -594,8 +594,8 @@ Suggestions of candidate restaurants for the cuisine selected in §9.5, in four 
 
 | Mode | Candidates |
 |---|---|
-| **Near me** | Within 0.25 / 0.5 / 1 / 2 mi of the device's location. The browser asks permission; the location is kept in memory only and **never written to the URL** or stored. |
-| **Around here** | Inside the focused area (§9.3). Asks for an area if none is focused. |
+| **Nearby** | Within 0.25 / 0.5 / 1 / 2 mi of a starting point, set inside the panel in one of three ways: **my location** (asked only when that button is pressed; kept in memory, **never written to the URL** or stored), a **ZIP code**, or **a click on the map**. A ZIP or click sets a radius pin, which is a normal radius focus (§9.3) and can be dragged. |
+| **In a neighborhood** | Inside a neighborhood or borough picked in the panel itself (or any focused area). |
 | **In an enclave** | Either the cuisine's restaurant clusters (§7) at the current preset, or "where the community lives": within 0.5 mi of the paired group's residential enclaves (default dimension, current preset). The second option is the §2.3 exception and is labeled as such. |
 | **Off the beaten path** | Places of the cuisine outside every one of its clusters. |
 
@@ -606,6 +606,9 @@ Rules:
 - Each suggestion shows "why" chips (distance, match basis, independent or multi-location, cluster, enclave distance) and a Google Maps link.
 - There are no ratings, so suggestions are candidates, not judgments of quality, and the panel says so.
 - **Not built: an "open since" signal.** The DOHMH file keeps only about three years of inspections per restaurant (verified: the maximum span is 3.0 years), so an earliest inspection date can't measure longevity.
+- **Location is optional everywhere** (user feedback, 2026-11-03). Opening Find food never asks for it. If it's denied, the panel says so and offers a ZIP or a map click; the message appears only under Nearby. Every other mode works without any location.
+- **ZIP centres** come from the restaurant data itself: the median location of each ZIP's restaurants (`restaurants/zips.json`, ZIPs with 3+ restaurants), rebuilt with every refresh. No geocoding service is used.
+- When a starting point exists, every mode defaults to closest first.
 - The mode is kept in the URL (`ff=`); the user's location never is.
 
 ## 10. About / methodology page [MUST]

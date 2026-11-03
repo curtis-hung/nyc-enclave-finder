@@ -68,3 +68,16 @@ def test_cluster_stats_are_internally_consistent(cfg, pts):
                 assert c["independent"] <= c["restaurants"]
                 for m in c["members"]:
                     assert pts["flags"][m] & 4, "cluster member outside the analysis population"
+
+
+def test_zip_centres_cover_nyc_and_lie_inside_it():
+    """Find food's ZIP lookup (§9.9): derived from restaurant locations, so every centre must be
+    in the NYC bounding box and the familiar residential ZIPs must be present."""
+    zips = json.loads((WEB_DATA_DIR / "restaurants" / "zips.json").read_text(encoding="utf-8"))["zips"]
+    assert len(zips) > 150
+    for z, (lat, lon, n) in zips.items():
+        assert len(z) == 5 and z.isdigit()
+        assert 40.47 < lat / 1e5 < 40.93 and -74.27 < lon / 1e5 < -73.68, z
+        assert n >= 3
+    for z in ("10001", "10453", "11201", "11373", "10301"):  # one per borough
+        assert z in zips

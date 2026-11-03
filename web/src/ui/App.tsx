@@ -47,6 +47,7 @@ export function App() {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapView | null>(null);
   const pickingRef = useRef(false);
+  const pickMiRef = useRef(0.5); // radius for a pin dropped by map click (Find food passes its own)
   const [mapReady, setMapReady] = useState(false);
   const [meta, setMeta] = useState<Meta | null>(null);
   const [groups, setGroups] = useState<GroupsFile | null>(null);
@@ -87,7 +88,8 @@ export function App() {
     mv.onClick((at, unit) => {
       if (pickingRef.current) {
         const cur = view.get().area;
-        view.set({ area: { kind: "radius", lat: at.lat, lon: at.lon, mi: cur?.kind === "radius" ? cur.mi : 0.5 } });
+        view.set({ area: { kind: "radius", lat: at.lat, lon: at.lon, mi: cur?.kind === "radius" ? cur.mi : pickMiRef.current } });
+        pickMiRef.current = 0.5;
         setPickingBoth(false);
         return;
       }
@@ -489,7 +491,8 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} dia={dia} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
-          {ix && pts && meta && groups && <FindFood meta={meta} groups={groups} ix={ix} pts={pts} v={v} clusters={clusterFile} preset={preset} onPick={pickRestaurant} />}
+          {ix && pts && meta && groups && <FindFood meta={meta} groups={groups} ix={ix} pts={pts} v={v} clusters={clusterFile} preset={preset} onPick={pickRestaurant}
+            picking={picking} onPickOnMap={(mi) => { pickMiRef.current = mi; setPickingBoth(true); }} onCancelPick={() => setPickingBoth(false)} />}
           {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} residents={clusterResidents}
             names={Object.fromEntries(clusterNames.map((n) => [n.id, n.label]))} />}
           {group && (

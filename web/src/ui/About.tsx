@@ -136,8 +136,9 @@ export function About({ meta, onClose }: { meta: Meta; onClose: () => void }) {
 
         <h2>Find food</h2>
         <p>
-          Find food lists candidate restaurants for the selected cuisine: near you (your browser asks first; the location stays on your device and is never put in the URL),
-          around a focused area, in the cuisine's restaurant clusters, near where the paired community lives, or off the beaten path (outside every cluster).
+          Find food lists candidate restaurants for the selected cuisine: nearby a starting point (your location, a ZIP code or a point you click on the map), in a neighborhood or borough,
+          in the cuisine's restaurant clusters, near where the paired community lives, or off the beaten path (outside every cluster). Sharing your location is optional:
+          the browser asks only if you press "Use my location", and the location stays on your device and is never put in the URL. ZIP codes are placed at the middle of their restaurants.
           You choose the order: closest, surest cuisine match (DOHMH category first, then inferred tags by confidence) or shuffled. Nothing is ranked by quality, because the data has no ratings.
           "Near where the community lives" uses census residence only to decide where to look; a restaurant's cuisine always comes from restaurant data.
         </p>
