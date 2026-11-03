@@ -323,3 +323,8 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
 .find-zip { display: inline-flex; gap: 4px; }
 .find-zip input { width: 6.5em; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; }
 .find-start select { max-width: 100%; }
+.find-list .why .chip.enc-cluster { border-color: #4a3aa7; color: #4a3aa7; }
+.find-list .why .chip.enc-res { border-color: #eb6834; color: #a8431b; }
+.contact { display: flex; flex-wrap: wrap; gap: 4px 12px; margin: 8px 0; font-size: 13px; }
+.contact.compact { margin: 3px 0 0; font-size: 12px; gap: 2px 10px; }
+.contact .hours { flex-basis: 100%; }

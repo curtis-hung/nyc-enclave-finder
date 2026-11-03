@@ -138,7 +138,7 @@ export function About({ meta, onClose }: { meta: Meta; onClose: () => void }) {
         <p>
           Find food lists candidate restaurants for the selected cuisine: nearby a starting point (your location, a ZIP code or a point you click on the map), in a neighborhood or borough,
           in the cuisine's restaurant clusters, near where the paired community lives, or off the beaten path (outside every cluster). Sharing your location is optional:
-          the browser asks only if you press "Use my location", and the location stays on your device and is never put in the URL. ZIP codes are placed at the middle of their restaurants.
+          the browser asks only if you press "Use my location", and the location stays on your device and is never put in the URL. ZIP codes are placed at the middle of their restaurants. Phone numbers come from DOHMH; websites, Instagram and opening hours come from OpenStreetMap where it has them, and hours may be out of date. There are no photos or ratings: the services that have them charge for them or forbid this use, so each place links to Google Maps instead.
           You choose the order: closest, surest cuisine match (DOHMH category first, then inferred tags by confidence) or shuffled. Nothing is ranked by quality, because the data has no ratings.
           "Near where the community lives" uses census residence only to decide where to look; a restaurant's cuisine always comes from restaurant data.
         </p>

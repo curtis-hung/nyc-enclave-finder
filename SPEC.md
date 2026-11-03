@@ -609,6 +609,17 @@ Rules:
 - **Location is optional everywhere** (user feedback, 2026-11-03). Opening Find food never asks for it. If it's denied, the panel says so and offers a ZIP or a map click; the message appears only under Nearby. Every other mode works without any location.
 - **ZIP centres** come from the restaurant data itself: the median location of each ZIP's restaurants (`restaurants/zips.json`, ZIPs with 3+ restaurants), rebuilt with every refresh. No geocoding service is used.
 - When a starting point exists, every mode defaults to closest first.
+- **Placement:** Find food stays below the Restaurants section, where the cuisine is picked next to the selected group's paired cuisines. A "first thing in the panel" layout was tried on 2026-11-03 and rejected by the user, because it separated restaurants from the group/enclave flow.
+- **Every suggestion is tagged to the enclaves** (user feedback, 2026-11-03), in every mode:
+  - the restaurant cluster it belongs to, by its colloquial place name where one exists (e.g. "Thai Town cluster"), else "#rank"
+  - its distance to the paired group's residential enclave, when it is within 0.5 mi
+
+  Only "Where the community lives" filters by that distance; elsewhere it is a label (residential context, §2.3).
+- **Contact details, free only** (user decision, 2026-11-03): each suggestion and restaurant card shows what the data has:
+  - phone (DOHMH, ~all restaurants)
+  - website, Instagram and opening hours from the matched OpenStreetMap place (partial coverage; hours labeled "may be out of date")
+  - **Normalization:** only 10-digit phones and http(s) links pass, and nothing is shown where data is missing.
+  - **No photos or ratings:** every source of those is paid, forbids storing data, or forbids use beside a non-Google map. The Google Maps link stays as the way to see them.
 - The mode is kept in the URL (`ff=`); the user's location never is.
 
 ## 10. About / methodology page [MUST]

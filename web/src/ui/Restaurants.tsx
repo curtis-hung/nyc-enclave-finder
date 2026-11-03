@@ -49,6 +49,35 @@ interface ControlsProps {
   shown: { total: number; viaTags: number };
 }
 
+const DAYS: Record<string, string> = { Mo: "Mon", Tu: "Tue", We: "Wed", Th: "Thu", Fr: "Fri", Sa: "Sat", Su: "Sun", PH: "Holidays" };
+
+/** OSM opening_hours made readable: "Mo-Fr 11:00-22:00; Sa off" -> ["Mon–Fri 11:00–22:00", "Sat closed"]. */
+export function prettyHours(h: string): string[] {
+  return h.split(/\s*;\s*/).filter(Boolean).map((part) =>
+    part.replace(/\b(Mo|Tu|We|Th|Fr|Sa|Su|PH)\b/g, (d) => DAYS[d]).replace(/-/g, "–").replace(/\boff\b/g, "closed"));
+}
+
+export function fmtPhone(p: string): string {
+  return `(${p.slice(0, 3)}) ${p.slice(3, 6)}-${p.slice(6)}`;
+}
+
+/** Phone, website, Instagram and hours where the data has them; nothing otherwise. */
+export function ContactInfo({ d, compact }: { d: RestaurantDetail; compact?: boolean }) {
+  if (!d.phone && !d.website && !d.instagram && !d.hours) return null;
+  const host = d.website ? d.website.replace(/^https?:\/\/(www\.)?/i, "").replace(/\/.*$/, "") : null;
+  const hours = d.hours ? prettyHours(d.hours) : [];
+  return (
+    <div class={`contact${compact ? " compact" : ""}`}>
+      {d.phone && <a href={`tel:+1${d.phone}`}>☎ {fmtPhone(d.phone)}</a>}
+      {d.website && <a href={d.website} target="_blank" rel="noopener noreferrer nofollow">{host} ↗</a>}
+      {d.instagram && <a href={`https://www.instagram.com/${d.instagram}/`} target="_blank" rel="noopener noreferrer nofollow">Instagram @{d.instagram} ↗</a>}
+      {hours.length > 0 && (compact
+        ? <span class="muted" title="Opening hours from OpenStreetMap; may be out of date">Hours: {hours.join("; ")}</span>
+        : <div class="hours"><span class="ctl-label">Hours <span class="muted">(OpenStreetMap; may be out of date)</span></span>{hours.map((l, k) => <div key={k}>{l}</div>)}</div>)}
+    </div>
+  );
+}
+
 export function RestaurantControls({ ix, v, group, shown }: ControlsProps) {
   const opts = useMemo(() => cuisineOptions(ix), [ix]);
   const pairs = group ? Object.entries(group.cuisines) : [];
@@ -219,6 +248,7 @@ export function RestaurantCard({ ix, pts, meta, index, onClose }: { ix: CuisineI
           <ul>{d.conflicts.map((c, k) => <li key={k}>{ix.node(c.label)?.name ?? c.label} — {c.source}: {c.evidence}</li>)}</ul>
         </details>
       )}
+      {d && <ContactInfo d={d} />}
       {d && (
         <dl class="kv">
           <dt>Address</dt><dd>{d.address}, {d.boro} {d.zip}</dd>

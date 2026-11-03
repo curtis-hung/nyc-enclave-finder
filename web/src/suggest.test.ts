@@ -56,8 +56,15 @@ describe("find food", () => {
   it("community option keeps only restaurants near the enclave polygons", () => {
     // a small square around restaurant 0
     const sq: GeoJSON.Polygon = { type: "Polygon", coordinates: [[[-73.8805, 40.7395], [-73.8795, 40.7395], [-73.8795, 40.7405], [-73.8805, 40.7405], [-73.8805, 40.7395]]] };
-    const list = findCandidates({ ix, pts, target: null, floor: 1, multi: false, pool: [0, 1, 2, 3], origin: null, enclaves: [sq], enclaveMi: 0.15 });
+    const list = findCandidates({ ix, pts, target: null, floor: 1, multi: false, pool: [0, 1, 2, 3], origin: null, enclaves: [sq], enclaveMi: 0.15, enclaveOnly: true });
     expect(list.map((s) => [s.i, Math.round((s.enclaveDist ?? -1) * 100) / 100])).toEqual([[0, 0], [1, 0.08]]);
+  });
+
+  it("every other mode tags restaurants near an enclave without dropping the rest", () => {
+    const sq: GeoJSON.Polygon = { type: "Polygon", coordinates: [[[-73.8805, 40.7395], [-73.8795, 40.7395], [-73.8795, 40.7405], [-73.8805, 40.7405], [-73.8805, 40.7395]]] };
+    const list = findCandidates({ ix, pts, target: null, floor: 1, multi: false, pool: [0, 1, 2, 3], origin: null, enclaves: [sq], enclaveMi: 0.15 });
+    expect(list.map((s) => s.i)).toEqual([0, 1, 2, 3]);
+    expect(list.map((s) => s.enclaveDist === undefined ? null : Math.round(s.enclaveDist * 100) / 100)).toEqual([0, 0.08, null, null]);
   });
 
   it("measures distances in miles", () => {

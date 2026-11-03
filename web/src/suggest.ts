@@ -4,7 +4,7 @@
 // community lives" option uses residential enclaves solely as a location filter the user chose.
 
 import { FLAG, type CuisineIndex, type Points } from "./cuisine";
-import { miPerDegLon, pointInGeom } from "./geo";
+import { bounds, miPerDegLon, pointInGeom } from "./geo";
 
 export type FindMode = "near" | "here" | "enclave" | "outpost";
 export type FindSort = "distance" | "confidence" | "shuffle";
@@ -101,13 +101,22 @@ export interface FindInput {
   maxMi?: number;
   /** cluster membership for the cuisine at the current preset */
   clusters?: Map<number, { id: string; rank: number }>;
-  /** residential enclave polygons of the paired group: keep restaurants within `enclaveMi` of one */
+  /** residential enclave polygons of the paired group: restaurants within `enclaveMi` of one are
+   *  tagged with that distance; with `enclaveOnly`, everything farther is dropped */
   enclaves?: GeoJSON.Geometry[];
   enclaveMi?: number;
+  enclaveOnly?: boolean;
 }
 
 export function findCandidates(inp: FindInput): Suggestion[] {
   const { ix, pts, target, floor, multi, origin } = inp;
+  const lim = inp.enclaveMi ?? 0.5;
+  // enclave bounding boxes grown by the limit, so far-away restaurants skip the polygon math
+  const boxes = (inp.enclaves ?? []).map((g) => {
+    const [[x0, y0], [x1, y1]] = bounds(g);
+    const pad = lim / MI_PER_DEG_LAT;
+    return [x0 - pad * 1.4, y0 - pad, x1 + pad * 1.4, y1 + pad];
+  });
   const out: Suggestion[] = [];
   for (const i of inp.pool) {
     if (!eligible(pts, i, multi)) continue;
@@ -118,14 +127,14 @@ export function findCandidates(inp: FindInput): Suggestion[] {
     if (inp.maxMi !== undefined && (dist === null || dist > inp.maxMi)) continue;
     const s: Suggestion = { i, strength, dist, cluster: inp.clusters?.get(i) ?? null };
     if (inp.enclaves) {
-      const lim = inp.enclaveMi ?? 0.5;
       let d = Infinity;
-      for (const g of inp.enclaves) {
+      inp.enclaves.forEach((g, k) => {
+        const b = boxes[k];
+        if (d === 0 || at.lon < b[0] || at.lat < b[1] || at.lon > b[2] || at.lat > b[3]) return;
         d = Math.min(d, distToGeomMi(at, g));
-        if (d === 0) break;
-      }
-      if (d > lim) continue;
-      s.enclaveDist = d;
+      });
+      if (d <= lim) s.enclaveDist = d;
+      else if (inp.enclaveOnly) continue;
     }
     out.push(s);
   }

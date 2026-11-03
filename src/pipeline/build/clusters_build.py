@@ -14,7 +14,7 @@ from shapely.geometry import mapping
 from pipeline.analysis.clusters import Cluster, ClusterRule, find_clusters
 from pipeline.analysis.labels import CONFIDENCE_ORDER
 from pipeline.build.geography import PROJECTED_CRS, Geography
-from pipeline.build.restaurants import Restaurants
+from pipeline.build.restaurants import Restaurants, norm_phone
 from pipeline.build.writer import _round_coords, clean, write_json
 from pipeline.config import Config, CuisineGraph
 from pipeline.paths import WEB_DATA_DIR
@@ -197,6 +197,9 @@ def write_restaurant_assets(cfg: Config, geo: Geography, r: Restaurants, cluster
                 "tags": [{"label": t.label, "confidence": t.confidence,
                           "sources": [{"source": e.source, "evidence": e.evidence} for e in t.sources]} for t in lab.tags],
                 "conflicts": [{"label": e.label, "source": e.source, "evidence": e.evidence} for e in lab.conflicts],
+                # contact: DOHMH phone; website, Instagram and hours from the matched OSM place (§9.9)
+                **({"phone": ph} if (ph := norm_phone(row.PHONE)) else {}),
+                **(r.contact[i] if r.contact else {}),
             }
         write_json(WEB_DATA_DIR / "restaurants" / "details" / f"{code}.json", det)
     # clusters per cuisine node

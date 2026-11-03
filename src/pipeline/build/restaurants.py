@@ -40,6 +40,51 @@ class Restaurants:
     xy: np.ndarray  # projected coordinates (ft)
     labels: list[Labels]
     diagnostics: dict[str, Any] = field(default_factory=dict)
+    # website / Instagram / opening hours from the matched OpenStreetMap place, where tagged
+    contact: list[dict[str, str]] = field(default_factory=list)
+
+
+# --- contact normalization (Find food cards, §9.9) ------------------------------------------------
+
+_IG_HANDLE = re.compile(r"^[A-Za-z0-9._]{1,30}$")
+
+
+def norm_phone(v: Any) -> str | None:
+    """10-digit US number, or None (DOHMH sometimes has placeholders)."""
+    if not isinstance(v, str):
+        return None
+    d = re.sub(r"\D", "", v)
+    if len(d) == 11 and d.startswith("1"):
+        d = d[1:]
+    return d if len(d) == 10 and d[0] not in "01" else None
+
+
+def norm_website(v: Any) -> str | None:
+    """An http(s) URL, or None. Bare domains get https://; anything else is dropped."""
+    if not isinstance(v, str):
+        return None
+    u = v.strip().split(";")[0].strip()
+    if not u or " " in u or len(u) > 300:
+        return None
+    if not re.match(r"^https?://", u, re.I):
+        if re.match(r"^[a-z]+:", u, re.I):  # mailto:, javascript:, ...
+            return None
+        u = "https://" + u
+    return u
+
+
+def norm_instagram(v: Any) -> str | None:
+    """An Instagram handle from a URL, '@handle' or bare handle."""
+    if not isinstance(v, str):
+        return None
+    u = v.strip().split(";")[0].strip()
+    m = re.search(r"instagram\.com/([^/?#]+)", u, re.I)
+    h = (m.group(1) if m else u).lstrip("@")
+    return h if _IG_HANDLE.match(h) and h.lower() not in {"p", "explore", "reel", "stories"} else None
+
+
+def norm_hours(v: Any) -> str | None:
+    return v.strip()[:200] if isinstance(v, str) and v.strip() else None
 
 
 # --- DOHMH backbone -------------------------------------------------------------------------------
@@ -77,7 +122,7 @@ def load_dohmh(cfg_r: dict[str, Any], geo: Geography, cuisine_map: dict[str, str
 
     g = raw.groupby("CAMIS", sort=True)
     out = pd.DataFrame(index=g.size().index)
-    for col in ("DBA", "BORO", "BUILDING", "STREET", "ZIPCODE", "CUISINE DESCRIPTION", "GRADE"):
+    for col in ("DBA", "BORO", "BUILDING", "STREET", "ZIPCODE", "PHONE", "CUISINE DESCRIPTION", "GRADE"):
         out[col] = first_non_null(col)
     out["last_inspection"] = raw[raw._real].groupby("CAMIS")["_date"].max()
     coords = raw[raw._coord_ok].groupby("CAMIS")[["_lat", "_lon"]].first()
@@ -165,7 +210,10 @@ def load_osm(geo_crs_tree: tuple[Any, Any]) -> pd.DataFrame:
         lon = e.get("lon", e.get("center", {}).get("lon"))
         if lat is None or lon is None:
             continue
-        rows.append({"id": f"{e['type']}/{e['id']}", "name": t.get("name"), "cuisine": t.get("cuisine"), "lat": lat, "lon": lon})
+        rows.append({"id": f"{e['type']}/{e['id']}", "name": t.get("name"), "cuisine": t.get("cuisine"), "lat": lat, "lon": lon,
+                     "website": t.get("website") or t.get("contact:website"),
+                     "instagram": t.get("contact:instagram") or t.get("instagram"),
+                     "hours": t.get("opening_hours")})
     return pd.DataFrame(rows)
 
 
@@ -188,6 +236,7 @@ def build_restaurants(cfg: Config, geo: Geography) -> Restaurants:
     xy = df[["_x", "_y"]].to_numpy()
     names = [normalize_name(n) for n in df.DBA]
     evidence: list[list[Evidence]] = [[] for _ in range(len(df))]
+    contact: list[dict[str, str]] = [{} for _ in range(len(df))]
 
     src = load_yaml("cuisine_sources.yaml")
     unmapped: dict[str, Counter] = {"osm": Counter(), "overture": Counter()}
@@ -209,6 +258,10 @@ def build_restaurants(cfg: Config, geo: Geography) -> Restaurants:
         oxy = _project(osm.lon, osm.lat)
         pairs = match(xy, names, list(df.CAMIS), oxy, [normalize_name(n) for n in osm.name], list(osm.id), max_ft, min_sim)
         for i, j, s, d in pairs:
+            for key, fn in (("website", norm_website), ("instagram", norm_instagram), ("hours", norm_hours)):
+                val = fn(osm[key].iloc[j])
+                if val:
+                    contact[i][key] = val
             cuis = osm.cuisine.iloc[j]
             if not isinstance(cuis, str):
                 continue
@@ -271,4 +324,5 @@ def build_restaurants(cfg: Config, geo: Geography) -> Restaurants:
     diag["conflicts"] = sum(len(lab.conflicts) for lab in labels)
     diag["restaurants_with_conflicts"] = sum(1 for lab in labels if lab.conflicts)
     diag["built_at_snapshot"] = dt.date.fromisoformat(diag["snapshot_date"]).isoformat()
-    return Restaurants(df=df, xy=xy, labels=labels, diagnostics=diag)
+    diag["contact_from_osm"] = {k: sum(1 for c in contact if k in c) for k in ("website", "instagram", "hours")}
+    return Restaurants(df=df, xy=xy, labels=labels, diagnostics=diag, contact=contact)

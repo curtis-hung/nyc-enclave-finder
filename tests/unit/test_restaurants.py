@@ -42,3 +42,20 @@ def test_leaf_membership_uses_medium_plus_tags_only(cg):
     m = membership(cg, "ecuadorian", primaries, tags, "medium")
     assert m.basis == "tag"
     assert m.member.tolist() == [False, True, True]
+
+
+def test_contact_normalization():
+    """Contact fields on Find food cards (§9.9): only safe links and well-formed values reach the UI."""
+    from pipeline.build.restaurants import norm_hours, norm_instagram, norm_phone, norm_website
+
+    assert norm_phone("7188031234") == "7188031234"
+    assert norm_phone("1-718-803-1234") == "7188031234"
+    assert norm_phone("__________") is None and norm_phone("0123456789") is None and norm_phone(None) is None
+    assert norm_website("ayada.com") == "https://ayada.com"
+    assert norm_website("http://a.com; http://b.com") == "http://a.com"
+    assert norm_website("javascript:alert(1)") is None and norm_website("mailto:x@y.com") is None
+    assert norm_website("not a url") is None
+    assert norm_instagram("https://www.instagram.com/ayadathai/") == "ayadathai"
+    assert norm_instagram("@zaab.zaab") == "zaab.zaab"
+    assert norm_instagram("https://instagram.com/p/abc123") is None
+    assert norm_hours("  Mo-Su 11:00-22:00 ") == "Mo-Su 11:00-22:00" and norm_hours("") is None

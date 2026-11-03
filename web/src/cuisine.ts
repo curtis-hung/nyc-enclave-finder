@@ -48,6 +48,11 @@ export interface RestaurantDetail {
   camis: string;
   tags: TagDetail[];
   conflicts: { label: string; source: string; evidence: string }[];
+  /** DOHMH phone (10 digits); website, Instagram handle and opening hours from the matched OSM place */
+  phone?: string;
+  website?: string;
+  instagram?: string;
+  hours?: string;
 }
 
 export interface ClusterStats {

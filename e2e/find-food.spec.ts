@@ -54,7 +54,7 @@ test.describe("find food with location blocked (§9.9)", () => {
     await expect(panel(page).locator(".find-list li").first()).toContainText(/cluster #\d+/);
     await panel(page).getByRole("button", { name: "Where the community lives" }).click();
     await expect(panel(page)).toContainText(/residential enclave/);
-    await expect(panel(page).locator(".find-list li").first()).toContainText(/Thai enclave/);
+    await expect(panel(page).locator(".find-list li").first()).toContainText(/Thai residential enclave/);
     await expect(panel(page)).not.toContainText("Location");
     await panel(page).getByRole("button", { name: "Off the beaten path" }).click();
     await expect(panel(page).locator(".find-list li").first()).toBeVisible();
@@ -69,5 +69,20 @@ test.describe("find food with location blocked (§9.9)", () => {
     await expect(panel(page).locator(".find-list li").first()).toBeVisible();
     await panel(page).getByRole("button", { name: "Queens" }).click();
     await expectHash(page, "a", "b:4");
+  });
+});
+
+test.describe("find food tags restaurants to enclaves and shows contact details (§9.9)", () => {
+  test("suggestions name their cluster and residential enclave, and show phone/website where known", async ({ page }) => {
+    await openApp(page, "c=thai&ff=enclave");
+    const first = panel(page).locator(".find-list li").first();
+    await expect(first.locator(".chip.enc-cluster")).toContainText(/cluster/);
+    // the residential enclave tag appears in the clusters view too, not only under "community"
+    await expect(panel(page).locator(".find-list li .chip.enc-res").first()).toContainText(/Thai residential enclave/);
+    await expect(panel(page).locator(".find-list li .contact a[href^='tel:+1']").first()).toBeVisible();
+    await expect(panel(page).locator(".find-list li .contact a[href^='http']").first()).toBeVisible();
+    const li = panel(page).locator(".find-list li").filter({ has: page.locator(".contact a[href^='tel:']") }).first();
+    await li.locator(".find-name").click();
+    await expect(page.getByRole("complementary", { name: "Restaurant details" }).locator(".contact a[href^='tel:+1']")).toBeVisible();
   });
 });

@@ -7,6 +7,7 @@
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { CONF, loadDetails, mapsLink, type ClusterFile, type CuisineIndex, type Points, type RestaurantDetail } from "../cuisine";
 import { loadEnclaves, loadJSON } from "../data";
+import { ContactInfo } from "./Restaurants";
 import { view } from "../store";
 import { distanceMi, findCandidates, sortSuggestions, type FindMode, type FindSort, type LatLon, type Suggestion } from "../suggest";
 import type { EnclaveBundle, Group, GroupsFile, Meta } from "../types";
@@ -21,6 +22,8 @@ interface Props {
   clusters: ClusterFile | null;
   preset: string;
   onPick: (i: number) => void;
+  /** colloquial place name per restaurant-cluster id, e.g. "Thai Town" (display only) */
+  clusterNames?: Record<string, string>;
   /** map-click picking for a starting point (shared with "Drop a radius pin") */
   picking: boolean;
   onPickOnMap: (mi: number) => void;
@@ -62,7 +65,7 @@ function unitPool(meta: Meta, pts: Points, a: NonNullable<ViewState["area"]>): n
   return pool;
 }
 
-export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, picking, onPickOnMap, onCancelPick }: Props) {
+export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, clusterNames, picking, onPickOnMap, onCancelPick }: Props) {
   const mode = v.find;
   const [sort, setSort] = useState<FindSort | null>(null); // null = the mode's default
   const [seed, setSeed] = useState(1);
@@ -139,11 +142,15 @@ export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, p
 
   useEffect(() => {
     setEnc(null);
-    if (mode !== "enclave" || !community || !group) return;
+    if (!mode || !group) return;
     let live = true;
     loadEnclaves(group.id).then((e) => live && setEnc(e)).catch(() => undefined);
     return () => { live = false; };
-  }, [mode, community, group?.id]);
+  }, [!!mode, group?.id]);
+  // residential enclaves of the paired group (default dimension, current preset): tag every suggestion
+  const encGeoms = useMemo(() => enc && group
+    ? enc.geojson.features.filter((f) => f.properties?.dim === group.default_dimension && f.properties?.preset === preset).map((f) => f.geometry)
+    : [], [enc, group?.id, preset]);
 
   const clusterOf = useMemo(() => {
     const m = new Map<number, { id: string; rank: number }>();
@@ -155,7 +162,8 @@ export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, p
   const result = useMemo((): { list: Suggestion[]; note: string | null } => {
     if (!mode || !cuisine) return { list: [], note: null };
     const all = () => Array.from({ length: pts.n }, (_, i) => i);
-    const base = { ix, pts, target, floor: CONF[v.conf], multi: v.multi, clusters: hasClusters ? clusterOf : undefined };
+    const base = { ix, pts, target, floor: CONF[v.conf], multi: v.multi, clusters: hasClusters ? clusterOf : undefined,
+      enclaves: encGeoms.length ? encGeoms : undefined, enclaveMi: 0.5 };
     if (mode === "near") {
       if (!origin) return { list: [], note: null };
       return { list: findCandidates({ ...base, pool: all(), origin, maxMi: nearMi }), note: null };
@@ -170,10 +178,9 @@ export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, p
       if (community) {
         if (!group) return { list: [], note: `No group is paired with ${cuisineName}, so there are no residential enclaves to look near.` };
         if (!enc) return { list: [], note: "Loading enclaves…" };
-        const feats = enc.geojson.features.filter((f) => f.properties?.dim === group.default_dimension && f.properties?.preset === preset);
-        if (!feats.length) return { list: [], note: `${group.name} has no residential enclaves under this preset.` };
+        if (!encGeoms.length) return { list: [], note: `${group.name} has no residential enclaves under this preset.` };
         return {
-          list: findCandidates({ ...base, pool: all(), origin, enclaves: feats.map((f) => f.geometry), enclaveMi: 0.5 }),
+          list: findCandidates({ ...base, pool: all(), origin, enclaveOnly: true }),
           note: `Within 0.5 mi of a ${group.name} residential enclave (${meta.dimensions[group.default_dimension]?.short ?? group.default_dimension}), anywhere in the city. Census residence picks where to look; the restaurants' cuisine still comes only from restaurant data.`,
         };
       }
@@ -186,7 +193,7 @@ export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, p
       list: findCandidates({ ...base, pool, origin, clusters: undefined }),
       note: hasClusters ? null : `${cuisineName} has no restaurant clusters computed, so every ${cuisineName} place counts as outside one.`,
     };
-  }, [mode, cuisine, target, v.conf, v.multi, v.area, origin?.lat, origin?.lon, nearMi, community, enc, group?.id, hasClusters, clusterOf, preset]);
+  }, [mode, cuisine, target, v.conf, v.multi, v.area, origin?.lat, origin?.lon, nearMi, community, enc, encGeoms, group?.id, hasClusters, clusterOf, preset]);
 
   const hasDist = result.list.some((s) => s.dist !== null);
   // once there is a starting point (location, ZIP or pin), closest first is the useful default
@@ -300,10 +307,11 @@ export function FindFood({ meta, groups, ix, pts, v, clusters, preset, onPick, p
                     {s.dist !== null && <span class="chip">{s.dist < 0.1 ? "< 0.1" : s.dist.toFixed(1)} mi</span>}
                     <span class="chip" title="How the cuisine match was established">{STRENGTH[s.strength]}</span>
                     {pts.flags[s.i] & 1 ? <span class="chip">multi-location</span> : <span class="chip">independent</span>}
-                    {s.cluster && <span class="chip">cluster #{s.cluster.rank}</span>}
-                    {s.enclaveDist !== undefined && <span class="chip">{s.enclaveDist === 0 ? "in" : `${s.enclaveDist.toFixed(1)} mi from`} {group?.name} enclave</span>}
+                    {s.cluster && <span class="chip enc-cluster" title="Member of this cuisine's restaurant cluster (commercial enclave)">{clusterNames?.[s.cluster.id] ? `${clusterNames[s.cluster.id]} cluster` : `${cuisineName} cluster #${s.cluster.rank}`}</span>}
+                    {s.enclaveDist !== undefined && <span class="chip enc-res" title="Distance to a residential enclave of the paired group (census residence; context, not a cuisine label)">{s.enclaveDist === 0 ? "in" : `${s.enclaveDist.toFixed(1)} mi from`} {group?.name} residential enclave</span>}
                     {d && <span class="muted small">{d.address}</span>}
                   </div>
+                  {d && <ContactInfo d={d} compact />}
                 </li>
               );
             })}
