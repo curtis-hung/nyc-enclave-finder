@@ -54,6 +54,12 @@ export function About({ meta, onClose }: { meta: Meta; onClose: () => void }) {
             ))}
           </tbody>
         </table>
+        <p class="small">
+          Licenses and credits: Census data are U.S. government works (public domain). NYC geography and DOHMH inspections come from NYC Open Data under its terms of use.
+          Map-derived cuisine tags and places of worship contain information from OpenStreetMap, © OpenStreetMap contributors, available under the Open Database License (ODbL);
+          Overture Maps Places data are under CDLA-Permissive-2.0. The basemap is © OpenFreeMap, OpenMapTiles and OpenStreetMap contributors.
+          The code is MIT-licensed; see <code>LICENSE</code> and <code>DATA_LICENSE.md</code> in the repository.
+        </p>
 
         <h2>Restaurants and cuisine labels</h2>
         <p>

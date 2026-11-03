@@ -507,7 +507,7 @@ export function App() {
           )}
           <Legend diversity={v.layer === "diversity"} reference={v.reference} level={level} metric={v.metric} scale={scale} shareOf={(meta && dim && meta.dimensions[dim].share_of) || "residents"} enclaves={v.enclaves && !!enclaveFC?.features.length} clusters={!!clusterFC?.features.length} restaurants={v.restOverlay && !!restaurantFC.total} />
           <footer class="foot muted small">
-            Data: ACS {meta?.acs_vintage} 5-year and PUMS (U.S. Census Bureau); NYC DCP geography; NYC DOHMH inspections; OpenStreetMap; Overture Maps.
+            Data: ACS {meta?.acs_vintage} 5-year and PUMS (U.S. Census Bureau); NYC DCP geography; NYC DOHMH inspections; © OpenStreetMap contributors (ODbL); Overture Maps.
             "Lives here" means census-measured residence; "eats here" means restaurant location. <button class="link" onClick={() => view.set({ about: true })}>About &amp; methods</button>
           </footer>
         </div>
