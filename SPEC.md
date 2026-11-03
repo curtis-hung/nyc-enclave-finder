@@ -25,6 +25,7 @@ Every feature is tagged **[MUST]**, **[SHOULD]** or **[STRETCH]**.
     9. connector lines
     10. diversity layer
     11. compare mode
+    12. Find food (§9.9), added after M9 on 2026-11-03
   - **STRETCH, keep first → cut first:**
     1. Places of Worship
     2. population-weighted radius interpolation
@@ -114,6 +115,7 @@ Census measures describe where people **reside**. Restaurant data describes wher
 - **Restaurant cuisine labels come only from restaurant data.** Residential data must never be used to label, tag, refine or cluster restaurants.
 - Commercial data must never define residential enclaves.
 - Residential data may be *displayed beside* commercial results as context (§8.3). It must be labeled as context, not evidence.
+- **One user-chosen exception (2026-11-03):** Find food's "Where the community lives" option (§9.9) uses residential enclaves to decide *where to look* for restaurants. It never changes a restaurant's cuisine label, tags or clusters, and the UI says so.
 
 ### 2.4 Exploratory, not prescriptive
 
@@ -585,6 +587,26 @@ The hash holds the group, dimension, metric, focused area, reference and preset.
 Usable on a phone. Prioritize the map, group selection, focus controls, key stats and readable legends. Secondary panels collapse.
 
 ---
+
+### 9.9 Find food [SHOULD] (user request, 2026-11-03)
+
+Suggestions of candidate restaurants for the cuisine selected in §9.5, in four modes:
+
+| Mode | Candidates |
+|---|---|
+| **Near me** | Within 0.25 / 0.5 / 1 / 2 mi of the device's location. The browser asks permission; the location is kept in memory only and **never written to the URL** or stored. |
+| **Around here** | Inside the focused area (§9.3). Asks for an area if none is focused. |
+| **In an enclave** | Either the cuisine's restaurant clusters (§7) at the current preset, or "where the community lives": within 0.5 mi of the paired group's residential enclaves (default dimension, current preset). The second option is the §2.3 exception and is labeled as such. |
+| **Off the beaten path** | Places of the cuisine outside every one of its clusters. |
+
+Rules:
+
+- Candidates follow the same eligibility as the map: independent and inspected, plus multi-location businesses when shown, at the current tag-confidence floor.
+- Ordering is visible and switchable: closest first, surest cuisine match first (DOHMH label, then high / medium / low tags) or shuffled. There is no hidden score.
+- Each suggestion shows "why" chips (distance, match basis, independent or multi-location, cluster, enclave distance) and a Google Maps link.
+- There are no ratings, so suggestions are candidates, not judgments of quality, and the panel says so.
+- **Not built: an "open since" signal.** The DOHMH file keeps only about three years of inspections per restaurant (verified: the maximum span is 3.0 years), so an earliest inspection date can't measure longevity.
+- The mode is kept in the URL (`ff=`); the user's location never is.
 
 ## 10. About / methodology page [MUST]
 

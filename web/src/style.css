@@ -306,3 +306,15 @@ details.ceiling summary { cursor: pointer; font-weight: 600; }
   .has-area .reset-view { bottom: calc(60vh + 8px); }
   .panel-collapsed .reset-view, .area-collapsed .reset-view { bottom: 64px; }
 }
+
+/* Find food (§9.9) */
+.find { margin: 12px 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.find h3 { margin: 0; }
+.find .seg { margin: 6px 0; }
+.find-open { width: 100%; text-align: left; }
+.find-sort { align-items: center; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+.find-list { margin: 6px 0; padding-left: 22px; }
+.find-list li { margin: 0 0 8px; }
+.find-list .find-name { font-weight: 600; margin-right: 6px; }
+.find-list .why { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 2px; }
+.find-list .why .chip { font-size: 11px; padding: 1px 6px; }

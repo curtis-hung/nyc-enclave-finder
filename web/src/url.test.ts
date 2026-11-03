@@ -23,6 +23,7 @@ describe("URL state", () => {
       pinned: { kind: "boro", id: "2" },
       worship: true,
       about: true,
+      find: "outpost",
     };
     expect(parse("#" + serialize(v))).toEqual(v);
   });

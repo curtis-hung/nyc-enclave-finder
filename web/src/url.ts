@@ -4,6 +4,7 @@
 //
 // Unknown or malformed keys are ignored; missing keys fall back to defaults.
 
+import type { FindMode } from "./suggest";
 import type { Level, Metric } from "./types";
 
 export type Area =
@@ -32,6 +33,7 @@ export interface ViewState {
   pinned: Area | null; // compare mode: a second area pinned for comparison
   worship: boolean; // Places of Worship layer (OSM, stretch)
   about: boolean; // About / methodology dialog open
+  find: FindMode | null; // "Find food" suggestions open, in this mode (§9.9)
 }
 
 export const DEFAULT_VIEW: ViewState = {
@@ -54,7 +56,10 @@ export const DEFAULT_VIEW: ViewState = {
   pinned: null,
   worship: false,
   about: false,
+  find: null,
 };
+
+const FIND_MODES: FindMode[] = ["near", "here", "enclave", "outpost"];
 
 const METRICS: Metric[] = ["lq", "share", "count"];
 
@@ -100,6 +105,7 @@ export function serialize(v: ViewState): string {
   if (v.pinned) p.set("a2", areaToString(v.pinned));
   if (v.worship) p.set("pw", "1");
   if (v.about) p.set("ab", "1");
+  if (v.find) p.set("ff", v.find); // the mode only: a location is never written to the URL
   // URLSearchParams escapes ":" and ","; keep the hash readable
   return p.toString().replace(/%3A/g, ":").replace(/%2C/g, ",");
 }
@@ -129,5 +135,6 @@ export function parse(hash: string): ViewState {
     pinned: parseArea(p.get("a2")),
     worship: p.get("pw") === "1",
     about: p.get("ab") === "1",
+    find: FIND_MODES.includes(p.get("ff") as FindMode) ? (p.get("ff") as FindMode) : null,
   };
 }

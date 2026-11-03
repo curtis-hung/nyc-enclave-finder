@@ -57,7 +57,8 @@ Pick a group to see where it lives (blue, by location quotient), its residential
 (orange outlines) and its paired cuisine's restaurant clusters (violet outlines; restaurants in
 red). Click any tract or neighbourhood to see who's over-represented there; focus a neighbourhood,
 borough, place or radius pin for area statistics; open **Experiment view** for the gap table and
-scatter. **About & methods** in the panel explains everything below in plain language. All view
+scatter. **Find food** suggests candidate restaurants for the selected cuisine: near you, around a
+focused area, in an enclave or off the beaten path. **About & methods** in the panel explains everything below in plain language. All view
 state lives in the URL hash, so any view can be shared.
 
 ## Data refresh

@@ -134,6 +134,14 @@ export function About({ meta, onClose }: { meta: Meta; onClose: () => void }) {
           Detailed languages (e.g. Bengali within "Other Indo-European") fill in under the broad tract-level categories the same way.
         </p>
 
+        <h2>Find food</h2>
+        <p>
+          Find food lists candidate restaurants for the selected cuisine: near you (your browser asks first; the location stays on your device and is never put in the URL),
+          around a focused area, in the cuisine's restaurant clusters, near where the paired community lives, or off the beaten path (outside every cluster).
+          You choose the order: closest, surest cuisine match (DOHMH category first, then inferred tags by confidence) or shuffled. Nothing is ranked by quality, because the data has no ratings.
+          "Near where the community lives" uses census residence only to decide where to look; a restaurant's cuisine always comes from restaurant data.
+        </p>
+
         <h2>Other notes</h2>
         <ul>
           <li><strong>Jewish (Yiddish-language proxy).</strong> The Census does not measure religion. This group is approximated by people who speak Yiddish at home (at tract level, the "German or other West Germanic" language category). It misses most Jewish New Yorkers.</li>

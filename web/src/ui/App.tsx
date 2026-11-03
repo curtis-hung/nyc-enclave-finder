@@ -24,6 +24,7 @@ import { loadTractIndex } from "../focus";
 import { pointInGeom } from "../geo";
 import { ClusterTable, defaultCuisine, RestaurantCard, RestaurantControls } from "./Restaurants";
 import { FocusControls } from "./FocusControls";
+import { FindFood } from "./FindFood";
 import { nameClusters, placeFitsCuisine } from "../placenames";
 import { GroupPicker } from "./GroupPicker";
 import { GroupSection } from "./GroupSection";
@@ -432,6 +433,13 @@ export function App() {
   useEffect(() => {
     if (resetKey) mapRef.current?.fitCity();
   }, [resetKey]);
+  // a suggestion picked in Find food: open its card and bring it into view
+  const pickRestaurant = (i: number) => {
+    view.set({ restaurant: i });
+    if (!pts) return;
+    const lon = pts.lon[i] / 1e5, lat = pts.lat[i] / 1e5, d = 0.004;
+    mapRef.current?.fitTo([[lon - d, lat - d], [lon + d, lat + d]], 40);
+  };
   const zoomToEnclave = (id: string) => {
     const f = enc?.geojson.features.find((x) => x.properties?.id === id);
     if (f) mapRef.current?.fitTo(bounds(f.geometry));
@@ -481,6 +489,7 @@ export function App() {
               onEnclave={(it: EnclaveItem) => zoomToEnclave(it.id)} dia={dia} />
           )}
           {ix && pts && <RestaurantControls ix={ix} pts={pts} v={v} group={group} shown={{ total: restaurantFC.total, viaTags: restaurantFC.viaTags }} />}
+          {ix && pts && meta && groups && <FindFood meta={meta} groups={groups} ix={ix} pts={pts} v={v} clusters={clusterFile} preset={preset} onPick={pickRestaurant} />}
           {ix && meta && <ClusterTable ix={ix} file={clusterFile} preset={preset} presetLabel={meta.presets.presets[preset].label} selected={selCluster} onSelect={focusCluster} onContext={(node, cluster) => setCtx({ node, cluster })} lqMin={meta.presets.presets[preset].cluster.lq_min} gapMin={meta.presets.presets[preset].cluster.gap_min} residents={clusterResidents}
             names={Object.fromEntries(clusterNames.map((n) => [n.id, n.label]))} />}
           {group && (
