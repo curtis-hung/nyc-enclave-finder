@@ -8,27 +8,27 @@ Polygon distance (0 = touching/overlapping) and signed edge distance from the cl
 
 | Group | Clusters | Min (mi) | Median (mi) | Max (mi) | Median edge (mi) | Clusters with no enclave |
 |---|---|---|---|---|---|---|
-| Jewish (Yiddish-language proxy) | 16 | 0.00 | 1.02 | 8.57 | 1.09 | 0 |
-| Japanese | 11 | 0.00 | 0.00 | 6.22 | -0.05 | 0 |
+| Jewish (Yiddish-language proxy) | 15 | 0.00 | 0.82 | 8.57 | 0.86 | 0 |
+| Japanese | 10 | 0.00 | 0.00 | 6.22 | -0.12 | 0 |
 | Middle Eastern & North African | 7 | 0.00 | 0.00 | 3.63 | 0.01 | 0 |
 | Thai | 2 | 0.00 | 1.44 | 2.88 | 1.36 | 0 |
-| Hispanic & Latin American | 62 | 0.00 | 0.00 | 2.82 | -0.02 | 0 |
+| Hispanic & Latin American | 64 | 0.00 | 0.00 | 2.82 | -0.01 | 0 |
+| Caribbean (West Indian, non-Hispanic) | 27 | 0.00 | 0.00 | 2.79 | -0.17 | 0 |
 | East Asian | 31 | 0.00 | 0.00 | 2.56 | -0.34 | 0 |
-| European | 22 | 0.00 | 0.05 | 2.42 | 0.14 | 0 |
+| European | 19 | 0.00 | 0.06 | 2.42 | 0.15 | 0 |
 | Chinese | 20 | 0.00 | 0.00 | 2.24 | -0.27 | 0 |
-| Asian | 47 | 0.00 | 0.00 | 1.91 | -0.21 | 0 |
-| Caribbean (West Indian, non-Hispanic) | 26 | 0.00 | 0.00 | 1.69 | -0.19 | 0 |
-| Italian | 19 | 0.00 | 0.00 | 0.48 | 0.04 | 0 |
-| Mexican | 25 | 0.00 | 0.00 | 0.33 | -0.05 | 0 |
-| Irish | 4 | 0.00 | 0.08 | 0.25 | 0.13 | 0 |
+| Asian | 46 | 0.00 | 0.00 | 1.40 | -0.22 | 0 |
+| Southeast Asian | 7 | 0.00 | 0.00 | 0.80 | 0.01 | 0 |
+| Italian | 17 | 0.00 | 0.00 | 0.48 | 0.05 | 0 |
+| Mexican | 26 | 0.00 | 0.00 | 0.33 | -0.06 | 0 |
+| Irish | 3 | 0.00 | 0.00 | 0.25 | -0.00 | 0 |
 | South Asian | 9 | 0.00 | 0.00 | 0.25 | -0.28 | 0 |
-| Korean | 8 | 0.00 | 0.00 | 0.25 | -0.12 | 0 |
-| Southeast Asian | 5 | 0.00 | 0.00 | 0.15 | -0.12 | 0 |
+| Korean | 7 | 0.00 | 0.00 | 0.25 | -0.16 | 0 |
 | Indian | 5 | 0.00 | 0.00 | 0.12 | -0.41 | 0 |
 | Bangladeshi | 5 | 0.00 | 0.00 | 0.00 | -0.07 | 0 |
-| Colombian | 1 | 0.00 | 0.00 | 0.00 | -0.76 | 0 |
+| Colombian | 3 | 0.00 | 0.00 | 0.00 | -0.78 | 0 |
 | Eastern European | 5 | 0.00 | 0.00 | 0.00 | -0.20 | 0 |
-| Ecuadorian | 1 | 0.00 | 0.00 | 0.00 | -0.43 | 0 |
+| Ecuadorian | 1 | 0.00 | 0.00 | 0.00 | -0.42 | 0 |
 | Egyptian | 1 | 0.00 | 0.00 | 0.00 | -0.05 | 0 |
 | Filipino | 1 | 0.00 | 0.00 | 0.00 | -0.56 | 0 |
 | French | 6 | 0.00 | 0.00 | 0.00 | -0.39 | 0 |
@@ -36,7 +36,7 @@ Polygon distance (0 = touching/overlapping) and signed edge distance from the cl
 | Nepali | 1 | 0.00 | 0.00 | 0.00 | -0.95 | 0 |
 | Polish | 1 | 0.00 | 0.00 | 0.00 | -0.16 | 0 |
 | Russian | 1 | 0.00 | 0.00 | 0.00 | -0.25 | 0 |
-| South American | 13 | 0.00 | 0.00 | 0.00 | -0.42 | 0 |
+| South American | 13 | 0.00 | 0.00 | 0.00 | -0.41 | 0 |
 | Vietnamese | 1 | 0.00 | 0.00 | 0.00 | 0.01 | 0 |
 
 ## 2. Groups with more than one enclave (default preset)
@@ -60,23 +60,23 @@ Polygon distance (0 = touching/overlapping) and signed edge distance from the cl
 | South Asian | 43 | 123,889 | 59.2% |
 | German | 42 | 43,000 | 52.1% |
 | East Asian | 40 | 176,641 | 62.5% |
-| Indian | 38 | 40,628 | 54.7% |
-| Polish | 37 | 19,384 | 44.2% |
+| Indian | 38 | 40,628 | 54.6% |
 | Hispanic & Latin American | 36 | 410,032 | 38.3% |
+| Polish | 36 | 19,384 | 43.9% |
 | Russian | 35 | 22,580 | 50.4% |
 | Eastern European | 30 | 88,998 | 58.7% |
-| Caribbean (West Indian, non-Hispanic) | 27 | 203,162 | 67.5% |
+| Caribbean (West Indian, non-Hispanic) | 28 | 202,388 | 67.5% |
 | West African | 26 | 7,216 | 39.6% |
 | Northern & Western European | 21 | 2,907 | 26.8% |
+| Jamaican | 19 | 47,646 | 65.4% |
 | Southeast Asian | 19 | 23,738 | 36.3% |
-| Jamaican | 18 | 47,866 | 65.5% |
 | Guyanese | 17 | 38,872 | 52.3% |
 | Bangladeshi | 16 | 25,829 | 58.3% |
 | English | 16 | 86,162 | 60.1% |
 | Korean | 14 | 27,562 | 49.0% |
+| Central American | 11 | 10,448 | 28.0% |
 | Haitian | 11 | 46,177 | 57.0% |
 | Honduran | 11 | 13,218 | 51.0% |
-| Central American | 10 | 15,681 | 28.0% |
 | Salvadoran | 10 | 5,237 | 42.1% |
 | Southern European | 10 | 5,350 | 32.6% |
 | Albanian | 9 | 9,240 | 65.1% |
@@ -165,26 +165,26 @@ Distinct finest-level groups with LQ > 1 and a usable estimate, across race, His
 
 | Cuisine | Cluster | Restaurants | Independent | Cuisine LQ | Cuisine share of catchment |
 |---|---|---|---|---|---|
-| Bangladeshi | #2 | 15 | 14 | 175.88 | 64.0% |
-| Filipino | #1 | 10 | 9 | 97.36 | 16.4% |
-| Irish | #1 | 9 | 8 | 68.28 | 60.0% |
-| Nepali | #1 | 13 | 12 | 66.60 | 8.6% |
-| Himalayan | #1 | 14 | 13 | 55.59 | 9.4% |
-| Eastern European | #1 | 15 | 13 | 51.10 | 42.9% |
-| Jewish / Kosher | #1 | 20 | 15 | 51.05 | 74.1% |
-| Jewish / Kosher | #2 | 13 | 10 | 43.64 | 63.3% |
-| Jewish / Kosher | #3 | 12 | 8 | 39.76 | 57.7% |
-| Bangladeshi | #1 | 16 | 14 | 34.08 | 12.4% |
-| South Asian | #3 | 16 | 14 | 31.79 | 68.0% |
-| Korean | #3 | 25 | 22 | 28.70 | 56.9% |
-| Middle Eastern | #3 | 9 | 9 | 28.17 | 50.0% |
-| Korean | #2 | 48 | 41 | 27.68 | 54.9% |
-| Jewish / Kosher | #4 | 9 | 8 | 27.20 | 39.5% |
-| Korean | #5 | 10 | 10 | 25.21 | 50.0% |
-| South Asian | #5 | 8 | 7 | 22.44 | 48.0% |
-| Middle Eastern | #1 | 28 | 27 | 22.08 | 39.2% |
-| Thai | #2 | 8 | 6 | 19.90 | 32.1% |
-| South American | #4 | 9 | 5 | 17.59 | 29.0% |
+| Bangladeshi | #2 | 15 | 14 | 175.18 | 64.0% |
+| Filipino | #1 | 10 | 9 | 98.13 | 16.2% |
+| Irish | #1 | 9 | 8 | 73.24 | 64.3% |
+| Nepali | #1 | 13 | 12 | 64.13 | 8.6% |
+| Himalayan | #1 | 14 | 13 | 55.37 | 9.4% |
+| Eastern European | #1 | 15 | 13 | 52.14 | 43.9% |
+| Jewish / Kosher | #1 | 19 | 14 | 51.10 | 73.1% |
+| Jewish / Kosher | #2 | 14 | 10 | 45.11 | 64.5% |
+| Jewish / Kosher | #3 | 10 | 8 | 37.87 | 54.2% |
+| Bangladeshi | #1 | 16 | 14 | 33.95 | 12.4% |
+| Jewish / Kosher | #5 | 8 | 7 | 33.12 | 47.4% |
+| South Asian | #3 | 16 | 14 | 31.93 | 68.0% |
+| Korean | #3 | 25 | 22 | 29.42 | 58.7% |
+| Korean | #2 | 47 | 40 | 27.28 | 54.5% |
+| Middle Eastern | #4 | 8 | 8 | 27.18 | 47.8% |
+| Jewish / Kosher | #4 | 8 | 7 | 25.76 | 36.8% |
+| Korean | #4 | 10 | 10 | 25.05 | 50.0% |
+| South Asian | #5 | 8 | 7 | 22.54 | 48.0% |
+| Middle Eastern | #1 | 28 | 27 | 22.27 | 39.2% |
+| Thai | #2 | 8 | 6 | 20.90 | 33.3% |
 
 ## 5. Neighborhoods with the highest residential diversity
 
@@ -207,12 +207,12 @@ Diversity = normalized Shannon entropy of the eight race/Hispanic-origin categor
 
 | Measure | strict | default | loose |
 |---|---|---|---|
-| Enclaves (default dimensions, all groups) | 455 | 1,646 | 2,733 |
-| Restaurant clusters (all paired cuisines) | 136 | 435 | 661 |
-| Exact-pairing cluster rows | 109 | 358 | 562 |
+| Enclaves (default dimensions, all groups) | 455 | 1,648 | 2,738 |
+| Restaurant clusters (all paired cuisines) | 143 | 432 | 664 |
+| Exact-pairing cluster rows | 113 | 356 | 563 |
 | Median nearest-enclave distance (mi) | 0.00 | 0.00 | 0.00 |
-| Median signed edge distance (mi; negative = inside) | -0.01 | -0.10 | -0.08 |
-| Rows with distance 0 | 59.6% | 77.7% | 77.2% |
+| Median signed edge distance (mi; negative = inside) | -0.01 | -0.11 | -0.08 |
+| Rows with distance 0 | 58.4% | 77.5% | 77.3% |
 | Rows with no enclave (null) | 0 | 0 | 0 |
 
 Preset parameters:

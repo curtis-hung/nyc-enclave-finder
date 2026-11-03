@@ -503,96 +503,96 @@ Groups with no paired cuisine: White (non-Hispanic), American Indian and Alaska 
 
 | DOHMH value | Establishments (unique CAMIS) | Hierarchy node | Kind |
 |---|---|---|---|
-| American | 4,819 | american | cuisine |
-| (blank) | 3,860 | root | generic |
-| Chinese | 2,274 | chinese | cuisine |
-| Coffee/Tea | 2,218 | generic_format | generic |
-| Pizza | 1,616 | pizza | food_type |
-| Latin American | 1,125 | latin_american | bucket |
+| American | 4,784 | american | cuisine |
+| (blank) | 3,979 | root | generic |
+| Chinese | 2,260 | chinese | cuisine |
+| Coffee/Tea | 2,213 | generic_format | generic |
+| Pizza | 1,601 | pizza | food_type |
+| Latin American | 1,124 | latin_american | bucket |
 | Mexican | 1,118 | mexican | cuisine |
-| Japanese | 1,063 | japanese | cuisine |
-| Italian | 1,011 | italian | cuisine |
-| Bakery Products/Desserts | 935 | generic_format | generic |
-| Caribbean | 739 | caribbean | bucket |
-| Chicken | 738 | generic_format | generic |
-| Other | 553 | root | generic |
-| Donuts | 545 | generic_format | generic |
-| Juice, Smoothies, Fruit Salads | 538 | generic_format | generic |
-| Hamburgers | 496 | hamburgers | food_type |
-| Asian/Asian Fusion | 469 | asian | bucket |
-| Spanish | 467 | spanish_hispanic | bucket |
-| Sandwiches | 459 | generic_format | generic |
-| Korean | 429 | korean | cuisine |
-| Frozen Desserts | 387 | generic_format | generic |
-| Thai | 349 | thai | cuisine |
-| Jewish/Kosher | 343 | jewish_kosher | cuisine |
-| Indian | 323 | indian | cuisine |
-| Mediterranean | 321 | mediterranean | bucket |
-| Tex-Mex | 313 | tex_mex | cuisine |
-| French | 292 | french | cuisine |
-| Middle Eastern | 292 | middle_eastern | bucket |
-| Seafood | 246 | generic_format | generic |
-| Bagels/Pretzels | 240 | bagels | food_type |
-| New American | 211 | new_american | cuisine |
-| Irish | 198 | irish | cuisine |
-| Sandwiches/Salads/Mixed Buffet | 164 | generic_format | generic |
-| Greek | 147 | greek | cuisine |
-| Eastern European | 131 | eastern_european | bucket |
-| Salads | 128 | generic_format | generic |
+| Japanese | 1,052 | japanese | cuisine |
+| Italian | 1,009 | italian | cuisine |
+| Bakery Products/Desserts | 926 | generic_format | generic |
+| Chicken | 743 | generic_format | generic |
+| Caribbean | 733 | caribbean | bucket |
+| Donuts | 542 | generic_format | generic |
+| Juice, Smoothies, Fruit Salads | 536 | generic_format | generic |
+| Other | 534 | root | generic |
+| Hamburgers | 497 | hamburgers | food_type |
+| Asian/Asian Fusion | 464 | asian | bucket |
+| Sandwiches | 453 | generic_format | generic |
+| Spanish | 451 | spanish_hispanic | bucket |
+| Korean | 425 | korean | cuisine |
+| Frozen Desserts | 390 | generic_format | generic |
+| Thai | 343 | thai | cuisine |
+| Jewish/Kosher | 336 | jewish_kosher | cuisine |
+| Indian | 320 | indian | cuisine |
+| Mediterranean | 319 | mediterranean | bucket |
+| Tex-Mex | 315 | tex_mex | cuisine |
+| French | 290 | french | cuisine |
+| Middle Eastern | 290 | middle_eastern | bucket |
+| Seafood | 243 | generic_format | generic |
+| Bagels/Pretzels | 242 | bagels | food_type |
+| New American | 217 | new_american | cuisine |
+| Irish | 197 | irish | cuisine |
+| Sandwiches/Salads/Mixed Buffet | 163 | generic_format | generic |
+| Greek | 148 | greek | cuisine |
+| Eastern European | 129 | eastern_european | bucket |
+| Salads | 126 | generic_format | generic |
 | Southeast Asian | 115 | southeast_asian | bucket |
-| Fusion | 110 | generic_format | generic |
-| Peruvian | 108 | peruvian | cuisine |
-| Bottled Beverages | 105 | generic_format | generic |
+| Peruvian | 107 | peruvian | cuisine |
+| Fusion | 107 | generic_format | generic |
 | Steakhouse | 105 | steakhouse | food_type |
-| African | 90 | african | bucket |
+| Bottled Beverages | 103 | generic_format | generic |
+| African | 89 | african | bucket |
 | Bangladeshi | 82 | bangladeshi | cuisine |
-| Turkish | 79 | turkish | cuisine |
-| Vegan | 74 | generic_format | generic |
-| Soul Food | 66 | soul_food | cuisine |
-| Soups/Salads/Sandwiches | 58 | generic_format | generic |
-| Vegetarian | 57 | generic_format | generic |
+| Turkish | 77 | turkish | cuisine |
+| Vegan | 73 | generic_format | generic |
+| Soul Food | 70 | soul_food | cuisine |
+| Soups/Salads/Sandwiches | 60 | generic_format | generic |
+| Vegetarian | 56 | generic_format | generic |
 | Barbecue | 51 | barbecue | food_type |
-| Continental | 47 | generic_format | generic |
-| Hawaiian | 44 | hawaiian | cuisine |
-| Pancakes/Waffles | 43 | pancakes | food_type |
+| Pancakes/Waffles | 45 | pancakes | food_type |
+| Continental | 45 | generic_format | generic |
+| Hawaiian | 43 | hawaiian | cuisine |
 | Russian | 42 | russian | cuisine |
 | Tapas | 42 | spanish_spain | cuisine |
-| Filipino | 38 | filipino | cuisine |
+| Australian | 41 | australian | cuisine |
+| Chinese/Japanese | 39 | chinese_japanese | cuisine |
 | Brazilian | 38 | brazilian | cuisine |
-| Australian | 38 | australian | cuisine |
-| Chinese/Japanese | 37 | chinese_japanese | cuisine |
-| Pakistani | 37 | pakistani | cuisine |
-| German | 34 | german | cuisine |
-| Hotdogs/Pretzels | 32 | hotdogs | food_type |
+| Pakistani | 38 | pakistani | cuisine |
+| Filipino | 37 | filipino | cuisine |
+| German | 35 | german | cuisine |
+| Hotdogs/Pretzels | 33 | hotdogs | food_type |
 | Hotdogs | 32 | hotdogs | food_type |
-| New French | 30 | new_french | cuisine |
+| New French | 29 | new_french | cuisine |
 | Californian | 26 | californian | cuisine |
 | Creole | 22 | creole | bucket |
 | Ethiopian | 19 | ethiopian | cuisine |
 | Polish | 18 | polish | cuisine |
 | Chinese/Cuban | 16 | chinese_cuban | cuisine |
+| Portuguese | 16 | portuguese | cuisine |
 | Soups | 15 | generic_format | generic |
 | Afghan | 14 | afghan | cuisine |
-| Portuguese | 14 | portuguese | cuisine |
 | Moroccan | 13 | moroccan | cuisine |
 | Egyptian | 12 | egyptian | cuisine |
-| English | 12 | english | cuisine |
 | Armenian | 11 | armenian | cuisine |
-| Not Listed/Not Applicable | 9 | root | generic |
+| English | 11 | english | cuisine |
 | Scandinavian | 9 | scandinavian | cuisine |
-| Nuts/Confectionary | 9 | generic_format | generic |
+| Not Listed/Not Applicable | 8 | root | generic |
+| Nuts/Confectionary | 8 | generic_format | generic |
 | Fruits/Vegetables | 8 | generic_format | generic |
-| Indonesian | 8 | indonesian | cuisine |
+| Cajun | 8 | cajun | cuisine |
 | Lebanese | 7 | lebanese | cuisine |
-| Southwestern | 7 | southwestern | cuisine |
-| Cajun | 7 | cajun | cuisine |
+| Indonesian | 7 | indonesian | cuisine |
+| Southwestern | 6 | southwestern | cuisine |
 | Iranian | 5 | persian | cuisine |
 | Creole/Cajun | 4 | creole | bucket |
 | Czech | 4 | czech | cuisine |
-| Polynesian | 2 | hawaiian | cuisine |
 | Chilean | 2 | chilean | cuisine |
-| Haute Cuisine | 2 | generic_format | generic |
 | Basque | 2 | basque | cuisine |
+| Haute Cuisine | 2 | generic_format | generic |
+| Polynesian | 2 | hawaiian | cuisine |
 | Chimichurri | 1 | latin_american | bucket |
 
 Unmapped values: none.
@@ -606,7 +606,7 @@ Unmapped values: none.
 | Dominican origin around Washington Heights | Washington Heights (South) | 3 of 187 | 5.34 | Inwood (6.17); University Heights (North)-Fordham (5.87); Washington Heights (South) (5.34) | pass |
 | Chinese population around Flushing | Flushing-Willets Point | 1 of 171 | 8.52 | Flushing-Willets Point (8.52); Chinatown-Two Bridges (8.09); Queensboro Hill (8.06) | pass |
 | Yiddish (language category: German or other West Germanic) around Borough Park | Borough Park | 2 of 96 | 36.25 | South Williamsburg (36.74); Borough Park (36.25); Mapleton-Midwood (West) (9.5) | pass |
-| Korean-cuisine restaurants around W 32nd St (restaurant data) | Midtown South-Flatiron-Union Square | 4 of 185 | 7.2 | Murray Hill-Broadway Flushing (25.68); Auburndale (9.94); Bayside (7.93) | pass |
+| Korean-cuisine restaurants around W 32nd St (restaurant data) | Midtown South-Flatiron-Union Square | 4 of 185 | 7.26 | Murray Hill-Broadway Flushing (25.67); Auburndale (9.88); Bayside (7.88) | pass |
 
 Korean-cuisine concentration around W 32nd St is checked at M6 (restaurants).
 
