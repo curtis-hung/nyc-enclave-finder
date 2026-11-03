@@ -61,8 +61,16 @@ def test_cluster_stats_are_internally_consistent(cfg, pts):
         for preset, items in data["stats"].items():
             pc = cfg.presets["presets"][preset]["cluster"]
             for c in items:
-                assert c["lq"] >= pc["lq_min"] - 1e-6 or c["share_gap"] >= pc["gap_min"] - 1e-3
-                assert c["qualified_by"] == ("lq" if c["lq"] >= pc["lq_min"] - 1e-6 else "share_gap")
+                # LQ is published rounded to 2 decimals but the pipeline qualifies on the exact value,
+                # so within ±0.005 of the cutoff either label is consistent with the published number
+                band = 0.005 + 1e-9
+                assert c["lq"] >= pc["lq_min"] - band or c["share_gap"] >= pc["gap_min"] - 1e-3
+                if c["lq"] >= pc["lq_min"] + band:
+                    assert c["qualified_by"] == "lq"
+                elif c["lq"] < pc["lq_min"] - band:
+                    assert c["qualified_by"] == "share_gap"
+                else:
+                    assert c["qualified_by"] in ("lq", "share_gap")
                 assert c["share"] == pytest.approx(c["cuisine_in_catchment"] / c["catchment_restaurants"], abs=1e-3)
                 assert c["restaurants"] == len(c["members"]) <= c["cuisine_in_catchment"]
                 assert c["independent"] <= c["restaurants"]
