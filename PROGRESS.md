@@ -24,6 +24,19 @@ cluster rule (Chinatown in Asian clusters), red restaurants, hover info, context
 **M8 complete** (D33-D38). **M9 complete** (D39-D40): all milestones done. Nothing has been
 pushed or published; deployment is prepared in `.github/workflows/` and `DEPLOY.md`.
 
+## Post-M9 (2026-11-03, planning session)
+
+- **Published** at https://curtis-hung.github.io/nyc-enclave-finder/ (public repo
+  `curtis-hung/nyc-enclave-finder`; MIT code license, `DATA_LICENSE.md` for source terms; OSM credit
+  added to the About page and footer). SPEC §14 updated.
+- **Monthly data refresh** (`refresh-data.yml`, SPEC §14): census pinned (`fetch` keeps the manifest
+  vintage; `--upgrade-vintages` to move), `--strict` fetch, `pipeline refresh-gate` auto-publishes
+  routine months and opens a PR otherwise, `pipeline check-vintages` opens an issue for a new ACS
+  vintage. Needs the repo setting "Allow GitHub Actions to create and approve pull requests" (user).
+- **Find food** (SPEC §9.9): near me / around here / in an enclave / off the beaten path.
+  An "open since" signal was dropped: DOHMH keeps only ~3 years of inspections per restaurant.
+- Tests: pytest 107, Vitest 44, Playwright 53.
+
 ## Completed work
 
 ### M0 Scaffold
