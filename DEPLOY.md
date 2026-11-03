@@ -68,7 +68,7 @@ from **Actions → Refresh data → Run workflow**. Each run:
 
 | Outcome | What happens |
 |---|---|
-| Routine: restaurant count within ±10%, tagged restaurants within ±25%, census and geography vintages unchanged | Commits to `main` and redeploys the site. No action needed. |
+| Routine: restaurant count within ±10%, tagged restaurants within ±25%, census vintage unchanged, and the same tracts and neighborhoods with no tract area moving more than 1% | Commits to `main` and redeploys the site. No action needed. |
 | Anything else | Opens a **pull request** with the gate's reasons. Review it; merging redeploys. |
 | No data changed | Nothing |
 

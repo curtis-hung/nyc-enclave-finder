@@ -801,7 +801,7 @@ Descriptive only: no explanations, no categories.
 - **`.github/workflows/refresh-data.yml`** (user decision, 2026-11-03): runs monthly and on demand.
   - It refetches every source at its **pinned** census vintage (§3.2), rebuilds and runs the full suite.
   - `pipeline refresh-gate` then decides the outcome:
-    - **Routine:** restaurant count within ±10%, tagged restaurants within ±25%, census and geography vintages unchanged. The workflow commits to `main` and starts the deploy itself, because pushes made with the workflow token don't trigger other workflows.
+    - **Routine:** restaurant count within ±10%, tagged restaurants within ±25%, census vintage unchanged, and geography unchanged in substance: the same tract, NTA and borough IDs and mappings, with no tract area moving more than 1%. Geography is judged by content, not publication date, because NYC re-releases its boundary files with cosmetic shoreline edits (first seen November 2026: same IDs, at most a 0.18% area change). The workflow commits to `main` and starts the deploy itself, because pushes made with the workflow token don't trigger other workflows.
     - **Anything else:** opens a PR with the gate's reasons.
   - A newer census vintage opens an issue. Upgrading it (`--upgrade-vintages`) is always a reviewed PR, never automatic.
 - **`DEPLOY.md`:** the steps to create a repo, push, enable Pages, optionally add `CENSUS_API_KEY` and optionally enable the cron. Going live should take a few minutes.

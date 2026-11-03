@@ -41,10 +41,25 @@ def test_new_census_vintage_never_auto_publishes():
     assert any("acs5 vintage changed" in r for r in reasons)
 
 
-def test_revised_geography_needs_review():
-    safe, _ = evaluate(_points(30000, 9000), _points(30000, 9000), _manifest(),
-                       _manifest(ntas="2027-01-15"))
-    assert not safe
+def _meta(areas=(1.0, 0.5, 0.25), ntas=("QN0401", "QN0402"), tract_nta=(0, 0, 1)) -> dict:
+    return {"tract_geoids": ["36081000100", "36081000200", "36081000300"], "tract_area_sqmi": list(areas),
+            "ntas": [{"code": c} for c in ntas], "boroughs": [{"code": "4"}],
+            "tract_nta": list(tract_nta), "tract_boro": [0, 0, 0]}
+
+
+def test_republished_geography_with_cosmetic_edits_is_routine():
+    """NYC re-dated its boundary files with ~0.2% shoreline edits (Nov 2026): not a review."""
+    safe, reasons = evaluate(_points(30000, 9000), _points(30000, 9000), _manifest(), _manifest(ntas="2026-11-02"),
+                             _meta(), _meta(areas=(1.0018, 0.5, 0.25)))
+    assert safe, reasons
+    assert any(r.startswith("ok geography") and "0.18%" in r for r in reasons)
+
+
+def test_structural_geography_change_needs_review():
+    base = (_points(30000, 9000), _points(30000, 9000), _manifest(), _manifest())
+    assert not evaluate(*base, _meta(), _meta(areas=(1.2, 0.5, 0.25)))[0]  # a tract grew 20%
+    assert not evaluate(*base, _meta(), _meta(ntas=("QN0401", "QN0499")))[0]  # an NTA code changed
+    assert not evaluate(*base, _meta(), _meta(tract_nta=(0, 1, 1)))[0]  # a tract moved neighborhood
 
 
 def test_acs_fetch_keeps_the_pinned_vintage(monkeypatch):
